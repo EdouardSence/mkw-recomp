@@ -36,6 +36,7 @@ typedef struct VkCtx {
         has_robustness2, has_buffer_device_address, has_fragment_shader_interlock,
         has_unused_attachments,             // VK_EXT_dynamic_rendering_unused_attachments
         has_buffer_marker,                  // VK_AMD_buffer_marker: the GPU breadcrumbs (vk_crumbs.c)
+        has_nv_checkpoints,                 // VK_NV_device_diagnostic_checkpoints: the same on NVIDIA
         has_exec_stats,                     // VK_KHR_pipeline_executable_properties, with MKW_SPEC_STATS=1 only
         has_mesh,                           // VK_EXT_mesh_shader with taskShader and meshShader (MKW's 25 task/mesh)
         has_astc_ldr,                       // textureCompressionASTC_LDR (enabled when reported)

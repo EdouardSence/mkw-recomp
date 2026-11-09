@@ -244,6 +244,13 @@ void rec_marker(PFN_vkCmdWriteBufferMarkerAMD fn, VkCommandBuffer cb, VkPipeline
     pub();
 }
 
+void rec_checkpoint(PFN_vkCmdSetCheckpointNV fn, VkCommandBuffer cb, const void *m) {
+    if (!OWNED(cb)) { fn(cb, m); return; }
+    A_Checkpoint *a = put(R_Checkpoint, sizeof *a);
+    *a = (A_Checkpoint){fn, m};
+    pub();
+}
+
 #define TARGET_CMD(fname, R, PFN, T)                                                                                    \
     void fname(PFN fn, VkCommandBuffer cb, uint32_t first, uint32_t n, const T *v) {                                    \
         if (!OWNED(cb)) { fn(cb, first, n, v); return; }                                                               \

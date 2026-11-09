@@ -33,6 +33,7 @@ void rec_draw_mesh(PFN_vkCmdDrawMeshTasksEXT fn, VkCommandBuffer cb, uint32_t x,
 // A GPU breadcrumb (vk_crumbs.c), in order with the commands around it.
 void rec_marker(PFN_vkCmdWriteBufferMarkerAMD fn, VkCommandBuffer cb, VkPipelineStageFlagBits stage, VkBuffer b,
                 VkDeviceSize o, uint32_t v);
+void rec_checkpoint(PFN_vkCmdSetCheckpointNV fn, VkCommandBuffer cb, const void *m);   // the same, on NVIDIA
 void rec_blend_enable(PFN_vkCmdSetColorBlendEnableEXT fn, VkCommandBuffer cb, uint32_t first, uint32_t n, const VkBool32 *v);
 void rec_blend_equation(PFN_vkCmdSetColorBlendEquationEXT fn, VkCommandBuffer cb, uint32_t first, uint32_t n,
                         const VkColorBlendEquationEXT *v);

@@ -29,7 +29,7 @@ enum {
     SL_N_ = SL_PUSHC + 1,
 };
 _Static_assert(SL_N_ <= REC_SLOTS, "REC_SLOTS covers the slots");
-_Static_assert(R_Marker < 64, "packet ops fit SL_OP");
+_Static_assert(R_Checkpoint < 64, "packet ops fit SL_OP");
 
 int rec_slots_on;
 static uint64_t slot[REC_SLOTS];

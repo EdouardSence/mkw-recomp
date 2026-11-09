@@ -266,6 +266,13 @@ static int create_device(void) {
     }
     if (has_ext(ep, ne, VK_EXT_MEMORY_BUDGET_EXTENSION_NAME)) { g_vk.has_memory_budget = 1; ext[n_ext++] = VK_EXT_MEMORY_BUDGET_EXTENSION_NAME; }
     if (has_ext(ep, ne, VK_AMD_BUFFER_MARKER_EXTENSION_NAME)) { g_vk.has_buffer_marker = 1; ext[n_ext++] = VK_AMD_BUFFER_MARKER_EXTENSION_NAME; }
+    // The breadcrumbs' fallback where the buffer marker is missing (NVIDIA's drivers have both: GTX 1050 Ti on Windows,
+    // RTX 5070 Ti 620.70 on Linux, 09/11/2026); only with the breadcrumbs on: enabling it may cost even unused.
+    if (!g_vk.has_buffer_marker && has_ext(ep, ne, VK_NV_DEVICE_DIAGNOSTIC_CHECKPOINTS_EXTENSION_NAME) &&
+        rt_knob("GPU_CRUMBS", "1")) {
+        g_vk.has_nv_checkpoints = 1;
+        ext[n_ext++] = VK_NV_DEVICE_DIAGNOSTIC_CHECKPOINTS_EXTENSION_NAME;
+    }
     if (has_ext(ep, ne, VK_KHR_CALIBRATED_TIMESTAMPS_EXTENSION_NAME) && vk_tl_on()) {   // vk_timeline.c
         g_vk.has_calibrated = 1;
         ext[n_ext++] = VK_KHR_CALIBRATED_TIMESTAMPS_EXTENSION_NAME;

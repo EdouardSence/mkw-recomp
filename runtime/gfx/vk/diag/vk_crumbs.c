@@ -9,6 +9,8 @@
 // noticed on, not the work that hung. VK_EXT_device_fault (vk_exec_dstat.c) names an address only for a page fault;
 // these marks also cover a timeout. Cost: two small writes per pass or dispatch, none per draw; a barrier already
 // precedes each pass and dispatch, so the end-of-pipe write adds no wait. MKW_GPU_CRUMBS=0 turns them off.
+// Where the driver has no buffer marker but VK_NV_device_diagnostic_checkpoints (older NVIDIA drivers; current ones
+// have both), the same marks are checkpoints, read from the queue after the loss.
 // The design follows totk-pc-recomp's vk_crumbs.c (MIT, 710b7f5) and Savage Wind Recomp's GPU checkpoints; the code
 // is ours.
 #include <stdio.h>
@@ -29,6 +31,8 @@ typedef struct {
 } Mark;
 
 static PFN_vkCmdWriteBufferMarkerAMD write_marker;
+static PFN_vkCmdSetCheckpointNV set_checkpoint;   // NVIDIA: a checkpoint (id << 1 | end) per mark instead of a write
+static int active;                                // marks are recorded (either way)
 static VkBuffer buf;
 static VmaAllocation alloc;
 static volatile uint32_t *words;
@@ -40,8 +44,16 @@ void vk_crumbs_init(void) {
     VkCtx *c = vk_ctx();
     mode = rt_knob("GPU_CRUMBS", "1");
     if (!c || !mode) return;
+    if (c->has_nv_checkpoints) {
+        set_checkpoint = (PFN_vkCmdSetCheckpointNV)vkGetDeviceProcAddr(c->device, "vkCmdSetCheckpointNV");
+        active = set_checkpoint != NULL;
+        rt_log("vk: GPU breadcrumbs %s%s: upload batches, render passes and dispatches as NVIDIA checkpoints "
+               "(MKW_GPU_CRUMBS=0 turns them off)", active ? "on" : "unavailable",
+               active && mode == 2 ? " in the B blocks (MKW_AB)" : "");
+        return;
+    }
     if (!c->has_buffer_marker) {
-        rt_log("vk: GPU breadcrumbs unavailable (no VK_AMD_buffer_marker)");
+        rt_log("vk: GPU breadcrumbs unavailable (no VK_AMD_buffer_marker or VK_NV_device_diagnostic_checkpoints)");
         return;
     }
     write_marker = (PFN_vkCmdWriteBufferMarkerAMD)vkGetDeviceProcAddr(c->device, "vkCmdWriteBufferMarkerAMD");
@@ -58,6 +70,7 @@ void vk_crumbs_init(void) {
     }
     words = info.pMappedData;
     words[0] = words[1] = words[2] = words[3] = 0;
+    active = 1;
     rt_log("vk: GPU breadcrumbs on%s: upload batches, render passes and dispatches (MKW_GPU_CRUMBS=0 turns them off)",
            mode == 2 ? " in the B blocks (MKW_AB)" : "");
 }
@@ -65,17 +78,18 @@ void vk_crumbs_init(void) {
 void vk_crumbs_release(void) {
     VkCtx *c = vk_ctx();
     if (buf && c) vmaDestroyBuffer(c->vma, buf, alloc);
-    buf = VK_NULL_HANDLE, alloc = NULL, words = NULL, write_marker = NULL;
+    buf = VK_NULL_HANDLE, alloc = NULL, words = NULL, write_marker = NULL, set_checkpoint = NULL, active = 0;
 }
 
 static void mark(VkCommandBuffer cb, uint32_t word, uint32_t id) {
-    rec_marker(write_marker, cb, word & 1 ? VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT : VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, buf,
-               4 * word, id);
+    if (set_checkpoint) rec_checkpoint(set_checkpoint, cb, (const void *)(uintptr_t)((uint64_t)id << 1 | (word & 1)));
+    else rec_marker(write_marker, cb, word & 1 ? VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT : VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+                    buf, 4 * word, id);
 }
 
 uint32_t vk_crumb_begin(VkCommandBuffer cb, int kind, uint32_t w, uint32_t h, uint32_t d, uint32_t ncolor,
                         const VkFormat *color, VkFormat depth) {
-    if (!words || !cb || !RT_KNOB_ON(mode)) return 0;
+    if (!active || !cb || !RT_KNOB_ON(mode)) return 0;
     uint32_t id = __atomic_add_fetch(&seq, 1, __ATOMIC_RELAXED);
     if (!id) id = __atomic_add_fetch(&seq, 1, __ATOMIC_RELAXED);   // 0 means no mark
     Mark *m = &ring[id % RING];
@@ -87,7 +101,7 @@ uint32_t vk_crumb_begin(VkCommandBuffer cb, int kind, uint32_t w, uint32_t h, ui
 }
 
 void vk_crumb_end(VkCommandBuffer cb, int kind, uint32_t id) {
-    if (words && cb && id) mark(cb, kind == VK_CRUMB_UPLOAD ? 1 : 3, id);
+    if (active && cb && id) mark(cb, kind == VK_CRUMB_UPLOAD ? 1 : 3, id);
 }
 
 static void describe(uint32_t id, char *o, size_t size) {
@@ -114,9 +128,37 @@ static void describe(uint32_t id, char *o, size_t size) {
     }
 }
 
+// NVIDIA: the last checkpoint each pipeline stage of the graphics queue (uploads and the replay both) executed. A
+// checkpoint is a mark's id times 2, plus 1 at its end: the top-of-pipe one is the newest point the GPU reached, the
+// bottom-of-pipe one the newest before which everything had finished.
+static void nv_report(void) {
+    VkCtx *c = vk_ctx();
+    PFN_vkGetQueueCheckpointDataNV get =
+        c ? (PFN_vkGetQueueCheckpointDataNV)vkGetDeviceProcAddr(c->device, "vkGetQueueCheckpointDataNV") : NULL;
+    if (!get) return;
+    VkCheckpointDataNV d[32];
+    uint32_t n = 0;
+    get(c->gfx_queue, &n, NULL);
+    if (n > 32) n = 32;
+    for (uint32_t i = 0; i < n; i++) d[i] = (VkCheckpointDataNV){.sType = VK_STRUCTURE_TYPE_CHECKPOINT_DATA_NV};
+    get(c->gfx_queue, &n, d);
+    rt_log("vk: GPU breadcrumbs (%u marks made, NVIDIA checkpoints): %u stages reported", __atomic_load_n(&seq, __ATOMIC_RELAXED),
+           n);
+    for (uint32_t i = 0; i < n; i++) {
+        uint64_t v = (uint64_t)(uintptr_t)d[i].pCheckpointMarker;
+        char a[256];
+        describe((uint32_t)(v >> 1), a, sizeof a);
+        rt_log("vk:   stage %#x last ran the %s of mark %s", (unsigned)d[i].stage, v & 1 ? "end" : "start", a);
+    }
+}
+
 void vk_crumbs_report(void) {
     static int done;
-    if (!words || __atomic_exchange_n(&done, 1, __ATOMIC_ACQ_REL)) return;
+    if (!active || __atomic_exchange_n(&done, 1, __ATOMIC_ACQ_REL)) return;
+    if (set_checkpoint) {
+        nv_report();
+        return;
+    }
     static const char *const what[2] = {"upload batches", "replay passes and dispatches"};
     rt_log("vk: GPU breadcrumbs (%u marks made): the hang lies after the last finished mark and up to the last started",
            __atomic_load_n(&seq, __ATOMIC_RELAXED));
