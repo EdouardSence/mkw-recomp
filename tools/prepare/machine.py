@@ -12,6 +12,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "tools/build"))
 import build  # (mem_total_gb)
 
 
+class Failed(Exception):
+    """A step that cannot go on: its message is for the player."""
+
+
 # ---- the package's tools (setup/ next to the executable), else the system's
 def package_dir(game: Path) -> Path:
     return game / "setup"
@@ -20,6 +24,13 @@ def package_dir(game: Path) -> Path:
 def default_cc(game: Path, target: str) -> list[str]:
     zig = package_dir(game) / "zig" / ("zig.exe" if os.name == "nt" else "zig")
     if zig.is_file():
+        # zig finds its lib/ from the path it reads as its own executable (/proc/self/exe); when that path is not the
+        # package's (a launcher or sandbox that copies or wraps the binary) every zig cc fails with "unable to find zig
+        # installation directory" (reported on 0.1.2). ZIG_LIB_DIR names it; the tools below inherit it.
+        lib = zig.parent / "lib"
+        if not (lib / "std/std.zig").is_file():
+            raise Failed(f"{lib} is incomplete: extract the release again")
+        os.environ["ZIG_LIB_DIR"] = str(lib)
         return [str(zig), "cc", "-target", "x86_64-windows-gnu" if target == "windows" else "x86_64-linux-gnu"]
     return ["clang"]
 

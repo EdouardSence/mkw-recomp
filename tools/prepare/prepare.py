@@ -40,22 +40,20 @@ sys.path.insert(0, str(ROOT / "tools/build"))
 import build  # (GEN_FLAGS, module_glue, game_id: the same game code as build.py --dist)
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from machine import default_cc, default_glslc, mem_gb, own_children, package_dir, shader_jobs, tool_env
+from machine import Failed, default_cc, default_glslc, mem_gb, own_children, package_dir, shader_jobs, tool_env
 
 PREP_VERSION = 1  # bump when a step's output changes meaning: every step runs again
 MAIN_BUILD_ID = "9e244438c3d8ef1c"  # MKW 1.0.0 exefs/main, the first 8 bytes of the NSO build id at 0x40
 ROMFS_FILES = 205_660  # files of the 1.0.0 RomFS (06/11/2026)
 ROMFS_MARGIN = 0.95  # a few short still passes: some dumping tools skip empty files
 STEPS = ("check", "exefs", "romfs", "generate", "compile", "shaders", "warm", "cleanup")
+LINK_TIMEOUT = 30 * 60  # far past a slow link: only a hung linker (issue #2: "stuck" after the last object)
 WARM_SECONDS = 60  # the driver cache is saved every 20 s and the pipeline keys every 2 (vk_pipeline.c, vk_pipe_keys.c)
-
-
-class Failed(Exception):
-    """A step that cannot go on: its message is for the player."""
 
 
 def emit(*words: object) -> None:
     print(*words, flush=True)
+    print(*words, file=sys.stderr)
 
 
 # ---- check
@@ -159,7 +157,8 @@ def compile_game(game: Path, exefs: Path, work: Path, cc: list[str], target: str
     inc = [f"-I{d}" for d in sorted({p.parent for p in (ROOT / "runtime").rglob("*.h")})] + [f"-I{gen}"]
     jobs_c = [(src, obj / f"{src.parent.name}_{src.stem}.o", [*flags, f"-I{ROOT / 'runtime/cpu'}"]) for src in srcs]
     jobs_c.append((obj / "modules.c", obj / "modules.o", [*flags, gid, *inc]))
-    total, done = len(jobs_c), 0
+    total, done = len(jobs_c) + 1, 0  # the link is the last unit: a progress bar full before it hid it (issue #2)
+    extra = [str(package_dir(game) / "lib/libmkw.dll.a")] if windows else ["-Wl,-z,noexecstack"]
 
     def one(job: tuple[Path, Path, list[str]]) -> str:
         src, out, f = job
@@ -171,24 +170,46 @@ def compile_game(game: Path, exefs: Path, work: Path, cc: list[str], target: str
         return "" if not r.returncode else f"{src.name}: {r.stderr.strip()[-300:]}"
 
     with ThreadPoolExecutor(jobs) as pool:
+        probe = pool.submit(probe_link, cc, obj, windows)  # first, so it runs beside the compiles
         for err in pool.map(one, jobs_c):
             if err:
                 raise Failed(f"compiling the game code failed: {err}")
             done += 1
             emit("progress", done, total)
+        probe.result()
     lib = game / ("mkwgame.dll" if windows else "mkwgame.so")
     part = lib.with_name(lib.name + ".part")
     objs = [str(o) for _, o, _ in jobs_c]
     rsp = obj / "link.rsp"  # ~360 objects: past the Windows command line limit
     rsp.write_text("\n".join(f'"{o}"' for o in objs).replace("\\", "/"))
-    extra = [str(package_dir(game) / "lib/libmkw.dll.a")] if windows else ["-Wl,-z,noexecstack"]
-    r = subprocess.run(
-        [*cc, "-shared", "-o", str(part), f"@{rsp}", *extra], capture_output=True, text=True, check=False
-    )
+    t0 = time.monotonic()
+    try:
+        r = subprocess.run([*cc, "-shared", "-o", str(part), f"@{rsp}", *extra], capture_output=True, text=True,
+                           check=False, timeout=LINK_TIMEOUT)  # fmt: skip
+    except subprocess.TimeoutExpired as e:
+        raise Failed(f"linking the game code took over {LINK_TIMEOUT // 60} min: {tail_of(e.stderr)}") from None
+    print(f"link: {time.monotonic() - t0:.1f} s, rc {r.returncode}\n{r.stderr}", file=sys.stderr)
     if r.returncode:
         raise Failed(f"linking the game code failed: {r.stderr.strip()[-300:]}")
     part.replace(lib)
+    emit("progress", total, total)
     (game / "mkwgame.id").write_text(build.game_id())  # runtime/core/boot/gamelib.c rt_game_present
+
+
+def probe_link(cc: list[str], obj: Path, windows: bool) -> None:
+    """A one-function library linked while the game code compiles: zig builds its libc and compiler_rt for the target
+    on its first link (11.7 s for Linux, 22 s for Windows on 12 cores, 09/11/2026), silent after the last object, and
+    caches them; this pays it in parallel. A failure is only logged: the real link reports its own."""
+    src, lib = obj / "probe.c", obj / ("probe.dll" if windows else "probe.so")
+    src.write_text("int probe(void) { return 0; }\n")
+    t0 = time.monotonic()
+    r = subprocess.run([*cc, "-shared", "-o", str(lib), str(src)], capture_output=True, text=True, check=False)
+    print(f"link probe: {time.monotonic() - t0:.1f} s, rc {r.returncode}\n{r.stderr}", file=sys.stderr)
+
+
+def tail_of(out: str | bytes | None) -> str:
+    text = out.decode(errors="replace") if isinstance(out, bytes) else out or ""
+    return text.strip()[-300:] or "no output"
 
 
 # ---- shaders and the overlay
@@ -263,13 +284,18 @@ def main() -> None:
     args = ap.parse_args()
     own_children()
     game, src = args.game.resolve(), args.source.resolve()
+    # The start screen reads only stdout: the tools' output and the timings go to logs/setup.log, the file a report
+    # attaches (issue #2 had none to give).
+    (game / "logs").mkdir(parents=True, exist_ok=True)
+    sys.stderr = open(game / "logs/setup.log", "w", encoding="utf-8", buffering=1)  # noqa: SIM115
+    print(f"setup: {' '.join(sys.argv)}", file=sys.stderr)
     jobs = args.jobs or max(1, min(os.cpu_count() or 1, int(mem_gb() * 0.6)))
-    cc = args.cc.split() if args.cc else default_cc(game, args.target)
     glslc = args.glslc or default_glslc(game)
     work = game / "setup-work"
     state = load_state(game)
     try:
         emit("step", "check")
+        cc = args.cc.split() if args.cc else default_cc(game, args.target)
         exefs_src, romfs_src = check(src)
         romfs = game / "romfs" if args.romfs == "copy" else romfs_src
         keys = {
@@ -308,10 +334,10 @@ def main() -> None:
             save_state(game, state)
         emit("done")
     except Failed as e:
-        emit("error", "failed", str(e))
+        emit("error", "failed", f"{e} (more in logs/setup.log)")
         sys.exit(1)
     except OSError as e:
-        emit("error", "io", str(e))
+        emit("error", "io", f"{e} (more in logs/setup.log)")
         sys.exit(1)
 
 

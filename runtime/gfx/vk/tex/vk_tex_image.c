@@ -223,8 +223,9 @@ static int astc_alpha_one(const uint8_t *p, uint64_t size, int bw, int bh) {
     return any;
 }
 
-// Texture memory made before play (MKW_VK_TEX_POOL_MIN=<blocks>, default half the VRAM, 0 off; discrete GPUs only): a pool of fixed
-// 256 MiB blocks, that many of them allocated at start on a thread of their own, takes the textures of its memory type.
+// Texture memory made before play (MKW_VK_TEX_POOL_MIN=<blocks>, default half the VRAM, 0 off; by default on discrete
+// GPUs only, a value set makes it on any): a pool of fixed 256 MiB blocks, that many of them allocated at start on a
+// thread of their own, takes the textures of its memory type.
 // On a GTX 1050 Ti the race load spent 79-93 % of a 2.2 s frame on the replay thread in vkAllocateMemory: VMA's
 // default pools, over the driver's budget (which counts the imported host memory), give every texture its own
 // allocation (VmaBlockVector::AllocatePage), and a pool whose blocks are made on demand only moved that time into
@@ -261,8 +262,10 @@ static void tex_pool_main(void *arg) {
 
 void vk_tex_pool_start(void) {
     VkCtx *c = vk_ctx();
-    if (!c || c->props.deviceType != VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) return;
     const char *e = cfg_get("MKW_VK_TEX_POOL_MIN");
+    // A value set by hand makes the pool on any GPU: the discrete GPUs' memory paths tried on an integrated one (the
+    // AMD discrete device losses of issues #4 and #5 happened with it, on a path no integrated GPU runs).
+    if (!c || (c->props.deviceType != VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU && !(e && *e))) return;
     VkDeviceSize vram = 0;
     for (uint32_t h = 0; h < c->mem_props.memoryHeapCount; h++)
         if (c->mem_props.memoryHeaps[h].flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT && c->mem_props.memoryHeaps[h].size > vram)
