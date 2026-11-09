@@ -19,7 +19,44 @@
 DrawRecent recent[RECENT_N];   // recent_note (vk_draw_internal.h)
 volatile uint32_t recent_at;
 
+// What the driver knows of the loss (VK_EXT_device_fault): on RADV the faulting GPU address and its kind, which a
+// player's log lacked (issues #4 and #5: "upload submit failed (-4)" and nothing else). Once per process.
+static void fault_log(void) {
+    static int done;
+    VkCtx *c = vk_ctx();
+    if (!c || !c->has_device_fault || __atomic_exchange_n(&done, 1, __ATOMIC_ACQ_REL)) return;
+    PFN_vkGetDeviceFaultInfoEXT get = (PFN_vkGetDeviceFaultInfoEXT)vkGetDeviceProcAddr(c->device, "vkGetDeviceFaultInfoEXT");
+    VkDeviceFaultCountsEXT n = {.sType = VK_STRUCTURE_TYPE_DEVICE_FAULT_COUNTS_EXT};
+    if (!get || get(c->device, &n, NULL) != VK_SUCCESS) {
+        rt_log("vk: device fault: no information from the driver");
+        return;
+    }
+    VkDeviceFaultAddressInfoEXT addr[16];
+    VkDeviceFaultVendorInfoEXT vendor[16];
+    if (n.addressInfoCount > 16) n.addressInfoCount = 16;
+    if (n.vendorInfoCount > 16) n.vendorInfoCount = 16;
+    n.vendorBinarySize = 0;
+    VkDeviceFaultInfoEXT info = {.sType = VK_STRUCTURE_TYPE_DEVICE_FAULT_INFO_EXT, .pAddressInfos = addr,
+                                 .pVendorInfos = vendor};
+    VkResult r = get(c->device, &n, &info);
+    if (r != VK_SUCCESS && r != VK_INCOMPLETE) {
+        rt_log("vk: device fault: no information from the driver (%d)", (int)r);
+        return;
+    }
+    static const char *const kind[] = {"none", "read invalid", "write invalid", "execute invalid", "instruction pointer unknown",
+                                       "instruction pointer invalid", "instruction pointer fault"};
+    rt_log("vk: device fault: %s; %u addresses, %u vendor records", info.description, n.addressInfoCount, n.vendorInfoCount);
+    for (uint32_t i = 0; i < n.addressInfoCount; i++)
+        rt_log("vk: device fault: %s at %#llx (precision %#llx)",
+               addr[i].addressType < sizeof kind / sizeof *kind ? kind[addr[i].addressType] : "?",
+               (unsigned long long)addr[i].reportedAddress, (unsigned long long)addr[i].addressPrecision);
+    for (uint32_t i = 0; i < n.vendorInfoCount; i++)
+        rt_log("vk: device fault: vendor %s, code %#llx, data %#llx", vendor[i].description,
+               (unsigned long long)vendor[i].vendorFaultCode, (unsigned long long)vendor[i].vendorFaultData);
+}
+
 void vk_exec_recent_log(void) {
+    fault_log();
     uint32_t n = __atomic_load_n(&recent_at, __ATOMIC_ACQUIRE), from = n > RECENT_N ? n - RECENT_N : 0;
     rt_log("vk_exec: the last %u programs drawn or dispatched with (oldest first; prepared SPIR-V keys):", n - from);
     for (uint32_t i = from; i < n; i++) {
