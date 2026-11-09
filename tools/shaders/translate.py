@@ -156,7 +156,7 @@ def main() -> None:
     ap.add_argument("--dumped-only", action="store_true", help="with --dumped: only those programs")
     ap.add_argument("--full", action="store_true", help="compile every program, also those whose GLSL is unchanged")
     ap.add_argument("--dumped", type=Path, help="also the <key>.{ctl,code} a run dumped (MKW_SPIRV_DUMP)")
-    ap.add_argument("--spec", type=Path, default=SPEC, help="the SM86 spec (tools/shaders/spec.sh)")
+    ap.add_argument("--spec", type=Path, default=SPEC, help="the SM86 spec (sm86/spec/spec.py)")
     ap.add_argument("--glslc", default=GLSLC, help="the glslc to run (the player's setup ships its own)")
     ap.add_argument("--no-validate", action="store_true", help="no spirv-val: the player's setup ships none")
     ap.add_argument("--progress", action="store_true", help="a line 'progress <done> <total>' every 100 programs")

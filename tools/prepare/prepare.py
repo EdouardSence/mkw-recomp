@@ -12,7 +12,8 @@ Steps, into --game (the folder of mkw / mkw.exe):
   romfs     romfs/ copied (23 GB), or --romfs link: its path written to mkw.ini (romfs = ...)
   generate  recomp/gen.py: the game code as C, in <game>/setup-work
   compile   that C with the package's zig (or clang) into mkwgame.so / mkwgame.dll
-  shaders   tools/shaders/extract.py and translate.py into spirv/
+  shaders   the SM86 spec built here from NVIDIA's nvdisasm (sm86/spec/spec.py, into sm86/; never shipped), then
+            tools/shaders/extract.py and translate.py into spirv/
   warm      the game run once for a minute: the driver's pipeline cache and the pipeline keys for the first start
   cleanup   setup-work removed
 
@@ -280,13 +281,24 @@ def compile_game(game: Path, exefs: Path, work: Path, cc: list[str], target: str
 
 
 # ---- shaders and the overlay
-def shaders(exefs: Path, romfs: Path, game: Path, work: Path, glslc: str, jobs: int) -> None:
+def sm86_spec(game: Path, work: Path, cc: list[str]) -> Path:
+    """The spec translate.py decodes with: a source checkout's own build/sm86, else built once into <game>/sm86."""
+    for spec in (ROOT / "build/sm86/instructions.json", game / "sm86/instructions.json"):
+        if spec.is_file():
+            return spec
+    run([sys.executable, str(ROOT / "sm86/spec/spec.py"), "--out", str(game / "sm86"), "--cache", str(work / "nvidia"),
+         "--cc", " ".join(cc)])  # fmt: skip
+    return game / "sm86/instructions.json"
+
+
+def shaders(exefs: Path, romfs: Path, game: Path, work: Path, glslc: str, jobs: int, cc: list[str]) -> None:
+    spec = sm86_spec(game, work, cc)
     sh = work / "shaders"
     run([sys.executable, str(ROOT / "tools/shaders/extract.py"), "--romfs", str(romfs), "--exefs", str(exefs),
          "--out", str(sh)])  # fmt: skip
     run([sys.executable, str(ROOT / "tools/shaders/translate.py"), "--shaders", str(sh), "--out", str(game / "spirv"),
          "--glslc", glslc, "--no-validate", "--progress", "--jobs", str(jobs),
-         "--spec", str(ROOT / "build/sm86/instructions.json")], env=tool_env(glslc), progress_prefix="progress")  # fmt: skip
+         "--spec", str(spec)], env=tool_env(glslc), progress_prefix="progress")  # fmt: skip
     for p in (game / "spirv").glob("*.glsl"):  # the runtime reads .spv and .res.json; the GLSL only made them
         p.unlink()
 
@@ -376,7 +388,7 @@ def main() -> None:
             elif step == "compile":
                 compile_game(game, game / "exefs", work, cc, args.target, jobs)
             elif step == "shaders":
-                shaders(game / "exefs", romfs, game, work, glslc, args.jobs or shader_jobs())
+                shaders(game / "exefs", romfs, game, work, glslc, args.jobs or shader_jobs(), cc)
             elif step == "warm":
                 warm(game, work)
             elif step == "cleanup":

@@ -1,4 +1,4 @@
-"""Check the SM86 decoder (sm86/decode, spec from tools/shaders/spec.sh) against nvdisasm on every extracted program.
+"""Check the SM86 decoder (sm86/decode, spec from sm86/spec/spec.py) against nvdisasm on every extracted program.
 
 Why: the translator trusts the decoder's class and fields; this proves, for each instruction MKW actually contains,
 that the decoder picks the instruction nvdisasm prints. Reference disassembly comes from tools/shaders/census.py.

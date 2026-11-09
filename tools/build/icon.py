@@ -2,9 +2,10 @@
 """Draws the icon of mkw.exe by code (our own: a checkered flag on a rounded square, no art of the game) and writes it as
 an .ico with PNG images of 256, 48, 32 and 16 pixels. tools/build/build.py --target windows calls it before the
 resource (runtime/platform/mkw.rc names "mkw.ico"); the file is made in build/, never committed. With an .svg name it
-writes the same drawing as vector shapes instead (the repo's logo, docs/logo.svg: text, so it can be versioned).
+writes the same drawing as vector shapes instead (the repo's logo, docs/logo.svg: text, so it can be versioned); with a
+.png name, one 256-pixel image (the Linux AppImage's icon, tools/build/release.py).
 
-Usage: uv run tools/build/icon.py OUT.ico | OUT.svg
+Usage: uv run tools/build/icon.py OUT.ico | OUT.svg | OUT.png
 """
 
 import math
@@ -101,6 +102,9 @@ def main() -> None:
         raise SystemExit(__doc__)
     if sys.argv[1].endswith(".svg"):
         Path(sys.argv[1]).write_text(svg())
+        return
+    if sys.argv[1].endswith(".png"):
+        Path(sys.argv[1]).write_bytes(png(256))
         return
     sizes = (256, 48, 32, 16)
     images = [png(s) for s in sizes]

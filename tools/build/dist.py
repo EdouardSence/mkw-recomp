@@ -3,14 +3,14 @@ player's machine. Nothing of the game goes in; the start screen's setup adds it.
 
 Why: the player has no Python, compiler or glslc. setup/ carries a portable CPython (python-build-standalone) with numpy
 and lz4, zig as the C compiler, glslc from conda-forge (Google's own shaderc builds are not downloadable), and the
-sources the setup runs (recomp/, sm86/, tools/, the runtime headers the game code includes, the SM86 spec). Every
-download is pinned by sha256, as tools/build/windeps.py; a mismatch stops.
+sources the setup runs (recomp/, sm86/, tools/, the runtime headers the game code includes). NVIDIA's SM86 spec does
+not go in: the setup builds it (sm86/spec/spec.py). Every download is pinned by sha256, as tools/build/windeps.py; a
+mismatch stops.
 
 Layout of build/dist/<target>/ (after build.py --dist):
     mkw, mkwgame.id                 the runtime (mkw.exe and its DLLs on Windows; mkwgame.* comes from the setup)
     setup/python, setup/zig, setup/glslc
-    setup/src/                      recomp/, sm86/, tools/{build,prepare,romfs,shaders}, runtime/{cpu,core/boot/gamelib.h},
-                                    build/sm86/instructions.json
+    setup/src/                      recomp/, sm86/, tools/{build,prepare,romfs,shaders}, runtime/{cpu,core/boot/gamelib.h}
     setup/lib/libmkw.dll.a          (Windows) the runtime's import library the game code library links against
 The desktop shortcut is the start screen's (a .desktop on Linux, a .lnk on Windows: platform.h).
 
@@ -81,7 +81,7 @@ PINS = {
 # The sources the setup runs, from the repository (tools/prepare/prepare.py imports and runs them).
 SOURCES = ["recomp", "sm86", "tools/build/build.py", "tools/prepare", "tools/romfs/resolution.py",
            "tools/shaders/extract.py", "tools/shaders/translate.py", "runtime/cpu",
-           "runtime/core/boot/gamelib.h", "build/sm86/instructions.json"]  # fmt: skip
+           "runtime/core/boot/gamelib.h"]  # fmt: skip
 # Windows DLLs mkw.exe needs beside it (build/win/deps/bin, tools/build/windeps.py); vulkan-1.dll is the driver's.
 WIN_DLLS = ["SDL3.dll", "libopus-0.dll"]
 
@@ -165,9 +165,6 @@ def main() -> None:
         return
     if not exe.is_file():
         sys.exit(f"{exe} missing: uv run tools/build/build.py --dist --target {args.target} first")
-    spec = ROOT / "build/sm86/instructions.json"
-    if not spec.is_file():
-        sys.exit(f"{spec} missing: tools/shaders/spec.sh")
     DL.mkdir(parents=True, exist_ok=True)
     pins = PINS[args.target]
     got = {name: fetch(url, want) for name, (url, want) in pins.items()}

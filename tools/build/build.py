@@ -133,6 +133,14 @@ def module_glue(gen: Path, exefs: Path, library: bool) -> str:
     return "\n".join(out)
 
 
+def port_version() -> str:
+    """The release tag without its v (0.1.0) or, between tags, git describe's tag-commits-hash; the commit alone in a
+    clone without tags, "dev" outside git (the source tarball of a release says nothing)."""
+    r = subprocess.run(["git", "-C", str(ROOT), "describe", "--tags", "--always", "--dirty"],
+                       capture_output=True, text=True, check=False)  # fmt: skip
+    return r.stdout.strip().removeprefix("v") if r.returncode == 0 and r.stdout.strip() else "dev"
+
+
 def defaults_glue(exefs: Path, romfs: Path, dist: bool) -> str:
     """defaults.c: the executable's own defaults, the game copy's paths (none in the player's build: the folders next
     to the executable, main.c portable_paths) and the port's version. The player's build gets rt_game_builtin here:
@@ -140,7 +148,7 @@ def defaults_glue(exefs: Path, romfs: Path, dist: bool) -> str:
     out = ["// Defaults written by tools/build/build.py; do not edit.", '#include "gamelib.h"', '#include "host.h"', ""]
     for name, path in (("exefs", exefs), ("romfs", romfs), ("profile", ROOT / "build/profile")):
         out.append(f"const char rt_default_{name}[] = {c_string('' if dist else str(path.resolve()))};")
-    out += ['const char rt_port_version[] = "mkw-0.0.0";', ""]
+    out += [f"const char rt_port_version[] = {c_string(port_version())};", ""]
     if dist:
         out += ["const RtGame *rt_game_builtin(void) { return 0; }", ""]
     return "\n".join(out)
@@ -151,14 +159,14 @@ RT_EXPORTS = ("rt_dispatch", "rt_svc", "rt_udf", "rt_ticks", "rt_spin_gate", "fn
 
 
 def ninja_file(target: Target, gen: Path, out: Path, rt_extra: list[str], dist: Path | None,
-               runtime_only: bool = False) -> str:  # fmt: skip
+               runtime_only: bool = False, ld_extra: list[str] | None = None) -> str:  # fmt: skip
     """dist: the player's build into that folder, the runtime (mkw, mkw.exe) and the game code apart (mkwgame.so,
     mkwgame.dll); else build/mkw with the game code linked in. runtime_only (with dist): the runtime alone, what a
     release ships and the CI builds, without the game's generated C."""
     inc = " ".join(f"-I{d}" for d in sorted({RUNTIME} | {p.parent for p in RUNTIME.rglob("*.h")}))
     gid = f'-DRT_GAME_ID=\\"{game_id()}\\"'
     pic = ["-fPIC"] if dist and target is LINUX else []
-    link_flags = list(target.link_flags)
+    link_flags = list(target.link_flags) + (ld_extra or [])
     if dist and target is LINUX:
         link_flags += [f"-Wl,--export-dynamic-symbol={s}" for s in RT_EXPORTS]
     elif dist:  # the exports (a .def file lld reads as an input) and the import library the game code links against
@@ -262,6 +270,10 @@ def main() -> None:
     ap.add_argument("--romfs", type=Path, default=GAME / "romfs")
     ap.add_argument("--jobs", type=int, default=0, help="parallel compiles (default: from the memory budget)")
     ap.add_argument("--job-mem-gb", type=float, default=1.0, help="memory one job may take (a main chunk: ~0.3 GB)")
+    ap.add_argument(
+        "--sysroot", type=Path,
+        help="Linux: compile and link against this sysroot (tools/build/sysroot.py: glibc 2.31, the release)",
+    )  # fmt: skip
     ap.add_argument("--dry-run", action="store_true", help="write build.ninja and show what would run")
     ap.add_argument(
         "--frame-pointers",
@@ -272,6 +284,11 @@ def main() -> None:
     if args.runtime_only and not args.dist:
         ap.error("--runtime-only needs --dist")
     target = WINDOWS if args.target == "windows" else LINUX
+    if args.sysroot and target is WINDOWS:
+        ap.error("--sysroot is for Linux")
+    # zstd and xxhash.h of the sysroot sit in its usr/local (tools/build/sysroot.py), whose include clang already reads
+    sys_flags = ["--target=x86_64-linux-gnu", f"--sysroot={args.sysroot.resolve()}"] if args.sysroot else []
+    sys_ld = [*sys_flags, f"-L{args.sysroot.resolve()}/usr/local/lib"] if args.sysroot else []
     dist = ROOT / "build/dist" / args.target if args.dist else None
     args.out = args.out or ROOT / ("build/obj" + ("-dist" if dist else "") + ("-win" if target is WINDOWS else ""))
     for tool in (target.cc, target.cxx, "ninja", target.ar):
@@ -292,7 +309,9 @@ def main() -> None:
         dist.mkdir(parents=True, exist_ok=True)
         (dist / "mkwgame.id").write_text(game_id())
     fp = ["-fno-omit-frame-pointer", "-mno-omit-leaf-frame-pointer"] if args.frame_pointers else []
-    (args.out / "build.ninja").write_text(ninja_file(target, args.gen, args.out, fp, dist, args.runtime_only))
+    (args.out / "build.ninja").write_text(
+        ninja_file(target, args.gen, args.out, fp + sys_flags, dist, args.runtime_only, sys_ld)
+    )
     if target is LINUX and not dist:
         write_compile_db(args.out / "build.ninja")
     cmd = ["ninja", "-f", str(args.out / "build.ninja"), "-j", str(jobs)] + (["-n"] if args.dry_run else [])

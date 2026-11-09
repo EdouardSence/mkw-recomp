@@ -47,6 +47,10 @@ PINS = {
         MSYS2 + "mingw-w64-ucrt-x86_64-libvpx-1.17.0-1-any.pkg.tar.zst",
         "8ff6919dbb88ea26ce28d22fd81d6f0d6e200cf56a4dd81ffc2d33124fe98024",
     ),
+    "libvpx-license": (  # the package carries none; mkw.exe links libvpx statically and the zip carries its BSD notice
+        "https://raw.githubusercontent.com/webmproject/libvpx/v1.17.0/LICENSE",
+        "8267348d5af1262c11d1a08de2f5afc77457755f1ac658627dd9acf71011d615",
+    ),
     "vulkan-headers": (
         MSYS2 + "mingw-w64-ucrt-x86_64-vulkan-headers-1~1.4.363.0-1-any.pkg.tar.zst",
         "be602b2657cace531316e78b1eda4087e8f7f84ebb877f08fba198a2db06406a",
@@ -112,7 +116,8 @@ def unpack_llvm(archive: Path) -> None:
 
 
 def unpack_deps(archives: dict[str, Path]) -> None:
-    """Each package's include/, lib/ and bin/*.dll into build/win/deps (MSYS2: ucrt64/..., SDL: x86_64-w64-mingw32/...)."""
+    """Each package's include/, lib/, bin/*.dll and share/licenses/ into build/win/deps (MSYS2: ucrt64/..., SDL:
+    x86_64-w64-mingw32/...); the licences go into the release zip (tools/build/release.py)."""
     dst = WIN / "deps"
     shutil.rmtree(dst, ignore_errors=True)
     for name, archive in archives.items():
@@ -121,7 +126,7 @@ def unpack_deps(archives: dict[str, Path]) -> None:
             for m in t.getmembers():
                 rel = m.name.split(prefix, 1)[1] if prefix in m.name else ""
                 top = rel.split("/", 1)[0]
-                if not m.isfile() or top not in ("include", "lib", "bin"):
+                if not m.isfile() or (top not in ("include", "lib", "bin") and not rel.startswith("share/licenses/")):
                     continue
                 if top == "bin" and (not rel.endswith(".dll") or Path(rel).name in SKIP_DLLS):
                     continue
@@ -142,7 +147,10 @@ def main() -> None:
     DL.mkdir(parents=True, exist_ok=True)
     paths = {name: fetch(name) for name in PINS}
     unpack_llvm(paths.pop("llvm-mingw"))
+    vpx_license = paths.pop("libvpx-license")
     unpack_deps(paths)
+    (WIN / "deps/share/licenses/libvpx").mkdir(parents=True, exist_ok=True)
+    shutil.copy2(vpx_license, WIN / "deps/share/licenses/libvpx/LICENSE")
     dlls = sorted(p.name for p in (WIN / "deps/bin").glob("*.dll"))
     print(f"build/win: llvm-mingw {LLVM_VERSION}, deps {', '.join(PINS)[len('llvm-mingw, ') :]}; DLLs {' '.join(dlls)}")
 

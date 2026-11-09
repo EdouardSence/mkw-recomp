@@ -15,7 +15,8 @@ dev = [
 
 [tool.ruff]
 line-length = 120
-extend-exclude = ["recomp", "sm86/decode"]  # vendored (totk-pc-recomp, nvsass-disassembler): kept close to upstream
+# vendored (totk-pc-recomp, nvsass-disassembler, DocumentSASS): kept close to upstream
+extend-exclude = ["recomp", "sm86/decode", "sm86/spec/funnel.py", "sm86/spec/parse_sidl.py", "sm86/spec/sidl_*.py"]
 
 [tool.ruff.lint]
 # Real bugs only (syntax errors, pyflakes: undefined names, unused variables), fixed here so the CI does not change

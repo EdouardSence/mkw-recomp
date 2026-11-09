@@ -4,8 +4,7 @@
 |---|---|---|
 | `extract.py` | Extracts every distinct stage of the `.bfsha` (BNSH) and `.sharcb` (agl) files of `romfs/Shader` to `build/shaders/<sha1>.{ctl,code}` with `index.csv` (stage, size, origin). Size from `control+0x44`; cuts at the first null word or at the next program's SPH. It also looks for BNSH in the rest of the romfs (effects, layouts), agl packages inside `.sarc` (`Lib/agl/agl_resource...sarc`) and the decompressed image of the NSOs (two BNSH in `main`): 11 492 stages; `--shader-dir` only looks at `romfs/Shader` (4 196) | `uv run tools/shaders/extract.py [--shader-dir]` (~2 min; `--shader-dir` ~10 s) |
 | `embed_spv.py` | Compiles one of the runtime's own shaders (`runtime/shaders/X.comp`) with `glslc` and writes it as an array in `runtime/gfx/vk/X_spv.h` | `uv run tools/shaders/embed_spv.py runtime/shaders/bc7_encode.comp` |
-| `spec.sh` | Generates the SM86 specification (`build/sm86/instructions.json`) from a local `nvdisasm` with DocumentSASS and nvsass-disassembler (cloned in `scratchpad/ext/`, pinned commit) | `tools/shaders/spec.sh` (~1 min) |
-| `decode_check.py` | Compares the `sm86/decode` decoder with `nvdisasm` on every instruction of every program | `uv run tools/shaders/decode_check.py` (~25 s; needs `census.py` and `spec.sh` done) |
+| `decode_check.py` | Compares the `sm86/decode` decoder with `nvdisasm` on every instruction of every program | `uv run tools/shaders/decode_check.py` (~25 s; needs `census.py` and `sm86/spec/spec.py` done) |
 | `mma_check.py` | Off-GPU test of the translator's matrix functions (`LDSM`, `HMMA`, `MOVM`) thread by thread, against `A·B` and the transpose | `uv run tools/shaders/mma_check.py` (seconds) |
 | `operand_check.py` | The same for operands: registers, predicates, constant banks (offset modulo 64 KiB) and `-`/`\|x\|` signs of the decoded fields against `nvdisasm`'s text | `uv run tools/shaders/operand_check.py` (~75 s; needs `census.py`) |
 | `translate.py` | Translates every program to SPIR-V ahead of time (`sm86/translate` → `glslc --target-env=vulkan1.3` → `spirv-val`) and counts the failures per instruction: the translator's work list. `--dumped DIR` adds the programs a run did not find (`MKW_SPIRV_DUMP=DIR`): the ones the game generates at run time from templates in `main`. Writes `build/spirv/<key>.{glsl,spv,res.json}`, with key = sha256 of the control section (0xd8 bytes) and the trimmed code: the name the runtime looks up (`nvn2_program_key` in `runtime/gfx/nvn/procs/nvn2.c`) | `uv run tools/shaders/translate.py [--stage ps] [--full]`: only compiles with `glslc` the programs whose GLSL changed since the previous pass (`<key>.result` keeps the verdict; `<key>.done`, with a hash of the translator, skips unchanged programs entirely); `--sample N` checks a change that touches them all on N spread programs; `--glslc`, `--spec`, `--no-validate` and `--progress`, for the player's setup |
@@ -21,6 +20,5 @@
 | `retry_shas.py`, `retry_failed.py` | Translates specific programs of the census again, or the failed ones with a given reason | see their header |
 | `classify_missing.py` | Programs dumped by `MKW_SPIRV_DUMP`: whether they are in the census | `python3 tools/shaders/classify_missing.py DIR` |
 
-`nvdisasm` is neither versioned nor distributed. To install it: the redistributable packages `cuda_nvdisasm`,
-`cuda_nvcc` and `cuda_cudart` 12.8 from `developer.download.nvidia.com/compute/cuda/redist/`, unpacked together in
-`scratchpad/nvidia/cuda/`.
+`nvdisasm` is neither versioned nor distributed. `sm86/spec/spec.py` (the SM86 spec) fetches what it needs; `census.py` and the checks also want
+`cuda_cudart` 12.8 from `developer.download.nvidia.com/compute/cuda/redist/`, unpacked in `scratchpad/nvidia/cuda/`.

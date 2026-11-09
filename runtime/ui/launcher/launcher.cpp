@@ -169,10 +169,13 @@ static bool big_button(const char *label, float width, bool enabled) {
 }
 
 // The desktop shortcut to this executable, the system's own kind (platform.h plat_desktop_shortcut); the result shows
-// under the button.
+// under the button. From the Linux AppImage the shortcut starts the AppImage ($APPIMAGE, set by its runtime): the copy of
+// mkw its AppRun runs needs the AppImage's libraries and its setup/ link.
 static void make_shortcut(void) {
     char exe[1100], made[1100];
-    if (!plat_exe_path(exe, sizeof exe)) return;
+    const char *appimage = getenv("APPIMAGE");
+    if (appimage && *appimage && strlen(appimage) < sizeof exe) snprintf(exe, sizeof exe, "%s", appimage);
+    else if (!plat_exe_path(exe, sizeof exe)) return;
     int ok = plat_desktop_shortcut("Mario Kart World", exe, L.exe_dir, made, sizeof made);
     snprintf(L.shortcut_note, sizeof L.shortcut_note, menu_text(ok ? UI_LAUNCH_SHORTCUT_DONE : UI_LAUNCH_SHORTCUT_FAILED),
              made);

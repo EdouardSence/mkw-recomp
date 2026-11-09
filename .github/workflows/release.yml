@@ -1,0 +1,100 @@
+name: Release
+
+# A tag v* publishes the release: the Linux AppImage of the start screen and its setup tools, nothing of the game
+# (tools/build/release.py) nor NVIDIA's SM86 spec (the setup builds it: sm86/spec/spec.py). The Windows zip is built
+# only by workflow_dispatch, as a run artifact, until its setup can build the spec too.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  # vk_mem_alloc.h 3.4.0 and its sha256 (tools/build/README.md)
+  VMA_URL: https://raw.githubusercontent.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator/v3.4.0/include/vk_mem_alloc.h
+  VMA_SHA256: 8487b7995ad3b263eb73bc5b9a77d71aa69b6bef5d58a715c02d2663afd81f1a
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    container: archlinux:latest
+    steps:
+      - name: Tools
+        run: pacman -Syu --noconfirm --needed git clang lld llvm ninja make cmake pkgconf expat binutils uv python
+      - uses: actions/checkout@v5
+      - name: Git trusts the checkout (build.py's version comes from git describe)
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - name: VMA header
+        run: |
+          mkdir -p scratchpad/vma
+          curl -sSfL -o scratchpad/vma/vk_mem_alloc.h "$VMA_URL"
+          echo "$VMA_SHA256  scratchpad/vma/vk_mem_alloc.h" | sha256sum -c -
+      - uses: actions/cache@v4
+        with:
+          path: build/sysroot
+          key: sysroot-${{ hashFiles('tools/build/sysroot.py') }}
+      - name: Steam Runtime sysroot (glibc 2.31)
+        run: uv run tools/build/sysroot.py
+      - name: Runtime and launcher
+        run: uv run tools/build/build.py --dist --runtime-only --sysroot build/sysroot
+      - name: Setup tools
+        run: uv run tools/build/dist.py --target linux
+      - name: AppImage
+        run: uv run tools/build/release.py --target linux --version "${GITHUB_REF_NAME#v}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          path: build/release/*.AppImage
+          retention-days: 7
+
+  windows:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    container: archlinux:latest
+    steps:
+      - name: Tools
+        run: pacman -Syu --noconfirm --needed git ninja binutils uv python
+      - uses: actions/checkout@v5
+      - name: Git trusts the checkout (build.py's version comes from git describe)
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - uses: actions/cache@v4
+        with:
+          path: build/win
+          key: windeps-${{ hashFiles('tools/build/windeps.py') }}
+      - name: llvm-mingw and the Windows libraries
+        run: uv run tools/build/windeps.py
+      - name: mkw.exe
+        run: uv run tools/build/build.py --target windows --dist --runtime-only
+      - name: Setup tools
+        run: uv run tools/build/dist.py --target windows
+      - name: Zip
+        run: uv run tools/build/release.py --target windows --version "${GITHUB_REF_NAME#v}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: build/release/*.zip
+          retention-days: 7
+
+  publish:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: linux
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v5
+        with:
+          path: release
+          merge-multiple: true
+      - name: GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" release/* --repo "$GITHUB_REPOSITORY" \
+            --title "$GITHUB_REF_NAME" --generate-notes
