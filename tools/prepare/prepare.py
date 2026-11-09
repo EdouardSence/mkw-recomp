@@ -245,7 +245,9 @@ def compile_game(game: Path, exefs: Path, work: Path, cc: list[str], target: str
     obj.mkdir(parents=True, exist_ok=True)
     (obj / "modules.c").write_text(build.module_glue(gen, exefs, True))
     gid = f'-DRT_GAME_ID="{build.game_id()}"'
-    inc = [f"-I{ROOT / 'runtime/cpu'}", f"-I{ROOT / 'runtime/core'}", f"-I{gen}"]
+    # every folder with a runtime header the package carries (runtime/cpu, runtime/core/boot for gamelib.h), as build.py
+    # does: a fixed list missed gamelib.h when it moved to core/boot (issue #1, v0.1.1)
+    inc = [f"-I{d}" for d in sorted({p.parent for p in (ROOT / "runtime").rglob("*.h")})] + [f"-I{gen}"]
     jobs_c = [(src, obj / f"{src.parent.name}_{src.stem}.o", [*flags, f"-I{ROOT / 'runtime/cpu'}"]) for src in srcs]
     jobs_c.append((obj / "modules.c", obj / "modules.o", [*flags, gid, *inc]))
     total, done = len(jobs_c), 0
