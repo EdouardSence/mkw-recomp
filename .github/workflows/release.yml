@@ -87,6 +87,10 @@ jobs:
     permissions:
       contents: write
     steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+      - name: Notes (docs/releases/template.md with the version's docs/releases/v<version>.md)
+        run: uv run tools/build/notes.py --version "${GITHUB_REF_NAME#v}" --out notes.md
       - uses: actions/download-artifact@v5
         with:
           path: release
@@ -96,4 +100,4 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release create "$GITHUB_REF_NAME" release/* --repo "$GITHUB_REPOSITORY" \
-            --title "$GITHUB_REF_NAME" --generate-notes
+            --title "$GITHUB_REF_NAME" --notes-file notes.md

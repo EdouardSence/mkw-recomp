@@ -1,0 +1,34 @@
+{summary}
+
+## Changes
+
+{changes}
+
+## Tested before publishing
+
+{tested}
+
+## Install
+
+- Linux x86-64, glibc 2.31 or newer (Debian 11, Ubuntu 20.04, SteamOS and later): `chmod +x` the AppImage and run it.
+  The game it builds lives in `~/.local/share/mkw-recomp`.
+- Windows 10/11 x64: unpack the zip into a folder and run `mkw.exe`.
+- Either: a Vulkan 1.3 GPU and about 30 GB free. Open **Game files**, point it at your `exefs/` and `romfs/` (Mario
+  Kart World 1.0.0, your own dump) and press **Prepare**. Nothing of the game ships here: the setup builds it on your
+  machine and downloads NVIDIA's `nvdisasm` and `ptxas` (pinned by sha256; 84 MB on Linux, 126 MB on Windows) to
+  describe the shader encoding.
+
+## Updating
+
+Linux: run the new AppImage. Windows: unpack the new zip over the same folder. Then press **Prepare** again: the steps
+already done are skipped.
+
+## Known issues
+
+- Below 60 fps, set Settings > Screen > Frame rate to 30: the Automatic one does not settle at 30 yet.
+{known}
+
+## Reporting a problem
+
+Open an issue with the bug form and attach the logs: `logs/mkw.log` (the game and the start screen) and
+`logs/setup.log` (the setup's tools), in `~/.local/share/mkw-recomp` on Linux and next to `mkw.exe` on Windows.

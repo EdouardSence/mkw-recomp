@@ -7,3 +7,4 @@
 | `logo.svg` | The repo's logo, the same chequered flag as `mkw.exe`'s icon, drawn by `tools/build/icon.py docs/logo.svg` |
 | [images/](images/README.md) | Screenshots of the start screen for the README |
 | [roadmap.md](roadmap.md) | The open work in order of priority, with the measurements behind it: the serial race frame first |
+| [releases/](releases/README.md) | Release notes: the common template and what each version adds (`tools/build/notes.py`) |
