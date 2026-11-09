@@ -236,6 +236,14 @@ void rec_draw_mesh(PFN_vkCmdDrawMeshTasksEXT fn, VkCommandBuffer cb, uint32_t x,
     pub();
 }
 
+void rec_marker(PFN_vkCmdWriteBufferMarkerAMD fn, VkCommandBuffer cb, VkPipelineStageFlagBits stage, VkBuffer b,
+                VkDeviceSize o, uint32_t v) {
+    if (!OWNED(cb)) { fn(cb, stage, b, o, v); return; }
+    A_Marker *a = put(R_Marker, sizeof *a);
+    *a = (A_Marker){fn, stage, b, o, v};
+    pub();
+}
+
 #define TARGET_CMD(fname, R, PFN, T)                                                                                    \
     void fname(PFN fn, VkCommandBuffer cb, uint32_t first, uint32_t n, const T *v) {                                    \
         if (!OWNED(cb)) { fn(cb, first, n, v); return; }                                                               \

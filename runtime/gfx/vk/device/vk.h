@@ -35,6 +35,7 @@ typedef struct VkCtx {
         has_conditional_rendering, has_transform_feedback, has_provoking_vertex, has_device_fault, has_memory_budget,
         has_robustness2, has_buffer_device_address, has_fragment_shader_interlock,
         has_unused_attachments,             // VK_EXT_dynamic_rendering_unused_attachments
+        has_buffer_marker,                  // VK_AMD_buffer_marker: the GPU breadcrumbs (vk_crumbs.c)
         has_exec_stats,                     // VK_KHR_pipeline_executable_properties, with MKW_SPEC_STATS=1 only
         has_mesh,                           // VK_EXT_mesh_shader with taskShader and meshShader (MKW's 25 task/mesh)
         has_astc_ldr,                       // textureCompressionASTC_LDR (enabled when reported)
@@ -376,6 +377,18 @@ typedef struct {
                                    // attach it in ATTACHMENT_FEEDBACK_LOOP_OPTIMAL_EXT (vk_exec.c vk_exec_pass_begin)
 } VkTexImage;
 void vk_exec_recent_log(void);   // the last programs drawn or dispatched with (vk_exec_dstat.c), at a device loss
+// GPU breadcrumbs (diag/vk_crumbs.c, VK_AMD_buffer_marker): a start and an end mark around each upload batch, render
+// pass and dispatch, and at a device loss the last started and finished of each with what it was.
+enum { VK_CRUMB_PASS, VK_CRUMB_DISPATCH, VK_CRUMB_UPLOAD };
+void vk_crumbs_init(void);       // after the allocator exists
+void vk_crumbs_release(void);    // before the allocator goes
+// The start mark into cb (through the recorder thread when it owns cb); returns its id for vk_crumb_end, 0 when off.
+// Pass: w, h, d the render area and layers with the attachment formats; dispatch: groups (0 for indirect); upload:
+// w the batch number.
+uint32_t vk_crumb_begin(VkCommandBuffer cb, int kind, uint32_t w, uint32_t h, uint32_t d, uint32_t ncolor,
+                        const VkFormat *color, VkFormat depth);
+void vk_crumb_end(VkCommandBuffer cb, int kind, uint32_t id);
+void vk_crumbs_report(void);     // at a device loss (vk_exec_recent_log), once
 VkFormat vk_texture_view_format(const VkTexImage *img, VkFormat want);   // a target view's format the image allows
 const VkTexImage *vk_texture_get(const tex_t *t);   // created and made current; NULL for BUFFER or unmapped formats
 // A texture slot; a slot whose texture was finalized follows the live texture at the same storage (hle_nvn.c).

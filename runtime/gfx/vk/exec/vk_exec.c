@@ -242,6 +242,8 @@ void vk_exec_pass_begin(VkExec *ex) {
                           .pDepthAttachment = ex->pass_depth ? &da : NULL,
                           .pStencilAttachment = ex->pass_stencil ? &sa : NULL};
     if (pt_on > 0) vk_pt_mark(ex->cb, (uint32_t)ex->pass_w << 16 | (ex->pass_h & 0xffff));
+    ex->pass_crumb = vk_crumb_begin(ex->cb, VK_CRUMB_PASS, ex->pass_w, ex->pass_h, ex->pass_layers, ex->pass_ncolor,
+                                    ex->pass_color, ex->pass_depth ? ex->pass_depth : ex->pass_stencil);
     vkCmdBeginRendering(ex->cb, &ri);
     if (vk_dump_armed) vk_dump_pass_begin(ex);
     vk_exec_frame.passes++;
@@ -254,6 +256,8 @@ void vk_exec_pass_end(VkExec *ex) {
     vk_exec_oq_pass_end(ex);
     if (vk_dump_armed) vk_dump_pass_close(ex);
     vkCmdEndRendering(ex->cb);
+    vk_crumb_end(ex->cb, VK_CRUMB_PASS, ex->pass_crumb);
+    ex->pass_crumb = 0;
     if (pt_on > 0) vk_pt_mark(ex->cb, 0);
     ex->recorded++;
     ex->in_pass = 0;

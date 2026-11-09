@@ -57,6 +57,7 @@ static void fault_log(void) {
 
 void vk_exec_recent_log(void) {
     fault_log();
+    vk_crumbs_report();
     uint32_t n = __atomic_load_n(&recent_at, __ATOMIC_ACQUIRE), from = n > RECENT_N ? n - RECENT_N : 0;
     rt_log("vk_exec: the last %u programs drawn or dispatched with (oldest first; prepared SPIR-V keys):", n - from);
     for (uint32_t i = from; i < n; i++) {

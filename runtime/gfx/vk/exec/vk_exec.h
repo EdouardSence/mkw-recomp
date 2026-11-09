@@ -49,6 +49,7 @@ typedef struct VkExec {
     uint64_t fence;                      // timeline value the submission signals (vk_completion_add)
     int recorded;                        // Vulkan commands recorded so far; every handler adds the ones it records
     int in_pass;                         // inside vkCmdBeginRendering
+    uint32_t pass_crumb;                 // the open pass's start mark (diag/vk_crumbs.c), 0 none
     uint32_t dirty;                      // VK_EXEC_DIRTY_*
 
     // ---- render targets (OP_SET_RT) and the current pass

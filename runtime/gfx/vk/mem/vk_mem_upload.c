@@ -24,6 +24,7 @@ typedef struct {
     uint64_t texels;          // ASTC texels its dispatches decode (vk_upload_work)
     uint32_t calls;           // vk_upload_begin calls that recorded into it
     int ut;                   // MKW_UPLOAD_TIME slot, -1: untimed
+    uint32_t crumb;           // its start mark (diag/vk_crumbs.c), 0 none
 } Batch;
 
 enum { DEAD_IMAGE = 1, DEAD_IMAGE_VMA, DEAD_VIEW, DEAD_BUFFER_VMA, DEAD_CALL };
@@ -138,6 +139,7 @@ VkCommandBuffer vk_upload_begin(void) {
                                    .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT};
     vkBeginCommandBuffer(open_b.cb, &bi);
     open_b.seq = ++next_seq;
+    open_b.crumb = vk_crumb_begin(open_b.cb, VK_CRUMB_UPLOAD, (uint32_t)open_b.seq, 0, 0, 0, NULL, 0);
     open_b.calls = 1;
     open_b.ut = vk_uptime_begin(open_b.cb);
     vk_uptime_call(open_b.ut, __builtin_return_address(0));
@@ -308,6 +310,7 @@ uint64_t vk_upload_flush(int wait) {
     if (c && open_active) {
         for (int i = 0; i < open_b.nstg; i++) vmaFlushAllocation(c->vma, open_b.stg[i].alloc, 0, VK_WHOLE_SIZE);
         vk_uptime_end(open_b.cb, open_b.ut);
+        vk_crumb_end(open_b.cb, VK_CRUMB_UPLOAD, open_b.crumb);
         vkEndCommandBuffer(open_b.cb);
         VkSubmitInfo si = {.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO, .commandBufferCount = 1, .pCommandBuffers = &open_b.cb};
         vk_queue_lock();

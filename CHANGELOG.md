@@ -6,17 +6,20 @@ its issue, #N), `### Tested` (what was run from the packages before publishing) 
 
 ## 0.1.3
 
-Fixes two ways the setup could fail or look stuck, and keeps a log of it to attach to a report.
+Fixes two ways the setup could fail or look stuck, keeps a log of it, and makes a GPU crash say where it happened.
 
 ### Changes
 
 - "Compile the game code" sat at 359/359 with no sign of life (#2): after the last file the game library is linked,
-  and on its first link zig also builds its C runtime for the target (12-22 s here, more on a slow disk or with an
+  and on its first link zig also builds its C runtime for the target (76 s on a 6-thread Windows PC, more on a slow disk or with an
   antivirus scanning). That now runs while the files compile, the link counts in the progress bar, and a link that
   takes over 30 minutes stops with an error instead of waiting forever.
 - `unable to find zig installation directory`: zig now gets its `lib/` folder named, so it no longer depends on the
   path a launcher or sandbox gives its executable.
 - The setup writes `logs/setup.log`: every tool's output and how long each step took; a failed setup points to it.
+- When the GPU is lost (#4, #5: AMD discrete cards that went black after the startup logo), `logs/mkw.log` now says
+  what the driver knows (the faulting address, `VK_EXT_device_fault`) and which upload batch, render pass or dispatch
+  the GPU had started and finished last (`VK_AMD_buffer_marker` marks). Nothing to set: attach the log.
 
 ### Tested
 

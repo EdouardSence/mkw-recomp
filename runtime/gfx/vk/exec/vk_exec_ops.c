@@ -279,7 +279,9 @@ static void op_dispatch(VkExec *ex, const p_dispatch *d) {
     if (pt && vk_pt_draw_mode()) vk_pt_draw(ex->cb, cs, NULL);
     else if (pt) vk_pt_mark(ex->cb, 1u << 31 | (uint32_t)(ex->prog->serial & 0x7fffffff));
     vk_cs_hash(ex, d->caller, 0, 0);   // MKW_CS_HASH (diag/vk_cs_hash.c)
+    uint32_t crumb = vk_crumb_begin(ex->cb, VK_CRUMB_DISPATCH, (uint32_t)d->x, (uint32_t)d->y, (uint32_t)d->z, 0, NULL, 0);
     vkCmdDispatch(ex->cb, (uint32_t)d->x, (uint32_t)d->y, (uint32_t)d->z);
+    vk_crumb_end(ex->cb, VK_CRUMB_DISPATCH, crumb);
     vk_cs_hash(ex, d->caller, 0, 1);
     if (pt) vk_pt_mark(ex->cb, 0);
     ex->recorded++;
@@ -325,7 +327,9 @@ static void op_dispatch_ind(VkExec *ex, const p_dispatch_ind *d) {
     }
     vk_ubo_watch(ex, NVN_STAGE_CS);   // MKW_UBO_WATCH: uw1/uw2 missed the culling dispatch, an indirect one
     vk_cs_hash(ex, d->caller, d->ind, 0);   // MKW_CS_HASH (diag/vk_cs_hash.c)
+    uint32_t crumb = vk_crumb_begin(ex->cb, VK_CRUMB_DISPATCH, 0, 0, 0, 0, NULL, 0);
     vkCmdDispatchIndirect(ex->cb, ip.buffer, ip.offset);
+    vk_crumb_end(ex->cb, VK_CRUMB_DISPATCH, crumb);
     vk_cs_hash(ex, d->caller, 0, 1);
     ex->recorded++;
     vk_mem_count(ip.cls, VK_MUSE_IND, sizeof(VkDispatchIndirectCommand));
