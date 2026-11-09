@@ -1,0 +1,59 @@
+name: Bug report
+description: The game stops, crashes, renders wrongly or sounds wrong.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Search open and closed issues for the error text first, and comment there if it is already reported.
+        Only Mario Kart World 1.0.0 dumped from your own console is supported; issues about obtaining the game are closed.
+        A slow scene goes into the [Performance report](https://github.com/adriadam10/mkw-recomp/issues/new?template=performance.yml) form.
+  - type: input
+    id: summary
+    attributes:
+      label: What happens
+      description: One sentence, with the exact error text if there is one.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: The release you downloaded, or the commit you built.
+    validations:
+      required: true
+  - type: input
+    id: system
+    attributes:
+      label: System
+      description: OS, CPU, GPU and driver version.
+      placeholder: Windows 11 24H2, i5-8400, GTX 1050 Ti (NVIDIA 582.66)
+    validations:
+      required: true
+  - type: dropdown
+    id: where
+    attributes:
+      label: Where
+      options:
+        - Start screen or setup
+        - Boot or title screen
+        - Menus
+        - Race
+        - Movie
+        - Building from source
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: What you did, settings you changed, and whether it happens every time.
+    validations:
+      required: true
+  - type: textarea
+    id: log
+    attributes:
+      label: Log
+      description: Attach `logs/mkw.log` from the game folder (or the setup's output). Screenshots help with rendering bugs.
+    validations:
+      required: true

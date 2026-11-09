@@ -1,0 +1,8545 @@
+{
+ "census": "census2.imports",
+ "date": "06/11/2026",
+ "failing": {},
+ "imports": [
+  [
+   "MovieCalloc",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "MovieFree",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "MovieMalloc",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "_Unwind_Resume",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "_ZN2nn2fs10CreateFileEPKcl",
+   "nn::fs",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn2fs10DeleteFileEPKc",
+   "nn::fs",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn2fs11GetFileSizeEPlNS0_10FileHandleE",
+   "nn::fs",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn2fs11SetFileSizeENS0_10FileHandleEl",
+   "nn::fs",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn2fs12GetEntryTypeEPNS0_18DirectoryEntryTypeEPKc",
+   "nn::fs",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn2fs13MountSaveDataEPKcRKNS_7account3UidE",
+   "nn::fs",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn2fs13OpenDirectoryEPNS0_15DirectoryHandleEPKci",
+   "nn::fs",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn2fs13ReadDirectoryEPlPNS0_14DirectoryEntryENS0_15DirectoryHandleEl",
+   "nn::fs",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn2fs14CloseDirectoryENS0_15DirectoryHandleE",
+   "nn::fs",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn2fs15CreateDirectoryEPKc",
+   "nn::fs",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn2fs22GetDirectoryEntryCountEPlNS0_15DirectoryHandleE",
+   "nn::fs",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn2fs22QueryMountRomCacheSizeEPm",
+   "nn::fs",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn2fs25GetCurrentThreadFsContextEv",
+   "nn::fs",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn2fs25SetCurrentThreadFsContextEPKNS0_9FsContextE",
+   "nn::fs",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn2fs26DeleteDirectoryRecursivelyEPKc",
+   "nn::fs",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn2fs26SetPriorityOnCurrentThreadENS0_8PriorityE",
+   "nn::fs",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn2fs6CommitEPKc",
+   "nn::fs",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn2fs7UnmountEPKc",
+   "nn::fs",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn2fs8MountRomEPKc",
+   "nn::fs",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn2fs8MountRomEPKcPvm",
+   "nn::fs",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn2fs8OpenFileEPNS0_10FileHandleEPKci",
+   "nn::fs",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn2fs8ReadFileENS0_10FileHandleElPvm",
+   "nn::fs",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn2fs8ReadFileEPmNS0_10FileHandleElPvm",
+   "nn::fs",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn2fs8ReadFileEPmNS0_10FileHandleElPvmRKNS0_10ReadOptionE",
+   "nn::fs",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn2fs9CloseFileENS0_10FileHandleE",
+   "nn::fs",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn2fs9FlushFileENS0_10FileHandleE",
+   "nn::fs",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn2fs9WriteFileENS0_10FileHandleElPKvmRKNS0_11WriteOptionE",
+   "nn::fs",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn2oe15SetCpuBoostModeENS0_12CpuBoostModeE",
+   "nn::oe",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn2oe16GetOperationModeEv",
+   "nn::oe",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn2oe17FinishStartupLogoEv",
+   "nn::oe",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn2oe17GetDisplayVersionEPNS0_14DisplayVersionE",
+   "nn::oe",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn2oe18GetDesiredLanguageEv",
+   "nn::oe",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn2oe18GetPerformanceModeEv",
+   "nn::oe",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn2oe20GetCurrentFocusStateEv",
+   "nn::oe",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn2oe20SetFocusHandlingModeENS0_17FocusHandlingModeE",
+   "nn::oe",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn2oe22PopNotificationMessageEv",
+   "nn::oe",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn2oe23GetCurrentGraphicsScaleEv",
+   "nn::oe",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn2oe25GetProgramTotalActiveTimeEv",
+   "nn::oe",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn2oe28SetResumeNotificationEnabledEb",
+   "nn::oe",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn2oe31EnterExitRequestHandlingSectionEv",
+   "nn::oe",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn2oe31LeaveExitRequestHandlingSectionEv",
+   "nn::oe",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn2oe38SetUserInactivityDetectionTimeExtendedEb",
+   "nn::oe",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn2oe40SendServerMaintenanceOverlayNotificationENS_4time9PosixTimeES2_",
+   "nn::oe",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn2oe42SetGraphicsScaleChangedNotificationEnabledEb",
+   "nn::oe",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn2oe42SetOperationModeChangedNotificationEnabledEb",
+   "nn::oe",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn2oe44SetPerformanceModeChangedNotificationEnabledEb",
+   "nn::oe",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn2os10ClearEventEPNS0_9EventTypeE",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os10WaitThreadEPNS0_10ThreadTypeE",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os11FreeTlsSlotENS0_7TlsSlotE",
+   "nn::os",
+   "kernel",
+   false
+  ],
+  [
+   "_ZN2nn2os11GetThreadIdEPKNS0_10ThreadTypeE",
+   "nn::os",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn2os11GetTlsValueENS0_7TlsSlotE",
+   "nn::os",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn2os11SetTlsValueENS0_7TlsSlotEm",
+   "nn::os",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn2os11SignalEventEPNS0_9EventTypeE",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os11SleepThreadENS_8TimeSpanE",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os11StartThreadEPNS0_10ThreadTypeE",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os11UnlockMutexEPNS0_9MutexTypeE",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os11YieldThreadEv",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os12CreateThreadEPNS0_10ThreadTypeEPFvPvES3_S3_mi",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os12CreateThreadEPNS0_10ThreadTypeEPFvPvES3_S3_mii",
+   "nn::os",
+   "kernel",
+   false
+  ],
+  [
+   "_ZN2nn2os12SdkMutexType4LockEv",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os12SdkMutexType6UnlockEv",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os12TryLockMutexEPNS0_9MutexTypeE",
+   "nn::os",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn2os12TryWaitEventEPNS0_9EventTypeE",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os13ConvertToTickENS_8TimeSpanE",
+   "nn::os",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn2os13DestroyThreadEPNS0_10ThreadTypeE",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os13FinalizeEventEPNS0_9EventTypeE",
+   "nn::os",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn2os13FinalizeMutexEPNS0_9MutexTypeE",
+   "nn::os",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn2os13GetSystemTickEv",
+   "nn::os",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn2os13SetThreadNameEPNS0_10ThreadTypeEPKc",
+   "nn::os",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn2os13SwitchToFiberEPNS0_9FiberTypeE",
+   "nn::os",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn2os14TimedWaitEventEPNS0_9EventTypeENS_8TimeSpanE",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os14WaitLightEventEPNS0_14LightEventTypeE",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os14WaitTimerEventEPNS0_14TimerEventTypeE",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os15AcquireReadLockEPNS0_20ReaderWriterLockTypeE",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os15AllocateTlsSlotEPNS0_7TlsSlotEPFvmE",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os15ClearLightEventEPNS0_14LightEventTypeE",
+   "nn::os",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn2os15FreeMemoryPagesEmm",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os15InitializeEventEPNS0_9EventTypeEbNS0_14EventClearModeE",
+   "nn::os",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn2os15InitializeMutexEPNS0_9MutexTypeEbi",
+   "nn::os",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn2os15JamMessageQueueEPNS0_16MessageQueueTypeEm",
+   "nn::os",
+   "kernel",
+   false
+  ],
+  [
+   "_ZN2nn2os15QueryMemoryInfoEPNS0_10MemoryInfoE",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os15ReleaseReadLockEPNS0_20ReaderWriterLockTypeE",
+   "nn::os",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn2os15WaitSystemEventEPNS0_15SystemEventTypeE",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os16AcquireSemaphoreEPNS0_13SemaphoreTypeE",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os16AcquireWriteLockEPNS0_20ReaderWriterLockTypeE",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os16ClearSystemEventEPNS0_15SystemEventTypeE",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os16GetCurrentThreadEv",
+   "nn::os",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn2os16ReleaseSemaphoreEPNS0_13SemaphoreTypeE",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os16ReleaseSemaphoreEPNS0_13SemaphoreTypeEi",
+   "nn::os",
+   "kernel",
+   false
+  ],
+  [
+   "_ZN2nn2os16ReleaseWriteLockEPNS0_20ReaderWriterLockTypeE",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os16SendMessageQueueEPNS0_16MessageQueueTypeEm",
+   "nn::os",
+   "kernel",
+   false
+  ],
+  [
+   "_ZN2nn2os16SignalLightEventEPNS0_14LightEventTypeE",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os17ConvertToTimeSpanENS0_4TickE",
+   "nn::os",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn2os17CreateSystemEventEPNS0_15SystemEventTypeENS0_14EventClearModeEb",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os17FinalizeMultiWaitEPNS0_13MultiWaitTypeE",
+   "nn::os",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn2os17FinalizeSemaphoreEPNS0_13SemaphoreTypeE",
+   "nn::os",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn2os17FreeAddressRegionEm",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os17GetThreadPriorityEPKNS0_10ThreadTypeE",
+   "nn::os",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn2os17SetMemoryHeapSizeEm",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os17SetThreadCoreMaskEPNS0_10ThreadTypeEim",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os17SignalSystemEventEPNS0_15SystemEventTypeE",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os18DestroySystemEventEPNS0_15SystemEventTypeE",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os18FinalizeLightEventEPNS0_14LightEventTypeE",
+   "nn::os",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn2os18FinalizeTimerEventEPNS0_14TimerEventTypeE",
+   "nn::os",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn2os18SdkAllocateTlsSlotEPNS0_7TlsSlotEPFvmE",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os18TryAcquireReadLockEPNS0_20ReaderWriterLockTypeE",
+   "nn::os",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn2os18TryJamMessageQueueEPNS0_16MessageQueueTypeEm",
+   "nn::os",
+   "kernel",
+   false
+  ],
+  [
+   "_ZN2nn2os18TryWaitSystemEventEPNS0_15SystemEventTypeE",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os19AllocateMemoryBlockEPmm",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os19AllocateMemoryPagesEmm",
+   "nn::os",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn2os19GenerateRandomBytesEPvm",
+   "nn::os",
+   "kernel",
+   false
+  ],
+  [
+   "_ZN2nn2os19GetCurrentStackInfoEPmS1_",
+   "nn::os",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn2os19InitializeMultiWaitEPNS0_13MultiWaitTypeE",
+   "nn::os",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn2os19InitializeSemaphoreEPNS0_13SemaphoreTypeEii",
+   "nn::os",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn2os19LinkMultiWaitHolderEPNS0_13MultiWaitTypeEPNS0_19MultiWaitHolderTypeE",
+   "nn::os",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn2os19ReceiveMessageQueueEPmPNS0_16MessageQueueTypeE",
+   "nn::os",
+   "kernel",
+   false
+  ],
+  [
+   "_ZN2nn2os19TimedWaitLightEventEPNS0_14LightEventTypeENS_8TimeSpanE",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os19TryAcquireWriteLockEPNS0_20ReaderWriterLockTypeE",
+   "nn::os",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn2os19TrySendMessageQueueEPNS0_16MessageQueueTypeEm",
+   "nn::os",
+   "kernel",
+   false
+  ],
+  [
+   "_ZN2nn2os20ChangeThreadPriorityEPNS0_10ThreadTypeEi",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os20FinalizeMessageQueueEPNS0_16MessageQueueTypeE",
+   "nn::os",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn2os20GetCurrentCoreNumberEv",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os20InitializeLightEventEPNS0_14LightEventTypeEbNS0_14EventClearModeE",
+   "nn::os",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn2os20InitializeTimerEventEPNS0_14TimerEventTypeENS0_14EventClearModeE",
+   "nn::os",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn2os20JamLightMessageQueueEPNS0_21LightMessageQueueTypeEm",
+   "nn::os",
+   "kernel",
+   false
+  ],
+  [
+   "_ZN2nn2os20TimedWaitSystemEventEPNS0_15SystemEventTypeENS_8TimeSpanE",
+   "nn::os",
+   "kernel",
+   false
+  ],
+  [
+   "_ZN2nn2os21AcquireLightSemaphoreEPNS0_18LightSemaphoreTypeE",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os21AllocateAddressRegionEPmm",
+   "nn::os",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn2os21ReleaseLightSemaphoreEPNS0_18LightSemaphoreTypeE",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os21SdkRecursiveMutexType4LockEv",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os21SdkRecursiveMutexType6UnlockEv",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os21SendLightMessageQueueEPNS0_21LightMessageQueueTypeEm",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os21SetDyingMessageRegionEmm",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os21UnlinkMultiWaitHolderEPNS0_19MultiWaitHolderTypeE",
+   "nn::os",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn2os21WaitConditionVariableEPNS0_21ConditionVariableTypeEPNS0_9MutexTypeE",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os22FinalizeLightSemaphoreEPNS0_18LightSemaphoreTypeE",
+   "nn::os",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn2os22GetSystemTickFrequencyEv",
+   "nn::os",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn2os22InitializeMessageQueueEPNS0_16MessageQueueTypeEPmm",
+   "nn::os",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn2os22StartOneShotTimerEventEPNS0_14TimerEventTypeENS_8TimeSpanE",
+   "nn::os",
+   "kernel",
+   false
+  ],
+  [
+   "_ZN2nn2os22TryReceiveMessageQueueEPmPNS0_16MessageQueueTypeE",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os23FinalizeMultiWaitHolderEPNS0_19MultiWaitHolderTypeE",
+   "nn::os",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn2os23SignalConditionVariableEPNS0_21ConditionVariableTypeE",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os23StartPeriodicTimerEventEPNS0_14TimerEventTypeENS_8TimeSpanES3_",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os23TryJamLightMessageQueueEPNS0_21LightMessageQueueTypeEm",
+   "nn::os",
+   "kernel",
+   false
+  ],
+  [
+   "_ZN2nn2os24FinalizeReaderWriterLockEPNS0_20ReaderWriterLockTypeE",
+   "nn::os",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn2os24InitializeLightSemaphoreEPNS0_18LightSemaphoreTypeEii",
+   "nn::os",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn2os24ReceiveLightMessageQueueEPmPNS0_21LightMessageQueueTypeE",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os24SdkConditionVariableType10InitializeEv",
+   "nn::os",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn2os24SdkConditionVariableType4WaitERNS0_21SdkRecursiveMutexTypeE",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os24SdkConditionVariableType6SignalEv",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os24SdkConditionVariableType9TimedWaitERNS0_21SdkRecursiveMutexTypeENS_8TimeSpanE",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os24TryPeekLightMessageQueueEPmPKNS0_21LightMessageQueueTypeE",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os24TrySendLightMessageQueueEPNS0_21LightMessageQueueTypeEm",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os24UnlinkAllMultiWaitHolderEPNS0_13MultiWaitTypeE",
+   "nn::os",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn2os25FinalizeConditionVariableEPNS0_21ConditionVariableTypeE",
+   "nn::os",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn2os25FinalizeLightMessageQueueEPNS0_21LightMessageQueueTypeE",
+   "nn::os",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn2os25InitializeMultiWaitHolderEPNS0_19MultiWaitHolderTypeEPNS0_13SemaphoreTypeE",
+   "nn::os",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn2os25InitializeMultiWaitHolderEPNS0_19MultiWaitHolderTypeEPNS0_14TimerEventTypeE",
+   "nn::os",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn2os25InitializeMultiWaitHolderEPNS0_19MultiWaitHolderTypeEPNS0_15SystemEventTypeE",
+   "nn::os",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn2os25InitializeMultiWaitHolderEPNS0_19MultiWaitHolderTypeEPNS0_9EventTypeE",
+   "nn::os",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn2os26GetMultiWaitHolderUserDataEPKNS0_19MultiWaitHolderTypeE",
+   "nn::os",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn2os26GetThreadAvailableCoreMaskEv",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os26InitializeReaderWriterLockEPNS0_20ReaderWriterLockTypeE",
+   "nn::os",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn2os26SetMultiWaitHolderUserDataEPNS0_19MultiWaitHolderTypeEm",
+   "nn::os",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn2os27InitializeConditionVariableEPNS0_21ConditionVariableTypeE",
+   "nn::os",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn2os27InitializeLightMessageQueueEPNS0_21LightMessageQueueTypeEPmm",
+   "nn::os",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn2os27TryReceiveLightMessageQueueEPmPNS0_21LightMessageQueueTypeE",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os28IsMutexLockedByCurrentThreadEPKNS0_9MutexTypeE",
+   "nn::os",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn2os30IsWriteLockHeldByCurrentThreadEPKNS0_20ReaderWriterLockTypeE",
+   "nn::os",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn2os32SetMemoryAllocatorForThreadLocalEPFPvmmEPFvS1_mE",
+   "nn::os",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn2os7WaitAnyEPNS0_13MultiWaitTypeE",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os9LockMutexEPNS0_9MutexTypeE",
+   "nn::os",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2os9WaitEventEPNS0_9EventTypeE",
+   "nn::os",
+   "kernel",
+   false
+  ],
+  [
+   "_ZN2nn2pl17GetSharedFontSizeENS0_14SharedFontTypeE",
+   "nn::pl",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn2pl20GetSharedFontAddressENS0_14SharedFontTypeE",
+   "nn::pl",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn2pl21RequestSharedFontLoadENS0_14SharedFontTypeE",
+   "nn::pl",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn2pl22GetSharedFontLoadStateENS0_14SharedFontTypeE",
+   "nn::pl",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn2ro12ProtectRelroEPKvS2_S2_S2_S2_",
+   "nn::ro",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2vi10InitializeEv",
+   "nn::vi",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn2vi11CreateLayerEPPNS0_5LayerEPNS0_7DisplayE",
+   "nn::vi",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn2vi15GetNativeWindowEPPvPNS0_5LayerE",
+   "nn::vi",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn2vi18OpenDefaultDisplayEPPNS0_7DisplayE",
+   "nn::vi",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn2vi20GetDisplayVsyncEventEPNS_2os15SystemEventTypeEPNS0_7DisplayE",
+   "nn::vi",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn2vi21QueryDisplayHdrStatusEPbPNS0_15HdrOutputFormatEPtPKNS0_7DisplayE",
+   "nn::vi",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2vi23SetDisplayVrrCapabilityEPNS0_7DisplayEb",
+   "nn::vi",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn2vi24QueryDisplayVrrSupportedEPbPKNS0_7DisplayE",
+   "nn::vi",
+   "kernel",
+   false
+  ],
+  [
+   "_ZN2nn2vi25QueryDisplayHdrPaperWhiteEPtPKNS0_7DisplayE",
+   "nn::vi",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn2vi28SetLayerExtendedSwapIntervalEPNS0_5LayerEii",
+   "nn::vi",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn2vi30ClearLayerExtendedSwapIntervalEPNS0_5LayerE",
+   "nn::vi",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn2vi52SetLayerNextHdrExtendedContentLuminanceRangeMetadataEPNS0_5LayerEtt",
+   "nn::vi",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn2vi52SetLayerNextHdrStandardContentLuminanceRangeMetadataEPNS0_5LayerEtt",
+   "nn::vi",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn3err11NplnContext4MakeEPKvm",
+   "nn::err",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3err18ErrorResultVariantC1ERKNS_6ResultE",
+   "nn::err",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn3err18ErrorResultVariantC1Ev",
+   "nn::err",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3err18ErrorResultVariantaSERKNS0_9ErrorCodeE",
+   "nn::err",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3err18ErrorResultVariantaSERKNS_6ResultE",
+   "nn::err",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn3err23UpdateResultWithContextINS0_11NplnContextEEENS_6ResultES3_RKT_",
+   "nn::err",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3err9ShowErrorERKNS0_18ErrorResultVariantE",
+   "nn::err",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3hid13GetNpadStatesEPNS0_16NpadFullKeyStateEiRKj",
+   "nn::hid",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3hid13GetNpadStatesEPNS0_16NpadJoyDualStateEiRKj",
+   "nn::hid",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3hid13GetNpadStatesEPNS0_16NpadJoyLeftStateEiRKj",
+   "nn::hid",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3hid13GetNpadStatesEPNS0_17NpadHandheldStateEiRKj",
+   "nn::hid",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3hid13GetNpadStatesEPNS0_17NpadJoyRightStateEiRKj",
+   "nn::hid",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3hid13VibrationNode30DefaultVibrationSampleIntervalE",
+   "nn::hid",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3hid13VibrationNode6UpdateEv",
+   "nn::hid",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn3hid14DisconnectNpadERKj",
+   "nn::hid",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3hid14InitializeNpadEv",
+   "nn::hid",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3hid14VibrationMixer10SetMixModeERKNS0_16VibrationMixModeE",
+   "nn::hid",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn3hid14VibrationMixer20OnNextSampleRequiredEPNS0_14VibrationValueEPNS_4util13IntrusiveListINS0_23VibrationNodeConnectionENS4_27IntrusiveListBaseNodeTraitsIS6_S6_EEEE",
+   "nn::hid",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn3hid14VibrationMixerC2Ev",
+   "nn::hid",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn3hid14VibrationMixerD2Ev",
+   "nn::hid",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3hid15GetNpadStyleSetERKj",
+   "nn::hid",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3hid15VibrationPlayer12SetPlaySpeedEf",
+   "nn::hid",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn3hid15VibrationPlayer18SetCurrentPositionEi",
+   "nn::hid",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn3hid15VibrationPlayer20OnNextSampleRequiredEPNS0_14VibrationValueEPNS_4util13IntrusiveListINS0_23VibrationNodeConnectionENS4_27IntrusiveListBaseNodeTraitsIS6_S6_EEEE",
+   "nn::hid",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn3hid15VibrationPlayer4LoadEPKvm",
+   "nn::hid",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn3hid15VibrationPlayer4PlayEv",
+   "nn::hid",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn3hid15VibrationPlayer4StopEv",
+   "nn::hid",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn3hid15VibrationPlayer6UnloadEv",
+   "nn::hid",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn3hid15VibrationPlayer7SetLoopEb",
+   "nn::hid",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn3hid15VibrationPlayerC2Ev",
+   "nn::hid",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3hid15VibrationPlayerD2Ev",
+   "nn::hid",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn3hid15VibrationTarget24SetVibrationDeviceHandleERKNS0_21VibrationDeviceHandleE",
+   "nn::hid",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn3hid15VibrationTarget26UnsetVibrationDeviceHandleEv",
+   "nn::hid",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3hid15VibrationTargetC1Ev",
+   "nn::hid",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn3hid15VibrationWriter5WriteERKNS0_14VibrationValueE",
+   "nn::hid",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3hid15VibrationWriterC1Ev",
+   "nn::hid",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3hid18SendVibrationValueERKNS0_21VibrationDeviceHandleERKNS0_14VibrationValueE",
+   "nn::hid",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3hid18SetNpadJoyHoldTypeENS0_15NpadJoyHoldTypeE",
+   "nn::hid",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3hid18StartSixAxisSensorERKNS0_19SixAxisSensorHandleE",
+   "nn::hid",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn3hid18SwapNpadAssignmentERKjS2_",
+   "nn::hid",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3hid20ControllerSupportArg10SetDefaultEv",
+   "nn::hid",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3hid20GetTouchScreenStatesILm16EEEiPNS0_16TouchScreenStateIXT_EEEi",
+   "nn::hid",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3hid21InitializeTouchScreenEv",
+   "nn::hid",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3hid21ShowControllerSupportEPNS0_27ControllerSupportResultInfoERKNS0_20ControllerSupportArgE",
+   "nn::hid",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3hid22GetSixAxisSensorStatesEPNS0_18SixAxisSensorStateEiRKNS0_19SixAxisSensorHandleE",
+   "nn::hid",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn3hid22SetSupportedNpadIdTypeEPKjm",
+   "nn::hid",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3hid23GetSixAxisSensorHandlesEPNS0_19SixAxisSensorHandleEiRKjNS_4util10BitFlagSetILi32ENS0_12NpadStyleTagEEE",
+   "nn::hid",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3hid23MergeSingleJoyAsDualJoyERKjS2_",
+   "nn::hid",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3hid23VibrationNodeConnection10DisconnectEv",
+   "nn::hid",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn3hid23VibrationNodeConnection13SetModulationERKNS0_19VibrationModulationE",
+   "nn::hid",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn3hid23VibrationNodeConnection7ConnectEPNS0_13VibrationNodeES3_",
+   "nn::hid",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn3hid23VibrationNodeConnectionC1Ev",
+   "nn::hid",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3hid24SetSupportedNpadStyleSetENS_4util10BitFlagSetILi32ENS0_12NpadStyleTagEEE",
+   "nn::hid",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3hid25GetVibrationDeviceHandlesEPNS0_21VibrationDeviceHandleEiRKjNS_4util10BitFlagSetILi32ENS0_12NpadStyleTagEEE",
+   "nn::hid",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3hid25InitializeVibrationDeviceERKNS0_21VibrationDeviceHandleE",
+   "nn::hid",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn3hid30SetNpadJoyAssignmentModeSingleERKjNS0_17NpadJoyDeviceTypeE",
+   "nn::hid",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3hid6detail20AppletResourceHolder10DeactivateEv",
+   "nn::hid",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3hid6detail23GetAppletResourceHolderEv",
+   "nn::hid",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3hid6server20CreateHidServerProxyEPNS_2sf13SharedPointerINS0_10IHidServerEEE",
+   "nn::hid",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3hid7utility14MakeJcmsHandleEjNS0_8JcmsTypeE",
+   "nn::hid",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3hid7utility21VerifyValidJcmsHandleERKNS0_10JcmsHandleE",
+   "nn::hid",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3hid7utility23GetAppletResourceUserIdEv",
+   "nn::hid",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3ldn10DisconnectEv",
+   "nn::ldn",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3ldn10InitializeEv",
+   "nn::ldn",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3ldn11OpenStationEv",
+   "nn::ldn",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3ldn11ScanPrivateEPNS0_11NetworkInfoEPiiRKNS0_10ScanFilterEi",
+   "nn::ldn",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3ldn12CloseStationEv",
+   "nn::ldn",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3ldn13CreateNetworkERKNS0_13NetworkConfigERKNS0_14SecurityConfigERKNS0_10UserConfigE",
+   "nn::ldn",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3ldn14ConnectPrivateERKNS0_13NetworkConfigERKNS0_14SecurityConfigERKNS0_17SecurityParameterERKNS0_10UserConfigEiNS0_13ConnectOptionE",
+   "nn::ldn",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3ldn14DestroyNetworkEv",
+   "nn::ldn",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3ldn14GetIpv4AddressEPNS0_11Ipv4AddressEPNS0_10SubnetMaskE",
+   "nn::ldn",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3ldn14GetNetworkInfoEPNS0_11NetworkInfoE",
+   "nn::ldn",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3ldn15OpenAccessPointEv",
+   "nn::ldn",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3ldn16CloseAccessPointEv",
+   "nn::ldn",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3ldn16SetAdvertiseDataEPKvm",
+   "nn::ldn",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3ldn19GetDisconnectReasonEv",
+   "nn::ldn",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3ldn20AddAcceptFilterEntryENS0_10MacAddressE",
+   "nn::ldn",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3ldn20CreateNetworkPrivateERKNS0_13NetworkConfigERKNS0_14SecurityConfigERKNS0_17SecurityParameterERKNS0_10UserConfigEiPKNS0_12AddressEntryE",
+   "nn::ldn",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3ldn20GetSecurityParameterEPNS0_17SecurityParameterE",
+   "nn::ldn",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3ldn20MakeBroadcastAddressENS0_11Ipv4AddressENS0_10SubnetMaskE",
+   "nn::ldn",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3ldn22AttachStateChangeEventEPNS_2os15SystemEventTypeE",
+   "nn::ldn",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3ldn22SetStationAcceptPolicyENS0_12AcceptPolicyE",
+   "nn::ldn",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3ldn4ScanEPNS0_11NetworkInfoEPiiRKNS0_10ScanFilterEi",
+   "nn::ldn",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3ldn6RejectENS0_11Ipv4AddressE",
+   "nn::ldn",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3ldn7ConnectERKNS0_11NetworkInfoERKNS0_14SecurityConfigERKNS0_10UserConfigEiNS0_13ConnectOptionE",
+   "nn::ldn",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3ldn8FinalizeEv",
+   "nn::ldn",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3ldn8GetStateEv",
+   "nn::ldn",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3mem17StandardAllocator10InitializeEPvm",
+   "nn::mem",
+   "kernel",
+   false
+  ],
+  [
+   "_ZN2nn3mem17StandardAllocator10InitializeEPvmb",
+   "nn::mem",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn3mem17StandardAllocator10ReallocateEPvm",
+   "nn::mem",
+   "kernel",
+   false
+  ],
+  [
+   "_ZN2nn3mem17StandardAllocator4FreeEPv",
+   "nn::mem",
+   "kernel",
+   false
+  ],
+  [
+   "_ZN2nn3mem17StandardAllocator8AllocateEm",
+   "nn::mem",
+   "kernel",
+   false
+  ],
+  [
+   "_ZN2nn3mem17StandardAllocator8AllocateEmm",
+   "nn::mem",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn3mem17StandardAllocator8FinalizeEv",
+   "nn::mem",
+   "kernel",
+   false
+  ],
+  [
+   "_ZN2nn3mem17StandardAllocatorC1EPvm",
+   "nn::mem",
+   "kernel",
+   false
+  ],
+  [
+   "_ZN2nn3mem17StandardAllocatorC1Ev",
+   "nn::mem",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn3nsd24GetEnvironmentIdentifierEPNS0_21EnvironmentIdentifierE",
+   "nn::nsd",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3nsd9ResolveExEPNS0_4FqdnERKS1_",
+   "nn::nsd",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3pia23ZSTD_trace_compress_endEyPKNS0_10ZSTD_TraceE",
+   "nn::pia",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3pia25ZSTD_trace_compress_beginEPKNS0_11ZSTD_CCtx_sE",
+   "nn::pia",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3pia25ZSTD_trace_decompress_endEyPKNS0_10ZSTD_TraceE",
+   "nn::pia",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3pia27ZSTD_trace_decompress_beginEPKNS0_11ZSTD_DCtx_sE",
+   "nn::pia",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3ssl10InitializeEv",
+   "nn::ssl",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3ssl14BuiltInManager22GetBuiltInCertificatesEPPNS0_26BuiltInCertificateInfoBaseEPhjPNS0_15CaCertificateIdEj",
+   "nn::ssl",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3ssl14BuiltInManager28GetBuiltInCertificateBufSizeEPjPNS0_15CaCertificateIdEj",
+   "nn::ssl",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3ssl7Context15ImportClientPkiEPmPKcS4_jj",
+   "nn::ssl",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3ssl7Context15ImportServerPkiEPmPKcjNS0_17CertificateFormatE",
+   "nn::ssl",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3ssl7Context6CreateENS1_10SslVersionE",
+   "nn::ssl",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3ssl7Context9ImportCrlEPmPKcj",
+   "nn::ssl",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn3ssl8FinalizeEv",
+   "nn::ssl",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn4diag12GetBacktraceEPmi",
+   "nn::diag",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn4diag13GetSymbolNameEPcmm",
+   "nn::diag",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn4diag6detail11NotNullImplEm",
+   "nn::diag",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn4diag6detail9AbortImplEPKNS_6ResultE",
+   "nn::diag",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn4diag6detail9AbortImplEv",
+   "nn::diag",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn4ecli10DeallocateEPvm",
+   "nn::ecli",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn4ecli8AllocateEm",
+   "nn::ecli",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn4lmem13CreateExpHeapEPvmi",
+   "nn::lmem",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn4lmem13FreeToExpHeapEPNS0_6detail8HeapHeadEPv",
+   "nn::lmem",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn4lmem19AllocateFromExpHeapEPNS0_6detail8HeapHeadEm",
+   "nn::lmem",
+   "kernel",
+   false
+  ],
+  [
+   "_ZN2nn4lmem19AllocateFromExpHeapEPNS0_6detail8HeapHeadEmi",
+   "nn::lmem",
+   "kernel",
+   false
+  ],
+  [
+   "_ZN2nn4lmem23GetExpHeapTotalFreeSizeEPNS0_6detail8HeapHeadE",
+   "nn::lmem",
+   "kernel",
+   false
+  ],
+  [
+   "_ZN2nn4nifm10InitializeEv",
+   "nn::nifm",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn4nifm18IsNetworkAvailableEv",
+   "nn::nifm",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn4nifm19SetLocalNetworkModeEb",
+   "nn::nifm",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn4nifm20CancelNetworkRequestEv",
+   "nn::nifm",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn4nifm22GetCurrentIpConfigInfoEP7in_addrS2_S2_S2_S2_",
+   "nn::nifm",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn4nifm22GetCurrentProxySettingEPNS0_12ProxySettingE",
+   "nn::nifm",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn4nifm27SubmitNetworkRequestAndWaitEv",
+   "nn::nifm",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn4nifm31HandleNetworkRequestErrorResultEv",
+   "nn::nifm",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn4time10InitializeEv",
+   "nn::time",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn4time13IsInitializedEv",
+   "nn::time",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn4time14ToCalendarTimeEPNS0_12CalendarTimeEPNS0_22CalendarAdditionalInfoERKNS0_9PosixTimeE",
+   "nn::time",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn4time16LoadTimeZoneRuleEPNS0_12TimeZoneRuleERKNS0_12LocationNameE",
+   "nn::time",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn4time21GetDeviceLocationNameEPNS0_12LocationNameE",
+   "nn::time",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn4time23StandardUserSystemClock14GetCurrentTimeEPNS0_9PosixTimeE",
+   "nn::time",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn4time26StandardNetworkSystemClock14GetCurrentTimeEPNS0_9PosixTimeE",
+   "nn::time",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn4time26StandardNetworkSystemClock20IsAccuracySufficientEv",
+   "nn::time",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn4time39AsyncEnsureNetworkClockAvailabilityTask10InitializeENS_2os14EventClearModeE",
+   "nn::time",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn4time39AsyncEnsureNetworkClockAvailabilityTask14GetFinishEventEv",
+   "nn::time",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn4time39AsyncEnsureNetworkClockAvailabilityTask9GetResultEv",
+   "nn::time",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn4time39AsyncEnsureNetworkClockAvailabilityTask9StartTaskEv",
+   "nn::time",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn4time39AsyncEnsureNetworkClockAvailabilityTaskC1Ev",
+   "nn::time",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn4time39AsyncEnsureNetworkClockAvailabilityTaskD1Ev",
+   "nn::time",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn4time8FinalizeEv",
+   "nn::time",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn4util10Quaternion16ConstantIdentityE",
+   "nn::util",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn4util11ReferSymbolEPKv",
+   "nn::util",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn4util12GenerateUuidEv",
+   "nn::util",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn4util15RelocationTable10UnrelocateEv",
+   "nn::util",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn4util15RelocationTable8RelocateEv",
+   "nn::util",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn4util16BinaryFileHeader13GetFirstBlockEv",
+   "nn::util",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn4util16BinaryFileHeader18GetRelocationTableEv",
+   "nn::util",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn4util18MatrixRowMajor4x3f16ConstantIdentityE",
+   "nn::util",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn4util27ConvertCharacterUtf8ToUtf32EPjPKc",
+   "nn::util",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn4util30PickOutCharacterFromUtf8StringEPcPPKc",
+   "nn::util",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn4util3pmr17NewDeleteResourceEv",
+   "nn::util",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn4util3pmr18GetDefaultResourceEv",
+   "nn::util",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn4util3pmr18SetDefaultResourceEPNS_14MemoryResourceE",
+   "nn::util",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn4util6ResDic5BuildEv",
+   "nn::util",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn4util6TinyMt10InitializeEPKji",
+   "nn::util",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn4util6TinyMt17GenerateRandomU32Ev",
+   "nn::util",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn4util6detail14FloatDegree180E",
+   "nn::util",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn4util6detail15CosCoefficientsE",
+   "nn::util",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn4util6detail15FloatPiDivided2E",
+   "nn::util",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn4util6detail15SinCoefficientsE",
+   "nn::util",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn4util6detail16AtanCoefficientsE",
+   "nn::util",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn4util6detail16Float1Divided2PiE",
+   "nn::util",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn4util6detail16IntrusiveDicImpl8MoveIterEPKNS0_16IntrusiveDicNodeEi",
+   "nn::util",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn4util6detail16IntrusiveDicImpl9EraseImplEPNS0_16IntrusiveDicNodeE",
+   "nn::util",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn4util6detail17SinCosSampleTableE",
+   "nn::util",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn4util6detail19AngleIndexHalfRoundE",
+   "nn::util",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn4util6detail22FloatQuaternionEpsilonE",
+   "nn::util",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn4util6detail7FloatPiE",
+   "nn::util",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn4util6detail8Float2PiE",
+   "nn::util",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn4util6detail8FloatUlpE",
+   "nn::util",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn4util7FloatPiE",
+   "nn::util",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn4util8BitArray5resetEv",
+   "nn::util",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn4util8SNPrintfEPcmPKcz",
+   "nn::util",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn4util8Vector3f12ConstantZeroE",
+   "nn::util",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn4util9TSNPrintfEPcmPKcz",
+   "nn::util",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn4util9VSNPrintfEPcmPKcSt9__va_list",
+   "nn::util",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn5async10Executable7ExecuteERKNS0_17CancellationTokenE",
+   "nn::async",
+   "kernel",
+   false
+  ],
+  [
+   "_ZN2nn5async10ExecutableC2Ev",
+   "nn::async",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn5async10ExecutableD2Ev",
+   "nn::async",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn5async11IsAwaitableEv",
+   "nn::async",
+   "kernel",
+   false
+  ],
+  [
+   "_ZN2nn5async15ExecutionResultC1ENS0_19ExecutionResultCodeEPNS0_13ResumeBlockerE",
+   "nn::async",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn5async15MakeReadyFutureEPNS_14MemoryResourceE",
+   "nn::async",
+   "kernel",
+   false
+  ],
+  [
+   "_ZN2nn5async15QueuingExecutor10ExecuteAllEv",
+   "nn::async",
+   "kernel",
+   false
+  ],
+  [
+   "_ZN2nn5async15QueuingExecutor13LoopExecutionEv",
+   "nn::async",
+   "kernel",
+   false
+  ],
+  [
+   "_ZN2nn5async15QueuingExecutor13TryExecuteOneEv",
+   "nn::async",
+   "kernel",
+   false
+  ],
+  [
+   "_ZN2nn5async15QueuingExecutor24RequestLoopExecutionExitEv",
+   "nn::async",
+   "kernel",
+   false
+  ],
+  [
+   "_ZN2nn5async15QueuingExecutorC1EPNS_14MemoryResourceE",
+   "nn::async",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn5async15QueuingExecutorD1Ev",
+   "nn::async",
+   "kernel",
+   false
+  ],
+  [
+   "_ZN2nn5async17EnqueueExecutableEPNS0_8ExecutorENSt3__110shared_ptrINS0_10ExecutableEEERKNS0_17CancellationTokenENS0_16ExecutionBlockerE",
+   "nn::async",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn5async18GetCurrentExecutorEv",
+   "nn::async",
+   "kernel",
+   false
+  ],
+  [
+   "_ZN2nn5async20CancellationObserverD2Ev",
+   "nn::async",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn5async20DumpAllTaskDebugDataEv",
+   "nn::async",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn5async23CancellationTokenSource13RequestCancelEv",
+   "nn::async",
+   "kernel",
+   false
+  ],
+  [
+   "_ZN2nn5async23CancellationTokenSourceC1EPNS_14MemoryResourceE",
+   "nn::async",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn5async28RegisterCancellationObserverERKNS0_17CancellationTokenEPNS0_20CancellationObserverE",
+   "nn::async",
+   "kernel",
+   false
+  ],
+  [
+   "_ZN2nn5async30UnregisterCancellationObserverERKNS0_17CancellationTokenEPNS0_20CancellationObserverE",
+   "nn::async",
+   "kernel",
+   false
+  ],
+  [
+   "_ZN2nn5async5AwaitEPNS_2os14TimerEventTypeE",
+   "nn::async",
+   "kernel",
+   false
+  ],
+  [
+   "_ZN2nn5async5AwaitEPNS_2os15SystemEventTypeE",
+   "nn::async",
+   "kernel",
+   false
+  ],
+  [
+   "_ZN2nn5async5AwaitEPNS_2os9EventTypeE",
+   "nn::async",
+   "kernel",
+   false
+  ],
+  [
+   "_ZN2nn5async6detail12AwaitAnyImplEPNS0_13ResumeBlockerE",
+   "nn::async",
+   "kernel",
+   false
+  ],
+  [
+   "_ZN2nn5async6detail15FutureStateBaseC2Ev",
+   "nn::async",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn5async6detail17ExecuteTaskInlineEPNS0_10ExecutableEbRKNS0_17CancellationTokenE",
+   "nn::async",
+   "kernel",
+   false
+  ],
+  [
+   "_ZN2nn5async6detail18GroupWaitHolderOneD1Ev",
+   "nn::async",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn5async6detail19TaskCoordinatorBase30GetSynchronousContinuationListEv",
+   "nn::async",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn5async6detail19TaskCoordinatorBase9DoExecuteERKNS0_17CancellationTokenE",
+   "nn::async",
+   "kernel",
+   false
+  ],
+  [
+   "_ZN2nn5async6detail19TaskCoordinatorBaseC2EPNS_14MemoryResourceEPNS1_15FutureStateBaseES6_",
+   "nn::async",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn5async6detail24FiberTaskCoordinatorBase13FinalizeFiberEv",
+   "nn::async",
+   "kernel",
+   false
+  ],
+  [
+   "_ZN2nn5async6detail24FiberTaskCoordinatorBase30GetSynchronousContinuationListEv",
+   "nn::async",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn5async6detail24FiberTaskCoordinatorBase9DoExecuteERKNS0_17CancellationTokenE",
+   "nn::async",
+   "kernel",
+   false
+  ],
+  [
+   "_ZN2nn5async6detail24FiberTaskCoordinatorBaseC2EPNS_14MemoryResourceEPNS1_15FutureStateBaseES6_PvmNS_2os9FiberFlagE",
+   "nn::async",
+   "kernel",
+   false
+  ],
+  [
+   "_ZN2nn5async6detail27SynchronousContinuationList15AddContinuationENSt3__110shared_ptrINS0_10ExecutableEEEbRKNS0_17CancellationTokenE",
+   "nn::async",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn5async6detail27SynchronousContinuationList20ExecuteContinuationsEv",
+   "nn::async",
+   "kernel",
+   false
+  ],
+  [
+   "_ZN2nn5async6detail27SynchronousContinuationList21EndAddingContinuationEv",
+   "nn::async",
+   "kernel",
+   false
+  ],
+  [
+   "_ZN2nn5async6detail27SynchronousContinuationList23BeginAddingContinuationEv",
+   "nn::async",
+   "kernel",
+   false
+  ],
+  [
+   "_ZN2nn5async6detail27SynchronousContinuationListC1EPNS_14MemoryResourceE",
+   "nn::async",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn5async6detail27SynchronousContinuationListD1Ev",
+   "nn::async",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn5async6detail9AwaitImplEPNS0_13ResumeBlockerE",
+   "nn::async",
+   "kernel",
+   false
+  ],
+  [
+   "_ZN2nn5async6detail9GroupWait21UnlinkGroupWaitHolderEPNS1_15GroupWaitHolderE",
+   "nn::async",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn5audio10AddCaptureEPNS0_19AudioRendererConfigEPNS0_11CaptureTypeEPNS0_10SubMixTypeEPvm",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio10AddCaptureEPNS0_19AudioRendererConfigEPNS0_11CaptureTypeEPNS0_12FinalMixTypeEPvm",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio11RemoveDelayEPNS0_19AudioRendererConfigEPNS0_9DelayTypeEPNS0_10SubMixTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio11RemoveDelayEPNS0_19AudioRendererConfigEPNS0_9DelayTypeEPNS0_12FinalMixTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio12GetDelayTimeEPKNS0_9DelayTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio12IsAuxEnabledEPKNS0_7AuxTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio12IsVoiceValidEPKNS0_9VoiceTypeE",
+   "nn::audio",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn5audio12RemoveReverbEPNS0_19AudioRendererConfigEPNS0_10ReverbTypeEPNS0_10SubMixTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio12RemoveReverbEPNS0_19AudioRendererConfigEPNS0_10ReverbTypeEPNS0_12FinalMixTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio12SetDelayTimeEPNS0_9DelayTypeENS_8TimeSpanE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio13AcquireSubMixEPNS0_19AudioRendererConfigEPNS0_10SubMixTypeEii",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio13AddCompressorEPNS0_19AudioRendererConfigEPNS0_14CompressorTypeEPNS0_10SubMixTypeEi",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio13AddCompressorEPNS0_19AudioRendererConfigEPNS0_14CompressorTypeEPNS0_12FinalMixTypeEi",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio13AddDeviceSinkEPNS0_19AudioRendererConfigEPNS0_14DeviceSinkTypeEPNS0_12FinalMixTypeEPKaiPKc",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio13ReleaseSubMixEPNS0_19AudioRendererConfigEPNS0_10SubMixTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio13RemoveCaptureEPNS0_19AudioRendererConfigEPNS0_11CaptureTypeEPNS0_10SubMixTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio13RemoveCaptureEPNS0_19AudioRendererConfigEPNS0_11CaptureTypeEPNS0_12FinalMixTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio13SetAuxEnabledEPNS0_7AuxTypeEb",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio13SetVoicePitchEPNS0_9VoiceTypeEf",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio14AddBufferMixerEPNS0_19AudioRendererConfigEPNS0_15BufferMixerTypeEPNS0_10SubMixTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio14AddBufferMixerEPNS0_19AudioRendererConfigEPNS0_15BufferMixerTypeEPNS0_12FinalMixTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio14AddI3dl2ReverbEPNS0_19AudioRendererConfigEPNS0_15I3dl2ReverbTypeEPvmPNS0_10SubMixTypeEi",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio14AddI3dl2ReverbEPNS0_19AudioRendererConfigEPNS0_15I3dl2ReverbTypeEPvmPNS0_12FinalMixTypeEi",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio14IsAuxRemovableEPKNS0_7AuxTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio14IsDelayEnabledEPKNS0_9DelayTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio14SetDelayInGainEPNS0_9DelayTypeEf",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio14SetVoiceVolumeEPNS0_9VoiceTypeEf",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio15AcquireFinalMixEPNS0_19AudioRendererConfigEPNS0_12FinalMixTypeEi",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio15AcquireSplitterEPNS0_19AudioRendererConfigEPNS0_12SplitterTypeEiii",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio15AddBiquadFilterEPNS0_19AudioRendererConfigEPNS0_16BiquadFilterTypeEPNS0_10SubMixTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio15AddBiquadFilterEPNS0_19AudioRendererConfigEPNS0_16BiquadFilterTypeEPNS0_12FinalMixTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio15AddLightLimiterEPNS0_19AudioRendererConfigEPNS0_16LightLimiterTypeEPvmPNS0_10SubMixTypeENS_8TimeSpanEi",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio15AddLightLimiterEPNS0_19AudioRendererConfigEPNS0_16LightLimiterTypeEPvmPNS0_12FinalMixTypeENS_8TimeSpanEi",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio15IsReverbEnabledEPKNS0_10ReverbTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio15ReleaseFinalMixEPNS0_19AudioRendererConfigEPNS0_12FinalMixTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio15ReleaseSplitterEPNS0_19AudioRendererConfigEPNS0_12SplitterTypeE",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio15SetCaptureInputEPNS0_11CaptureTypeEPKai",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio15SetDelayDryGainEPNS0_9DelayTypeEf",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio15SetDelayEnabledEPNS0_9DelayTypeEb",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio15SetSubMixVolumeEPNS0_10SubMixTypeEf",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio16AcquireVoiceSlotEPNS0_19AudioRendererConfigEPNS0_9VoiceTypeEiiNS0_12SampleFormatEiPKvmPKNS3_15BehaviorOptionsE",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio16AppendWaveBufferEPNS0_9VoiceTypeEPKNS0_10WaveBufferE",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio16IsCaptureEnabledEPKNS0_11CaptureTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio16IsDelayRemovableEPKNS0_9DelayTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio16OpenOutputStreamEPNS0_16OutputStreamTypeEPNS_2os11SystemEventEPvmRKNS0_15AudioDeviceNameERKNS0_12StreamFormatEii",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio16OpenOutputStreamEPNS0_16OutputStreamTypeEPNS_2os11SystemEventEPvmRKNS0_15AudioDeviceNameERKNS0_12StreamFormatEiiNS_4util10BitFlagSetILi32ENS0_16OutputStreamFlagEEE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio16ReleaseVoiceSlotEPNS0_19AudioRendererConfigEPNS0_9VoiceTypeE",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio16RemoveCompressorEPNS0_19AudioRendererConfigEPNS0_14CompressorTypeEPNS0_10SubMixTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio16RemoveCompressorEPNS0_19AudioRendererConfigEPNS0_14CompressorTypeEPNS0_12FinalMixTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio16RemoveDeviceSinkEPNS0_19AudioRendererConfigEPNS0_14DeviceSinkTypeEPNS0_12FinalMixTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio16SetReverbDryGainEPNS0_10ReverbTypeEf",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio16SetReverbEnabledEPNS0_10ReverbTypeEb",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio16SetReverbOutGainEPNS0_10ReverbTypeEf",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio16SetVoicePriorityEPNS0_9VoiceTypeEi",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio16StopOutputStreamEPNS0_16OutputStreamTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio17AcquireMemoryPoolEPNS0_19AudioRendererConfigEPNS0_14MemoryPoolTypeEPvm",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio17CloseOutputStreamEPNS0_16OutputStreamTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio17GetAuxSampleCountEPKNS0_7AuxTypeE",
+   "nn::audio",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn5audio17GetMemoryPoolSizeEPKNS0_14MemoryPoolTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio17GetSampleByteSizeENS0_12SampleFormatE",
+   "nn::audio",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn5audio17IsReverbRemovableEPKNS0_10ReverbTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio17OpenAudioRendererEPNS0_19AudioRendererHandleEPNS_2os11SystemEventERKNS0_22AudioRendererParameterEPvm",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio17ReadAuxSendBufferEPNS0_7AuxTypeEPii",
+   "nn::audio",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn5audio17ReadCaptureBufferEPNS0_11CaptureTypeEPii",
+   "nn::audio",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn5audio17ReleaseMemoryPoolEPNS0_19AudioRendererConfigEPNS0_14MemoryPoolTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio17RemoveBufferMixerEPNS0_19AudioRendererConfigEPNS0_15BufferMixerTypeEPNS0_10SubMixTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio17RemoveBufferMixerEPNS0_19AudioRendererConfigEPNS0_15BufferMixerTypeEPNS0_12FinalMixTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio17RemoveI3dl2ReverbEPNS0_19AudioRendererConfigEPNS0_15I3dl2ReverbTypeEPNS0_10SubMixTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio17RemoveI3dl2ReverbEPNS0_19AudioRendererConfigEPNS0_15I3dl2ReverbTypeEPNS0_12FinalMixTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio17SetAuxInputOutputEPNS0_7AuxTypeEPKaS4_i",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio17SetCaptureEnabledEPNS0_11CaptureTypeEb",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio17SetFinalMixVolumeEPNS0_12FinalMixTypeEf",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio17SetReverbLateGainEPNS0_10ReverbTypeEf",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio17SetReverbLateModeEPNS0_10ReverbTypeENS1_8LateModeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio17SetVoiceMixVolumeEPNS0_9VoiceTypeEPNS0_10SubMixTypeEfii",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio17SetVoiceMixVolumeEPNS0_9VoiceTypeEPNS0_12FinalMixTypeEfii",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio17SetVoicePlayStateEPNS0_9VoiceTypeENS1_9PlayStateE",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio17StartOutputStreamEPNS0_16OutputStreamTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio17StopAudioRendererENS0_19AudioRendererHandleE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio17WriteOutputStreamEPNS0_16OutputStreamTypeEPKvi",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio18CloseAudioRendererENS0_19AudioRendererHandleE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio18GetWaveBufferCountEPKNS0_9VoiceTypeE",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio18IsCaptureRemovableEPKNS0_11CaptureTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio18RemoveBiquadFilterEPNS0_19AudioRendererConfigEPNS0_16BiquadFilterTypeEPNS0_10SubMixTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio18RemoveBiquadFilterEPNS0_19AudioRendererConfigEPNS0_16BiquadFilterTypeEPNS0_12FinalMixTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio18RemoveLightLimiterEPNS0_19AudioRendererConfigEPNS0_16LightLimiterTypeEPNS0_10SubMixTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio18RemoveLightLimiterEPNS0_19AudioRendererConfigEPNS0_16LightLimiterTypeEPNS0_12FinalMixTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio18SetCompressorRatioEPNS0_14CompressorTypeEf",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio18SetReverbDecayTimeEPNS0_10ReverbTypeENS_8TimeSpanE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio18SetReverbEarlyGainEPNS0_10ReverbTypeEf",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio18SetReverbEarlyModeEPNS0_10ReverbTypeENS1_9EarlyModeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio18SetSubMixMixVolumeEPNS0_10SubMixTypeEPNS0_12FinalMixTypeEfii",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio18SetSubMixMixVolumeEPNS0_10SubMixTypeES2_fii",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio18StartAudioRendererENS0_19AudioRendererHandleE",
+   "nn::audio",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn5audio19IsCompressorEnabledEPKNS0_14CompressorTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio19SetDelayInputOutputEPNS0_9DelayTypeEPKaS4_i",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio19SetReverbColorationEPNS0_10ReverbTypeEf",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio19SetReverbReverbGainEPNS0_10ReverbTypeEf",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio19SetVoiceDestinationEPNS0_19AudioRendererConfigEPNS0_9VoiceTypeEPNS0_10SubMixTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio19SetVoiceDestinationEPNS0_19AudioRendererConfigEPNS0_9VoiceTypeEPNS0_12FinalMixTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio19SetVoiceDestinationEPNS0_19AudioRendererConfigEPNS0_9VoiceTypeEPNS0_12SplitterTypeE",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio20GetMemoryPoolAddressEPKNS0_14MemoryPoolTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio20GetOutputStreamStateEPKNS0_16OutputStreamTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio20GetReverbInputOutputEPKNS0_10ReverbTypeEPaS4_Pii",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio20IsBufferMixerEnabledEPKNS0_15BufferMixerTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio20IsI3dl2ReverbEnabledEPKNS0_15I3dl2ReverbTypeE",
+   "nn::audio",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn5audio20IsMemoryPoolAttachedEPKNS0_14MemoryPoolTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio20IsVoiceDroppedFlagOnEPKNS0_9VoiceTypeE",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio20SetBufferMixerVolumeEPNS0_15BufferMixerTypeEif",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio20SetCompressorEnabledEPNS0_14CompressorTypeEb",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio20SetCompressorOutGainEPNS0_14CompressorTypeEf",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio20SetDelayFeedbackGainEPNS0_9DelayTypeEf",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio20SetReverbInputOutputEPNS0_10ReverbTypeEPKaS4_i",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio20SetSplitterMixVolumeEPNS0_12SplitterTypeEiPNS0_10SubMixTypeEfii",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio20SetSplitterMixVolumeEPNS0_12SplitterTypeEiPNS0_12FinalMixTypeEfii",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio20SetSubMixDestinationEPNS0_19AudioRendererConfigEPNS0_10SubMixTypeEPNS0_12FinalMixTypeE",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio20SetSubMixDestinationEPNS0_19AudioRendererConfigEPNS0_10SubMixTypeEPNS0_12SplitterTypeE",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio20SetSubMixDestinationEPNS0_19AudioRendererConfigEPNS0_10SubMixTypeES4_",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio20WriteAuxReturnBufferEPNS0_7AuxTypeEPKii",
+   "nn::audio",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn5audio21AddCircularBufferSinkEPNS0_19AudioRendererConfigEPNS0_22CircularBufferSinkTypeEPNS0_12FinalMixTypeEPKaiPvmNS0_12SampleFormatE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio21ClearVoiceDestinationEPNS0_19AudioRendererConfigEPNS0_9VoiceTypeE",
+   "nn::audio",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn5audio21GetCaptureSampleCountEPKNS0_11CaptureTypeE",
+   "nn::audio",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn5audio21GetI3dl2ReverbDryGainEPKNS0_15I3dl2ReverbTypeE",
+   "nn::audio",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn5audio21GetReleasedWaveBufferEPNS0_9VoiceTypeE",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio21IsBiquadFilterEnabledEPKNS0_16BiquadFilterTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio21IsCompressorRemovableEPKNS0_14CompressorTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio21IsLightLimiterEnabledEPKNS0_16LightLimiterTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio21SetBufferMixerEnabledEPNS0_15BufferMixerTypeEb",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio21SetDelayChannelSpreadEPNS0_9DelayTypeEf",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio21SetDelayLowPassAmountEPNS0_9DelayTypeEf",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio21SetI3dl2ReverbDryGainEPNS0_15I3dl2ReverbTypeEf",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio21SetI3dl2ReverbEnabledEPNS0_15I3dl2ReverbTypeEb",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio21SetReverbPredelayTimeEPNS0_10ReverbTypeENS_8TimeSpanE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio22ClearSubMixDestinationEPNS0_19AudioRendererConfigEPNS0_10SubMixTypeE",
+   "nn::audio",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn5audio22GetI3dl2ReverbRoomGainEPKNS0_15I3dl2ReverbTypeE",
+   "nn::audio",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn5audio22IsBufferMixerRemovableEPKNS0_15BufferMixerTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio22IsI3dl2ReverbRemovableEPKNS0_15I3dl2ReverbTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio22ReadCircularBufferSinkEPNS0_22CircularBufferSinkTypeEPvm",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio22SetBiquadFilterEnabledEPNS0_16BiquadFilterTypeEb",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio22SetCompressorThresholdEPNS0_14CompressorTypeEf",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio22SetI3dl2ReverbRoomGainEPNS0_15I3dl2ReverbTypeEf",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio22SetLightLimiterEnabledEPNS0_16LightLimiterTypeEb",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio22SetSplitterDestinationEPNS0_19AudioRendererConfigEPNS0_12SplitterTypeEiPNS0_10SubMixTypeE",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio22SetSplitterDestinationEPNS0_19AudioRendererConfigEPNS0_12SplitterTypeEiPNS0_12FinalMixTypeE",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio23IsBiquadFilterRemovableEPKNS0_16BiquadFilterTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio23IsLightLimiterRemovableEPKNS0_16LightLimiterTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio23RequestAttachMemoryPoolEPNS0_14MemoryPoolTypeE",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio23RequestDetachMemoryPoolEPNS0_14MemoryPoolTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio23SetCompressorAttackTimeEPNS0_14CompressorTypeENS_8TimeSpanE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio24GetCompressorInputOutputEPKNS0_14CompressorTypeEPaS4_Pii",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio24GetI3dl2ReverbReverbGainEPKNS0_15I3dl2ReverbTypeE",
+   "nn::audio",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn5audio24GetI3dl2ReverbRoomHfGainEPKNS0_15I3dl2ReverbTypeE",
+   "nn::audio",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn5audio24RemoveCircularBufferSinkEPNS0_19AudioRendererConfigEPNS0_22CircularBufferSinkTypeEPNS0_12FinalMixTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio24SetBiquadFilterParameterEPNS0_16BiquadFilterTypeERKNS0_22TBiquadFilterParameterIfEE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio24SetCompressorInputOutputEPNS0_14CompressorTypeEPKaS4_i",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio24SetCompressorReleaseTimeEPNS0_14CompressorTypeENS_8TimeSpanE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio24SetI3dl2ReverbReverbGainEPNS0_15I3dl2ReverbTypeEf",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio24SetI3dl2ReverbRoomHfGainEPNS0_15I3dl2ReverbTypeEf",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio24SetLightLimiterInputGainEPNS0_16LightLimiterTypeEf",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio24SetLightLimiterThresholdEPNS0_16LightLimiterTypeEf",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio25GetI3dl2ReverbHfReferenceEPKNS0_15I3dl2ReverbTypeE",
+   "nn::audio",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn5audio25GetI3dl2ReverbInputOutputEPKNS0_15I3dl2ReverbTypeEPaS4_Pii",
+   "nn::audio",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn5audio25GetVoicePlayedSampleCountEPKNS0_9VoiceTypeE",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio25ListAudioOutputDeviceNameEPNS0_15AudioDeviceNameEi",
+   "nn::audio",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn5audio25SetBufferMixerInputOutputEPNS0_15BufferMixerTypeEPKaS4_i",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio25SetI3dl2ReverbHfReferenceEPNS0_15I3dl2ReverbTypeEf",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio25SetI3dl2ReverbInputOutputEPNS0_15I3dl2ReverbTypeEPKaS4_i",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio25SetLightLimiterAttackTimeEPNS0_16LightLimiterTypeENS_8TimeSpanE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio25SetLightLimiterOutputGainEPNS0_16LightLimiterTypeEf",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio26GetAudioDeviceOutputVolumeEPKNS0_15AudioDeviceNameE",
+   "nn::audio",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn5audio26GetLightLimiterInputOutputEPKNS0_16LightLimiterTypeEPaS4_Pii",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio26RequestUpdateAudioRendererENS0_19AudioRendererHandleEPKNS0_19AudioRendererConfigE",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio26SetAudioDeviceOutputVolumeEPKNS0_15AudioDeviceNameEf",
+   "nn::audio",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn5audio26SetBiquadFilterInputOutputEPNS0_16BiquadFilterTypeEPKaS4_i",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio26SetLightLimiterInputOutputEPNS0_16LightLimiterTypeEPKaS4_i",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio26SetLightLimiterReleaseTimeEPNS0_16LightLimiterTypeENS_8TimeSpanE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio26SetPerformanceDetailTargetEPNS0_19AudioRendererConfigEPKNS0_10SubMixTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio26SetPerformanceDetailTargetEPNS0_19AudioRendererConfigEPKNS0_12FinalMixTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio28ClearPerformanceDetailTargetEPNS0_19AudioRendererConfigE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio28GetLightLimiterLookAheadTimeEPKNS0_16LightLimiterTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio28SetLightLimiterLookAheadTimeEPNS0_16LightLimiterTypeENS_8TimeSpanE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio29ExecuteAudioRendererRenderingENS0_19AudioRendererHandleE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio29GetDefaultVirtualOutputDeviceEPNS0_15AudioDeviceNameE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio29GetI3dl2ReverbReflectionsGainEPKNS0_15I3dl2ReverbTypeE",
+   "nn::audio",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn5audio29GetOutputStreamFreeFrameCountEPKNS0_16OutputStreamTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio29GetRequiredBufferSizeForDelayENS_8TimeSpanEii",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio29InitializeAudioRendererConfigEPNS0_19AudioRendererConfigERKNS0_22AudioRendererParameterEPvm",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio29SetI3dl2ReverbReflectionsGainEPNS0_15I3dl2ReverbTypeEf",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio29SetLightLimiterProcessingModeEPNS0_16LightLimiterTypeENS1_14ProcessingModeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio29SetVoiceBiquadFilterParameterEPNS0_9VoiceTypeEiRKNS0_22TBiquadFilterParameterIfEE",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio30GetActiveAudioOutputDeviceNameEPNS0_15AudioDeviceNameE",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio30GetAudioRendererWorkBufferSizeERKNS0_22AudioRendererParameterE",
+   "nn::audio",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn5audio30GetRequiredBufferSizeForReverbEii",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio30SetCompressorMakeupGainEnabledEPNS0_14CompressorTypeEb",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio31GetI3dl2ReverbLateReverbDensityEPKNS0_15I3dl2ReverbTypeE",
+   "nn::audio",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn5audio31GetRequiredBufferSizeForCaptureEPKNS0_22AudioRendererParameterEii",
+   "nn::audio",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn5audio31SetI3dl2ReverbLateReverbDensityEPNS0_15I3dl2ReverbTypeEf",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio32GetVirtualOutputDevicePropertiesEPNS0_23VirtualDevicePropertiesERKNS0_15AudioDeviceNameE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio32InitializeAudioRendererParameterEPNS0_22AudioRendererParameterE",
+   "nn::audio",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn5audio32SetReverbHighFrequencyDecayRatioEPNS0_10ReverbTypeEf",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio33GetAudioRendererElapsedFrameCountEPKNS0_19AudioRendererConfigE",
+   "nn::audio",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn5audio33GetI3dl2ReverbLateReverbDecayTimeEPKNS0_15I3dl2ReverbTypeE",
+   "nn::audio",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn5audio33GetI3dl2ReverbLateReverbDelayTimeEPKNS0_15I3dl2ReverbTypeE",
+   "nn::audio",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn5audio33GetI3dl2ReverbLateReverbDiffusionEPKNS0_15I3dl2ReverbTypeE",
+   "nn::audio",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn5audio33GetI3dl2ReverbReflectionDelayTimeEPKNS0_15I3dl2ReverbTypeE",
+   "nn::audio",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn5audio33SetI3dl2ReverbLateReverbDecayTimeEPNS0_15I3dl2ReverbTypeENS_8TimeSpanE",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio33SetI3dl2ReverbLateReverbDelayTimeEPNS0_15I3dl2ReverbTypeENS_8TimeSpanE",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio33SetI3dl2ReverbLateReverbDiffusionEPNS0_15I3dl2ReverbTypeEf",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio33SetI3dl2ReverbReflectionDelayTimeEPNS0_15I3dl2ReverbTypeENS_8TimeSpanE",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio34GetAudioRendererVoiceDropParameterENS0_19AudioRendererHandleE",
+   "nn::audio",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn5audio34SetAudioRendererVoiceDropParameterENS0_19AudioRendererHandleEf",
+   "nn::audio",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn5audio35GetRequiredBufferSizeForI3dl2ReverbEii",
+   "nn::audio",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn5audio36GetAudioRendererConfigWorkBufferSizeERKNS0_22AudioRendererParameterE",
+   "nn::audio",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn5audio36GetI3dl2ReverbLateReverbHfDecayRatioEPKNS0_15I3dl2ReverbTypeE",
+   "nn::audio",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn5audio36GetRequiredBufferSizeForLightLimiterENS_8TimeSpanEii",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio36SetI3dl2ReverbLateReverbHfDecayRatioEPNS0_15I3dl2ReverbTypeEf",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio39AcquireAudioDeviceNotificationForOutputEPNS_2os11SystemEventE",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio39IsDeviceOutputVolumeAutoTuneModeEnabledEv",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio40SetDeviceOutputVolumeAutoTuneModeEnabledEb",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio41GetActiveAudioDeviceChannelCountForOutputEv",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio41GetRequiredBufferSizeForPerformanceFramesERKNS0_22AudioRendererParameterE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio42GetRequiredBufferSizeForCircularBufferSinkEPKNS0_22AudioRendererParameterEiiNS0_12SampleFormatE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio43GetRequiredBufferSizeForAuxSendReturnBufferEPKNS0_22AudioRendererParameterEii",
+   "nn::audio",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn5audio6AddAuxEPNS0_19AudioRendererConfigEPNS0_7AuxTypeEPNS0_10SubMixTypeEPvS7_m",
+   "nn::audio",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5audio6AddAuxEPNS0_19AudioRendererConfigEPNS0_7AuxTypeEPNS0_12FinalMixTypeEPvS7_m",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio6detail25FftInitializeInternalImplERNS1_13FftWorkBufferEj",
+   "nn::audio",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn5audio6detail32GetFftWorkBufferSizeInternalImplENS1_14FftElementTypeEmNS0_14FftProcessTypeEij",
+   "nn::audio",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn5audio6detail33FftProcessInternalImplFloat32RealEPfiPKfiRKNS1_13FftWorkBufferENS1_12FftDirectionEj",
+   "nn::audio",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn5audio8AddDelayEPNS0_19AudioRendererConfigEPNS0_9DelayTypeEPvmPNS0_10SubMixTypeENS_8TimeSpanEi",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio8AddDelayEPNS0_19AudioRendererConfigEPNS0_9DelayTypeEPvmPNS0_12FinalMixTypeENS_8TimeSpanEi",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio9AddReverbEPNS0_19AudioRendererConfigEPNS0_10ReverbTypeEPvmPNS0_10SubMixTypeEi",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio9AddReverbEPNS0_19AudioRendererConfigEPNS0_10ReverbTypeEPvmPNS0_12FinalMixTypeEi",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio9RemoveAuxEPNS0_19AudioRendererConfigEPNS0_7AuxTypeEPNS0_10SubMixTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5audio9RemoveAuxEPNS0_19AudioRendererConfigEPNS0_7AuxTypeEPNS0_12FinalMixTypeE",
+   "nn::audio",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec10AacDecoderC1Ev",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec10AacDecoderD1Ev",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec14StopAv1DecoderEPNS0_14Av1DecoderTypeE",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec14StopVp8DecoderEPNS0_14Vp8DecoderTypeE",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec14StopVp9DecoderEPNS0_14Vp9DecoderTypeE",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec15FlushAv1DecoderEPNS0_14Av1DecoderTypeE",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec15FlushVp8DecoderEPNS0_14Vp8DecoderTypeE",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec15FlushVp9DecoderEPNS0_14Vp9DecoderTypeE",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec15StartAv1DecoderEPNS0_14Av1DecoderTypeE",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec15StartVp8DecoderEPNS0_14Vp8DecoderTypeE",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec15StartVp9DecoderEPNS0_14Vp9DecoderTypeE",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec15StopH264DecoderEPNS0_15H264DecoderTypeE",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec16FlushH264DecoderEPNS0_15H264DecoderTypeE",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec16StartH264DecoderEPNS0_15H264DecoderTypeE",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec17GetOpusPacketSizeEPKhm",
+   "nn::codec",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn5codec18FinalizeAacDecoderEPNS0_14AacDecoderTypeE",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec18FinalizeAv1DecoderEPNS0_14Av1DecoderTypeE",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec18FinalizeVp8DecoderEPNS0_14Vp8DecoderTypeE",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec18FinalizeVp9DecoderEPNS0_14Vp9DecoderTypeE",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec19FinalizeH264DecoderEPNS0_15H264DecoderTypeE",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec20DecodeAacInterleavedEPNS0_14AacDecoderTypeEPmPiPsmPKvm",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec20InitializeAv1DecoderEPNS0_14Av1DecoderTypeEPvmmttjNS0_23VideoDecoderInputFormatENS0_24VideoDecoderOutputFormatE",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec20InitializeAv1DecoderEPNS0_14Av1DecoderTypeEmmttjNS0_23VideoDecoderInputFormatENS0_24VideoDecoderOutputFormatE",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec20InitializeVp8DecoderEPNS0_14Vp8DecoderTypeEPvmmttjNS0_23VideoDecoderInputFormatENS0_24VideoDecoderOutputFormatE",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec20InitializeVp8DecoderEPNS0_14Vp8DecoderTypeEmmttjNS0_23VideoDecoderInputFormatENS0_24VideoDecoderOutputFormatE",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec20InitializeVp9DecoderEPNS0_14Vp9DecoderTypeEPvmmttjNS0_23VideoDecoderInputFormatENS0_24VideoDecoderOutputFormatE",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec20InitializeVp9DecoderEPNS0_14Vp9DecoderTypeEmmttjNS0_23VideoDecoderInputFormatENS0_24VideoDecoderOutputFormatE",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec21InitializeH264DecoderEPNS0_15H264DecoderTypeEPvmmttjNS0_23VideoDecoderInputFormatENS0_24VideoDecoderOutputFormatEPKvm",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec21InitializeH264DecoderEPNS0_15H264DecoderTypeEmmttjNS0_23VideoDecoderInputFormatENS0_24VideoDecoderOutputFormatEPKvm",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec23GetAacDecoderSampleRateEPKNS0_14AacDecoderTypeE",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec24FinalizeDecoderImagePoolEPNS0_25VideoDecoderImagePoolTypeE",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec24RegisterAv1DecoderBufferEPNS0_14Av1DecoderTypeEjPNS0_25VideoDecoderImagePoolTypeEj",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec24RegisterVp8DecoderBufferEPNS0_14Vp8DecoderTypeEjPNS0_25VideoDecoderImagePoolTypeEj",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec24RegisterVp9DecoderBufferEPNS0_14Vp9DecoderTypeEjPNS0_25VideoDecoderImagePoolTypeEj",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec24ResetHardwareOpusDecoderEPNS0_23HardwareOpusDecoderTypeE",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec25GetAacDecoderChannelCountEPKNS0_14AacDecoderTypeE",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec25MakeDecodeImagePreferenceEttNS0_24VideoDecoderOutputFormatENS0_9CodecModeE",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec25RegisterH264DecoderBufferEPNS0_15H264DecoderTypeEjPNS0_25VideoDecoderImagePoolTypeEj",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec26InitializeDecoderImagePoolEPNS0_25VideoDecoderImagePoolTypeEPvmRKNS0_27VideoDecoderImagePreferenceEjNS0_9CodecModeE",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec26ReadDecoderOutputImageNv12EPKNS0_25VideoDecoderImagePoolTypeEjttttPvmmS4_mm",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec27FinalizeHardwareOpusDecoderEPNS0_23HardwareOpusDecoderTypeE",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec27SubmitAv1DecoderInputBufferEPmPNS0_14Av1DecoderTypeEPKvmNS_8TimeSpanEb",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec27SubmitVp8DecoderInputBufferEPmPNS0_14Vp8DecoderTypeEPKvmNS_8TimeSpanEb",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec27SubmitVp9DecoderInputBufferEPmPNS0_14Vp9DecoderTypeEPKvmNS_8TimeSpanEb",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec28SubmitH264DecoderInputBufferEPmPNS0_15H264DecoderTypeEPKvmNS_8TimeSpanEb",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec29AcquireAv1DecoderOutputBufferEPjPNS_2gs16NativeSyncHandleEPNS0_14Av1DecoderTypeE",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec29AcquireVp8DecoderOutputBufferEPjPNS_2gs16NativeSyncHandleEPNS0_14Vp8DecoderTypeE",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec29AcquireVp9DecoderOutputBufferEPjPNS_2gs16NativeSyncHandleEPNS0_14Vp9DecoderTypeE",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec29CalculateAv1DecoderWorkBufferEPmS1_mtt",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec29CalculateVp8DecoderWorkBufferEPmS1_mtt",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec29CalculateVp9DecoderWorkBufferEPmS1_mtt",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec29InitializeHardwareOpusDecoderEPNS0_23HardwareOpusDecoderTypeEiiPvmi",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec29ReleaseAv1DecoderOutputBufferEPNS0_14Av1DecoderTypeEjNS_2gs16NativeSyncHandleE",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec29ReleaseVp8DecoderOutputBufferEPNS0_14Vp8DecoderTypeEjNS_2gs16NativeSyncHandleE",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec29ReleaseVp9DecoderOutputBufferEPNS0_14Vp9DecoderTypeEjNS_2gs16NativeSyncHandleE",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec30AcquireH264DecoderOutputBufferEPjPNS_2gs16NativeSyncHandleEPNS0_15H264DecoderTypeE",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec30CalculateH264DecoderWorkBufferEPmS1_mtt",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec30InitializeAacDecoderForAnyTypeEPNS0_14AacDecoderTypeEiiPvm",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec30ReleaseH264DecoderOutputBufferEPNS0_15H264DecoderTypeEjNS_2gs16NativeSyncHandleE",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec31CalculateDecoderImagePoolBufferEPmS1_RKNS0_27VideoDecoderImagePreferenceEj",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec32GetHardwareOpusDecoderSampleRateEPKNS0_23HardwareOpusDecoderTypeE",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec33DecodeOpusInterleavedWithHardwareEPNS0_23HardwareOpusDecoderTypeEPmPiPsmPKvm",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec33GetAacDecoderMpeg4AudioObjectTypeEPKNS0_14AacDecoderTypeE",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec33GetAv1DecoderSubmissionReadyEventEPPNS_2os15SystemEventTypeEPNS0_14Av1DecoderTypeE",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec33GetVp8DecoderSubmissionReadyEventEPPNS_2os15SystemEventTypeEPNS0_14Vp8DecoderTypeE",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec33GetVp9DecoderSubmissionReadyEventEPPNS_2os15SystemEventTypeEPNS0_14Vp9DecoderTypeE",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec34GetH264DecoderSubmissionReadyEventEPPNS_2os15SystemEventTypeEPNS0_15H264DecoderTypeE",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec34GetHardwareOpusDecoderChannelCountEPKNS0_23HardwareOpusDecoderTypeE",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec35GetAv1DecoderOutputBufferPropertiesEPtS1_S1_S1_PNS_5movie10ColorSpaceEPNS_8TimeSpanEPbPNS0_14Av1DecoderTypeEj",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec35GetVp8DecoderOutputBufferPropertiesEPtS1_S1_S1_PNS_5movie10ColorSpaceEPNS_8TimeSpanEPbPNS0_14Vp8DecoderTypeEj",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec35GetVp9DecoderOutputBufferPropertiesEPtS1_S1_S1_PNS_5movie10ColorSpaceEPNS_8TimeSpanEPbPNS0_14Vp9DecoderTypeEj",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec36GetDecoderImagePoolNativeImageHandleEPKNS0_25VideoDecoderImagePoolTypeEj",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec36GetH264DecoderOutputBufferPropertiesEPtS1_S1_S1_PNS_5movie10ColorSpaceEPNS_8TimeSpanEPbPNS0_15H264DecoderTypeEj",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec36GetHardwareOpusDecoderWorkBufferSizeEiii",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec3sdk34MakeDecodeImagePreferenceForCompatEttNS0_24VideoDecoderOutputFormatENS0_9CodecModeE",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec5video10InitializeEv",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5codec5video8FinalizeEv",
+   "nn::codec",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5image10PngEncoder10InitializeEPFPvmS2_ES2_PFvS2_S2_ES2_",
+   "nn::image",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn5image10PngEncoder12SetPixelDataEPKvmNS0_11PixelFormatENS0_9DimensionEm",
+   "nn::image",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn5image10PngEncoder6EncodeEPmPvm",
+   "nn::image",
+   "kernel",
+   false
+  ],
+  [
+   "_ZN2nn5image10PngEncoderC1Ev",
+   "nn::image",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn5image10PngEncoderD1Ev",
+   "nn::image",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn5image11JpegEncoder10SetQualityEi",
+   "nn::image",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn5image11JpegEncoder12SetPixelDataEPKvNS0_11PixelFormatERKNS0_9DimensionEi",
+   "nn::image",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn5image11JpegEncoder16SetSamplingRatioENS0_17JpegSamplingRatioE",
+   "nn::image",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn5image11JpegEncoder6EncodeEPmPvmPNS0_11ExifBuilderE",
+   "nn::image",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn5image11JpegEncoder7AnalyzeEv",
+   "nn::image",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn5image11JpegEncoderC1EPNS_14MemoryResourceE",
+   "nn::image",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn5image11JpegEncoderD1Ev",
+   "nn::image",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn5movie10InitializeEv",
+   "nn::movie",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5movie13IsInitializedEv",
+   "nn::movie",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5movie13MediaProperty5ClearEv",
+   "nn::movie",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5movie13MediaProperty7SetSizeEPKcm",
+   "nn::movie",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5movie13MediaProperty8SetInt32EPKci",
+   "nn::movie",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn5movie13MediaProperty8SetInt64EPKcl",
+   "nn::movie",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5movie13MediaProperty9SetStringEPKcS3_i",
+   "nn::movie",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5movie13MediaPropertyC1Ev",
+   "nn::movie",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5movie14MediaExtractor10InitializeEPvmm",
+   "nn::movie",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5movie14MediaExtractor11ReadSamplesEPNS0_6BufferEi",
+   "nn::movie",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5movie14MediaExtractor11SelectTrackEi",
+   "nn::movie",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5movie14MediaExtractor13GetTrackCountEPi",
+   "nn::movie",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn5movie14MediaExtractor16GetTrackMimeTypeEPNS0_13MediaMimeTypeEi",
+   "nn::movie",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5movie14MediaExtractor18GetTrackPropertiesEPNS0_13MediaPropertyEi",
+   "nn::movie",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5movie14MediaExtractor19GetSampleBufferSizeEPmi",
+   "nn::movie",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5movie14MediaExtractor20SetUpMediaSourceModeEv",
+   "nn::movie",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5movie14MediaExtractor21AppendMediaSourceDataEPKvm",
+   "nn::movie",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn5movie14MediaExtractor21GetTrackConfigurationEPvmi",
+   "nn::movie",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5movie14MediaExtractor23GetSampleAvailableEventEPPNS_2os15SystemEventTypeEi",
+   "nn::movie",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn5movie14MediaExtractor25GetTrackConfigurationSizeEPmi",
+   "nn::movie",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5movie14MediaExtractor27GetEventsForMediaSourceModeEPPNS_2os15SystemEventTypeES5_",
+   "nn::movie",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn5movie14MediaExtractor30GetMediaSourceModeSeekPositionEPl",
+   "nn::movie",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn5movie14MediaExtractor5StartEv",
+   "nn::movie",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5movie14MediaExtractor6SeekToENS_8TimeSpanENS0_8SeekModeE",
+   "nn::movie",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5movie14MediaExtractor8FinalizeEv",
+   "nn::movie",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5movie14MediaExtractorC1Ev",
+   "nn::movie",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5movie14MediaExtractorD1Ev",
+   "nn::movie",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5movie6Buffer12SetTimeStampENS_8TimeSpanE",
+   "nn::movie",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5movie6Buffer14SetBufferFlagsENS0_11BufferFlagsE",
+   "nn::movie",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5movie6Buffer19SetFilledBufferSizeEm",
+   "nn::movie",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5movie6Buffer9SetBufferEPvmm",
+   "nn::movie",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn5movie6BufferC1Ev",
+   "nn::movie",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5movie6detail13AllocatorInfo21CalculateLeakedMemoryEv",
+   "nn::movie",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5movie6detail13ThreadManager11GetInstanceEv",
+   "nn::movie",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5movie6detail13ThreadManager13_StaticCreateENS1_10ThreadInfo13ComponentTypeEPPS3_PFvPvES7_S7_miPKcmS7_",
+   "nn::movie",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5movie6detail13ThreadManager28_GetThreadCoreMaskByInstanceEPv",
+   "nn::movie",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5movie6detail13ThreadManager28_GetThreadPriorityByInstanceEPv",
+   "nn::movie",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5movie6detail13ThreadManager33_GetThreadCoreMaskByComponentTypeENS1_10ThreadInfo13ComponentTypeE",
+   "nn::movie",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5movie6detail13ThreadManager33_GetThreadPriorityByComponentTypeENS1_10ThreadInfo13ComponentTypeE",
+   "nn::movie",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5movie6detail13ThreadManager36_RemoveThreadConfigurationByInstanceEPv",
+   "nn::movie",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5movie8FinalizeEv",
+   "nn::movie",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5prepo10PlayReport10SetEventIdEPKc",
+   "nn::prepo",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn5prepo10PlayReport3AddEPKcPKvm",
+   "nn::prepo",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5prepo10PlayReport3AddEPKcRKNS0_10Any64BitIdE",
+   "nn::prepo",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5prepo10PlayReport3AddEPKcRKNS0_5ArrayE",
+   "nn::prepo",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5prepo10PlayReport3AddEPKcRKNS0_6StructE",
+   "nn::prepo",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5prepo10PlayReport3AddEPKcS3_",
+   "nn::prepo",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn5prepo10PlayReport3AddEPKcb",
+   "nn::prepo",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5prepo10PlayReport3AddEPKcf",
+   "nn::prepo",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5prepo10PlayReport3AddEPKcl",
+   "nn::prepo",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn5prepo10PlayReport4SaveERKNS_7account3UidE",
+   "nn::prepo",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5prepo10PlayReport4SaveEv",
+   "nn::prepo",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5prepo10PlayReport5ClearEv",
+   "nn::prepo",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5prepo10PlayReport9SetBufferEPvm",
+   "nn::prepo",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn5prepo10PlayReportC1Ev",
+   "nn::prepo",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5prepo27AddInternetConnectionStatusEPNS0_10PlayReportEPKcS4_S4_",
+   "nn::prepo",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5prepo28RequestImmediateTransmissionEv",
+   "nn::prepo",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5prepo30GetOverSaveFrequencyLimitEventEv",
+   "nn::prepo",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nn5prepo5Array3AddERKNS0_6StructE",
+   "nn::prepo",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5prepo5Array3AddEl",
+   "nn::prepo",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5prepo5Array9SetBufferEPvm",
+   "nn::prepo",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5prepo5ArrayC1Ev",
+   "nn::prepo",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5prepo6Struct3AddEPKcRKNS0_10Any64BitIdE",
+   "nn::prepo",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5prepo6Struct3AddEPKcS3_",
+   "nn::prepo",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5prepo6Struct3AddEPKcb",
+   "nn::prepo",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5prepo6Struct3AddEPKcf",
+   "nn::prepo",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5prepo6Struct3AddEPKcl",
+   "nn::prepo",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5prepo6Struct9SetBufferEPvm",
+   "nn::prepo",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5prepo6StructC1Ev",
+   "nn::prepo",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5swkbd10MakePresetEPNS0_14KeyboardConfigENS0_6PresetE",
+   "nn::swkbd",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5swkbd10SetSubTextEPNS0_14KeyboardConfigEPKDs",
+   "nn::swkbd",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5swkbd12SetGuideTextEPNS0_14KeyboardConfigEPKDs",
+   "nn::swkbd",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5swkbd12ShowKeyboardEPNS0_6StringERKNS0_15ShowKeyboardArgE",
+   "nn::swkbd",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5swkbd13SetHeaderTextEPNS0_14KeyboardConfigEPKDs",
+   "nn::swkbd",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn5swkbd25GetRequiredWorkBufferSizeEb",
+   "nn::swkbd",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn5swkbd27GetRequiredStringBufferSizeEv",
+   "nn::swkbd",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn5swkbd34GetRequiredTextCheckWorkBufferSizeEv",
+   "nn::swkbd",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn6crypto36GenerateCryptographicallyRandomBytesEPvm",
+   "nn::crypto",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn6crypto6detail8Sha1Impl10InitializeEv",
+   "nn::crypto",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn6crypto6detail8Sha1Impl6UpdateEPKvm",
+   "nn::crypto",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn6crypto6detail8Sha1Impl7GetHashEPvm",
+   "nn::crypto",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn6crypto6detail8Sha1ImplD1Ev",
+   "nn::crypto",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn6detail21UnexpectedDefaultImplEv",
+   "nn::detail",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn6fontll18ScalableFontEngine10GetAdvanceEPsS2_PiS3_jt",
+   "nn::fontll",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn6fontll18ScalableFontEngine10GetKerningEPiS2_jj",
+   "nn::fontll",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn6fontll18ScalableFontEngine10InitializeEPvj",
+   "nn::fontll",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn6fontll18ScalableFontEngine11SetAutoHintEb",
+   "nn::fontll",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn6fontll18ScalableFontEngine13ReleasesGlyphEPv",
+   "nn::fontll",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn6fontll18ScalableFontEngine13SetBoldWeightEi",
+   "nn::fontll",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn6fontll18ScalableFontEngine14GetFontMetricsEPNS0_7MetricsE",
+   "nn::fontll",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn6fontll18ScalableFontEngine15AcquireGlyphmapEjt",
+   "nn::fontll",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn6fontll18ScalableFontEngine15CheckGlyphExistEj",
+   "nn::fontll",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn6fontll18ScalableFontEngine15SetOutlineWidthEt",
+   "nn::fontll",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn6fontll18ScalableFontEngine17AcquireOtfKerningEPKNS0_15OtfKerningTableEjjj",
+   "nn::fontll",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn6fontll18ScalableFontEngine21AcquireOtfKerningLastEPKNS0_15OtfKerningTableEjj",
+   "nn::fontll",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn6fontll18ScalableFontEngine22AcquireOtfKerningFirstEPKNS0_15OtfKerningTableEjj",
+   "nn::fontll",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn6fontll18ScalableFontEngine22GetPointerToWorkBufferEv",
+   "nn::fontll",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn6fontll18ScalableFontEngine23FinalizeOtfKerningTableEPNS0_15OtfKerningTableEPFvPvS4_ES4_",
+   "nn::fontll",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn6fontll18ScalableFontEngine25InitializeOtfKerningTableEPFPvmmS2_ES2_b",
+   "nn::fontll",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn6fontll18ScalableFontEngine7SetFontEPc",
+   "nn::fontll",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn6fontll18ScalableFontEngine8FinalizeEv",
+   "nn::fontll",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn6fontll18ScalableFontEngine8GetErrorEv",
+   "nn::fontll",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn6fontll18ScalableFontEngine8LoadFontEPcPKvjj",
+   "nn::fontll",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn6fontll18ScalableFontEngine8SetFlagsENS1_5FlagsE",
+   "nn::fontll",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn6fontll18ScalableFontEngine8SetScaleEiiii",
+   "nn::fontll",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn6fontll18ScalableFontEngineC1Ev",
+   "nn::fontll",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn6fontll18ScalableFontEngineD1Ev",
+   "nn::fontll",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn6fontll24ScalableFontEngineHelper6DecodeEPKvjPFmPvmS3_mS3_mS3_mEPKh",
+   "nn::fontll",
+   "pure",
+   true
+  ],
+  [
+   "_ZN2nn6socket10SetSockOptEiNS0_5LevelENS0_6OptionEPKvj",
+   "nn::socket",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn6socket11EventFdReadEiPm",
+   "nn::socket",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn6socket11GAIStrErrorENS0_7AiErrnoE",
+   "nn::socket",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn6socket11GetAddrInfoEPKcS2_PK8addrinfoPPS3_",
+   "nn::socket",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn6socket11GetAddrInfoEPKcS2_PKNS0_8AddrInfoEPPS3_",
+   "nn::socket",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn6socket12EventFdWriteEim",
+   "nn::socket",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn6socket12FreeAddrInfoEP8addrinfo",
+   "nn::socket",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn6socket12FreeAddrInfoEPNS0_8AddrInfoE",
+   "nn::socket",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn6socket12GetLastErrnoEv",
+   "nn::socket",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn6socket12GetLastErrorEv",
+   "nn::socket",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn6socket12SetAllocatorEPNS_14MemoryResourceE",
+   "nn::socket",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn6socket13IsInitializedEv",
+   "nn::socket",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn6socket4BindEiPK8sockaddrj",
+   "nn::socket",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn6socket4BindEiPKNS0_8SockAddrEj",
+   "nn::socket",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn6socket4PollEP6pollfdmi",
+   "nn::socket",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn6socket5CloseEi",
+   "nn::socket",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn6socket6SendToEiPKvmNS0_7MsgFlagEPKNS0_8SockAddrEj",
+   "nn::socket",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn6socket6SendToEiPKvmiPK8sockaddrj",
+   "nn::socket",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn6socket6SocketENS0_6FamilyENS0_4TypeENS0_8ProtocolE",
+   "nn::socket",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn6socket6SocketEiii",
+   "nn::socket",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn6socket7EventFdEmNS0_12EventFdFlagsE",
+   "nn::socket",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn6socket8FinalizeEv",
+   "nn::socket",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn6socket8InetNtopEiPKvPcj",
+   "nn::socket",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn6socket8InetPtonEiPKcPv",
+   "nn::socket",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn6socket8RecvFromEiPvmNS0_7MsgFlagEPNS0_8SockAddrEPj",
+   "nn::socket",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn6socket8RecvFromEiPvmiP8sockaddrPj",
+   "nn::socket",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn6socket8ShutdownEii",
+   "nn::socket",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn6socket8internal10InitializeEi",
+   "nn::socket",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn6socket9InetHtonlEj",
+   "nn::socket",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn6socket9InetHtonsEt",
+   "nn::socket",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn6socket9InetNtohlEj",
+   "nn::socket",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn6socket9InetNtohsEt",
+   "nn::socket",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn6syncpt3sdk20CancelSyncPointEventEPNS1_18SyncPointEventTypeE",
+   "nn::syncpt",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn6syncpt3sdk20CreateSyncPointEventEPNS1_18SyncPointEventTypeE",
+   "nn::syncpt",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn6syncpt3sdk21DestroySyncPointEventEPNS1_18SyncPointEventTypeE",
+   "nn::syncpt",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn6syncpt3sdk21RequestSyncPointEventEPNS1_18SyncPointEventTypeERKNS1_15SyncPointHandleE",
+   "nn::syncpt",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn6syncpt3sdk21TryWaitSyncPointEventEPKNS1_18SyncPointEventTypeE",
+   "nn::syncpt",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn6syncpt3sdk25InitializeMultiWaitHolderEPNS_2os19MultiWaitHolderTypeEPNS1_18SyncPointEventTypeE",
+   "nn::syncpt",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nn7account10InitializeEv",
+   "nn::account",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn7account11GetNicknameEPNS0_8NicknameERKNS0_3UidE",
+   "nn::account",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn7account12AsyncContext14GetSystemEventEPNS_2os11SystemEventE",
+   "nn::account",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn7account12AsyncContext6CancelEv",
+   "nn::account",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn7account12AsyncContext7HasDoneEPb",
+   "nn::account",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn7account12AsyncContext9GetResultEv",
+   "nn::account",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn7account12AsyncContextC1Ev",
+   "nn::account",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn7account12AsyncContextD1Ev",
+   "nn::account",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn7account12AsyncContextaSEOS1_",
+   "nn::account",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn7account12ListAllUsersEPiPNS0_3UidEi",
+   "nn::account",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn7account16GetUserExistenceEPbRKNS0_3UidE",
+   "nn::account",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn7account22TryOpenPreselectedUserEPNS0_10UserHandleE",
+   "nn::account",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn7account26GetNetworkServiceAccountIdEPNS0_23NetworkServiceAccountIdERKNS0_10UserHandleE",
+   "nn::account",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn7account32IsNetworkServiceAccountAvailableEPbRKNS0_10UserHandleE",
+   "nn::account",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn7account36EnsureNetworkServiceAccountAvailableERKNS0_10UserHandleE",
+   "nn::account",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn7account37LoadNetworkServiceAccountIdTokenCacheEPmPcmRKNS0_10UserHandleE",
+   "nn::account",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn7account44EnsureNetworkServiceAccountIdTokenCacheAsyncEPNS0_12AsyncContextERKNS0_10UserHandleE",
+   "nn::account",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn7account8OpenUserEPNS0_10UserHandleERKNS0_3UidE",
+   "nn::account",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn7account9CloseUserERKNS0_10UserHandleE",
+   "nn::account",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn7account9GetUserIdEPNS0_3UidERKNS0_10UserHandleE",
+   "nn::account",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn7friends10InitializeEv",
+   "nn::friends",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn7friends12AsyncContext7HasDoneEPb",
+   "nn::friends",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn7friends12AsyncContextC1Ev",
+   "nn::friends",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn7friends12AsyncContextD1Ev",
+   "nn::friends",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn7friends12SetAllocatorEPFPvmEPFvS1_mE",
+   "nn::friends",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn7friends13GetFriendListEPiPNS0_6FriendERKNS_7account3UidEiiRKNS0_12FriendFilterE",
+   "nn::friends",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn7friends14AddPlayHistoryERKNS_7account3UidERKNS0_26PlayHistoryRegistrationKeyERKNS0_15InAppScreenNameESA_",
+   "nn::friends",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn7friends25EnsureFriendListAvailableEPNS0_12AsyncContextERKNS_7account3UidE",
+   "nn::friends",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn7friends27CheckFriendListAvailabilityEPbRKNS_7account3UidE",
+   "nn::friends",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn7friends29GetPlayHistoryRegistrationKeyEPNS0_26PlayHistoryRegistrationKeyERKNS_7account3UidEb",
+   "nn::friends",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nn7friends6FriendC1Ev",
+   "nn::friends",
+   "service",
+   false
+  ],
+  [
+   "_ZN2nv18InitializeGraphicsEPvm",
+   "nv::InitializeGraphics",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nv20SetGraphicsAllocatorEPFPvmmS0_EPFvS0_S0_EPFS0_S0_mS0_ES0_",
+   "nv::SetGraphicsAllocator",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nv21GetGraphicsMemoryInfoEPNS_10MemoryInfoE",
+   "nv::GetGraphicsMemoryInfo",
+   "kernel",
+   true
+  ],
+  [
+   "_ZN2nv28SetGraphicsDevtoolsAllocatorEPFPvmmS0_EPFvS0_S0_EPFS0_S0_mS0_ES0_",
+   "nv::SetGraphicsDevtoolsAllocator",
+   "pure",
+   false
+  ],
+  [
+   "_ZN2nv9InitCheckEv",
+   "nv::InitCheck",
+   "pure",
+   false
+  ],
+  [
+   "_ZNK2nn3err18ErrorResultVariant8GetStateEv",
+   "nn::err",
+   "service",
+   false
+  ],
+  [
+   "_ZNK2nn3err18ErrorResultVariantcvNS0_9ErrorCodeEEv",
+   "nn::err",
+   "service",
+   false
+  ],
+  [
+   "_ZNK2nn3err18ErrorResultVariantcvNS_6ResultEEv",
+   "nn::Result",
+   "pure",
+   false
+  ],
+  [
+   "_ZNK2nn3hid15VibrationPlayer6IsLoopEv",
+   "nn::hid",
+   "service",
+   false
+  ],
+  [
+   "_ZNK2nn3hid15VibrationPlayer8IsLoadedEv",
+   "nn::hid",
+   "pure",
+   true
+  ],
+  [
+   "_ZNK2nn3hid15VibrationPlayer9IsPlayingEv",
+   "nn::hid",
+   "pure",
+   true
+  ],
+  [
+   "_ZNK2nn3mem17StandardAllocator16GetTotalFreeSizeEv",
+   "nn::mem",
+   "kernel",
+   false
+  ],
+  [
+   "_ZNK2nn3mem17StandardAllocator18GetAllocatableSizeEv",
+   "nn::mem",
+   "kernel",
+   false
+  ],
+  [
+   "_ZNK2nn3mem17StandardAllocator4DumpEv",
+   "nn::mem",
+   "kernel",
+   false
+  ],
+  [
+   "_ZNK2nn4util16BinaryFileHeader11GetFileSizeEv",
+   "nn::util",
+   "pure",
+   false
+  ],
+  [
+   "_ZNK2nn4util16BinaryFileHeader11IsRelocatedEv",
+   "nn::util",
+   "pure",
+   true
+  ],
+  [
+   "_ZNK2nn4util16BinaryFileHeader12GetAlignmentEv",
+   "nn::util",
+   "pure",
+   true
+  ],
+  [
+   "_ZNK2nn4util16BinaryFileHeader13GetFirstBlockEv",
+   "nn::util",
+   "pure",
+   true
+  ],
+  [
+   "_ZNK2nn4util16BinaryFileHeader15IsEndianReverseEv",
+   "nn::util",
+   "pure",
+   true
+  ],
+  [
+   "_ZNK2nn4util16BinaryFileHeader16IsAlignmentValidEv",
+   "nn::util",
+   "pure",
+   true
+  ],
+  [
+   "_ZNK2nn4util16BinaryFileHeader16IsSignatureValidEl",
+   "nn::util",
+   "pure",
+   true
+  ],
+  [
+   "_ZNK2nn4util16BinaryFileHeader7IsValidEliii",
+   "nn::util",
+   "pure",
+   true
+  ],
+  [
+   "_ZNK2nn4util17BinaryBlockHeader12GetBlockSizeEv",
+   "nn::util",
+   "pure",
+   true
+  ],
+  [
+   "_ZNK2nn4util17BinaryBlockHeader12GetNextBlockEv",
+   "nn::util",
+   "pure",
+   false
+  ],
+  [
+   "_ZNK2nn4util6detail16IntrusiveDicImpl8FindImplERKNS0_17basic_string_viewIcNSt3__111char_traitsIcEEEE",
+   "nn::util",
+   "pure",
+   true
+  ],
+  [
+   "_ZNK2nn4util6detail16IntrusiveDicImpl8FindIterEv",
+   "nn::util",
+   "pure",
+   false
+  ],
+  [
+   "_ZNK2nn5async17CancellationToken23IsCancellationRequestedEv",
+   "nn::async",
+   "pure",
+   false
+  ],
+  [
+   "_ZNK2nn5async23CancellationTokenSource8GetTokenEv",
+   "nn::async",
+   "pure",
+   false
+  ],
+  [
+   "_ZNK2nn5image10PngEncoder17GetPngDataSizeMaxEv",
+   "nn::image",
+   "pure",
+   false
+  ],
+  [
+   "_ZNK2nn5movie13MediaProperty11ContainsKeyEPKc",
+   "nn::movie",
+   "service",
+   false
+  ],
+  [
+   "_ZNK2nn5movie13MediaProperty7GetSizeEPmPKc",
+   "nn::movie",
+   "pure",
+   true
+  ],
+  [
+   "_ZNK2nn5movie13MediaProperty8GetFloatEPfPKc",
+   "nn::movie",
+   "pure",
+   true
+  ],
+  [
+   "_ZNK2nn5movie13MediaProperty8GetInt32EPiPKc",
+   "nn::movie",
+   "pure",
+   true
+  ],
+  [
+   "_ZNK2nn5movie13MediaProperty8GetInt64EPlPKc",
+   "nn::movie",
+   "service",
+   false
+  ],
+  [
+   "_ZNK2nn5movie13MediaProperty9GetStringEPciPKc",
+   "nn::movie",
+   "pure",
+   true
+  ],
+  [
+   "_ZNK2nn5movie6Buffer12GetTimeStampEPNS_8TimeSpanE",
+   "nn::movie",
+   "pure",
+   true
+  ],
+  [
+   "_ZNK2nn5movie6Buffer14GetBufferFlagsEPNS0_11BufferFlagsE",
+   "nn::movie",
+   "pure",
+   true
+  ],
+  [
+   "_ZNK2nn5movie6Buffer17GetBufferCapacityEPm",
+   "nn::movie",
+   "pure",
+   true
+  ],
+  [
+   "_ZNK2nn5movie6Buffer19GetFilledBufferSizeEPm",
+   "nn::movie",
+   "pure",
+   true
+  ],
+  [
+   "_ZNK2nn5movie6Buffer9GetBufferEPPvPmS4_",
+   "nn::movie",
+   "pure",
+   true
+  ],
+  [
+   "_ZNK2nn5prepo10PlayReport7GetSizeEv",
+   "nn::prepo",
+   "pure",
+   true
+  ],
+  [
+   "_ZNK2nn5prepo5Array9GetBufferEv",
+   "nn::prepo",
+   "service",
+   false
+  ],
+  [
+   "_ZNK2nn5prepo6Struct9GetBufferEv",
+   "nn::prepo",
+   "service",
+   false
+  ],
+  [
+   "_ZNK2nn7friends6Friend11GetNicknameEv",
+   "nn::friends",
+   "service",
+   false
+  ],
+  [
+   "_ZNK2nn7friends6Friend12GetAccountIdEv",
+   "nn::friends",
+   "service",
+   false
+  ],
+  [
+   "_ZNK2nn7friends6Friend7IsValidEv",
+   "nn::friends",
+   "service",
+   false
+  ],
+  [
+   "_ZNKSt3__119__shared_weak_count13__get_deleterERKSt9type_info",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "_ZNKSt3__16locale9use_facetERNS0_2idE",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "_ZNKSt3__18ios_base6getlocEv",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "_ZNKSt9exception4whatEv",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "_ZNSt11logic_errorC2EPKc",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "_ZNSt11logic_errorC2ERKS_",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "_ZNSt12out_of_rangeD1Ev",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "_ZNSt19bad_optional_accessD1Ev",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "_ZNSt20bad_array_new_lengthC1Ev",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "_ZNSt20bad_array_new_lengthD1Ev",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "_ZNSt3__111__call_onceERVmPvPFvS2_E",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "_ZNSt3__111this_thread9sleep_forERKNS_6chrono8durationIxNS_5ratioILl1ELl1000000000EEEEE",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "_ZNSt3__112__next_primeEm",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   true
+  ],
+  [
+   "_ZNSt3__112bad_weak_ptrD1Ev",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "_ZNSt3__112basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEE6assignEPKcm",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "_ZNSt3__113basic_istreamIcNS_11char_traitsIcEEED0Ev",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "_ZNSt3__113basic_istreamIcNS_11char_traitsIcEEED1Ev",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "_ZNSt3__113basic_ostreamIcNS_11char_traitsIcEEE6sentryC1ERS3_",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "_ZNSt3__113basic_ostreamIcNS_11char_traitsIcEEE6sentryD1Ev",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "_ZNSt3__113basic_ostreamIcNS_11char_traitsIcEEED0Ev",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "_ZNSt3__113basic_ostreamIcNS_11char_traitsIcEEED1Ev",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "_ZNSt3__113basic_ostreamIcNS_11char_traitsIcEEED2Ev",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "_ZNSt3__113basic_ostreamIcNS_11char_traitsIcEEElsEPKv",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "_ZNSt3__113basic_ostreamIcNS_11char_traitsIcEEElsEi",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "_ZNSt3__113basic_ostreamIcNS_11char_traitsIcEEElsEm",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "_ZNSt3__113basic_ostreamIcNS_11char_traitsIcEEElsEt",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "_ZNSt3__114basic_iostreamIcNS_11char_traitsIcEEED0Ev",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "_ZNSt3__114basic_iostreamIcNS_11char_traitsIcEEED1Ev",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "_ZNSt3__114basic_iostreamIcNS_11char_traitsIcEEED2Ev",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "_ZNSt3__115basic_streambufIcNS_11char_traitsIcEEE4syncEv",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "_ZNSt3__115basic_streambufIcNS_11char_traitsIcEEE5imbueERKNS_6localeE",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "_ZNSt3__115basic_streambufIcNS_11char_traitsIcEEE5uflowEv",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "_ZNSt3__115basic_streambufIcNS_11char_traitsIcEEE6setbufEPcl",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "_ZNSt3__115basic_streambufIcNS_11char_traitsIcEEE6xsgetnEPcl",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "_ZNSt3__115basic_streambufIcNS_11char_traitsIcEEE6xsputnEPKcl",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "_ZNSt3__115basic_streambufIcNS_11char_traitsIcEEE9showmanycEv",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "_ZNSt3__115basic_streambufIcNS_11char_traitsIcEEEC2Ev",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "_ZNSt3__115basic_streambufIcNS_11char_traitsIcEEED2Ev",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "_ZNSt3__119__shared_weak_count14__release_weakEv",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "_ZNSt3__119__shared_weak_count4lockEv",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "_ZNSt3__119__shared_weak_countD2Ev",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "_ZNSt3__122__libcpp_verbose_abortEPKcz",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "_ZNSt3__14clogE",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "_ZNSt3__15ctypeIcE2idE",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "_ZNSt3__15mutex4lockEv",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   true
+  ],
+  [
+   "_ZNSt3__15mutex6unlockEv",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   true
+  ],
+  [
+   "_ZNSt3__16__sortIRNS_6__lessIiiEEPiEEvT0_S5_T_",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "_ZNSt3__16__sortIRNS_6__lessIllEEPlEEvT0_S5_T_",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "_ZNSt3__16__sortIRNS_6__lessImmEEPmEEvT0_S5_T_",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "_ZNSt3__16chrono12steady_clock3nowEv",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "_ZNSt3__16chrono12system_clock11from_time_tEl",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "_ZNSt3__16localeD1Ev",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "_ZNSt3__18ios_base33__set_badbit_and_consider_rethrowEv",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "_ZNSt3__18ios_base4initEPv",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "_ZNSt3__18ios_base5clearEj",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "_ZNSt3__19basic_iosIcNS_11char_traitsIcEEED2Ev",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "_ZNSt3__19to_stringEi",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "_ZNSt3__19to_stringEj",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "_ZNSt3__19to_stringEl",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "_ZNSt3__19to_stringEm",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "_ZNSt9exceptionD2Ev",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "_ZSt7nothrow",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "_ZSt9terminatev",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "_ZTHN9grpc_core26ApplicationCallbackExecCtx18callback_exec_ctx_E",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "_ZTHN9grpc_core7ExecCtx9exec_ctx_E",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "_ZTIN2nn5async10ExecutableE",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "_ZTIN2nn5async20CancellationObserverE",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "_ZTIN2nn5async6detail19TaskCoordinatorBaseE",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "_ZTIN2nn5async6detail24FiberTaskCoordinatorBaseE",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "_ZTINSt3__119__shared_weak_countE",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "_ZTVN10__cxxabiv117__class_type_infoE",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "_ZTVN10__cxxabiv120__si_class_type_infoE",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "_ZTVN10__cxxabiv121__vmi_class_type_infoE",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "_ZTVN2nn5async6detail18GroupWaitHolderOneE",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "_ZTVN2nn5async6detail19TaskCoordinatorBaseE",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "_ZTVN2nn5async6detail24FiberTaskCoordinatorBaseE",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "_ZTVNSt3__112bad_weak_ptrE",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "_ZTVSt12out_of_range",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "_ZTVSt19bad_optional_access",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "_ZThn16_NSt3__114basic_iostreamIcNS_11char_traitsIcEEED0Ev",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "_ZThn16_NSt3__114basic_iostreamIcNS_11char_traitsIcEEED1Ev",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "_ZThn48_N2nn5async6detail19TaskCoordinatorBase30GetSynchronousContinuationListEv",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "_ZThn48_N2nn5async6detail24FiberTaskCoordinatorBase30GetSynchronousContinuationListEv",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "_ZTv0_n24_NSt3__113basic_istreamIcNS_11char_traitsIcEEED0Ev",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "_ZTv0_n24_NSt3__113basic_istreamIcNS_11char_traitsIcEEED1Ev",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "_ZTv0_n24_NSt3__113basic_ostreamIcNS_11char_traitsIcEEED0Ev",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "_ZTv0_n24_NSt3__113basic_ostreamIcNS_11char_traitsIcEEED1Ev",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "_ZTv0_n24_NSt3__114basic_iostreamIcNS_11char_traitsIcEEED0Ev",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "_ZTv0_n24_NSt3__114basic_iostreamIcNS_11char_traitsIcEEED1Ev",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "__cxa_allocate_exception",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "__cxa_begin_catch",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "__cxa_demangle",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "__cxa_end_catch",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "__cxa_guard_abort",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "__cxa_guard_acquire",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   true
+  ],
+  [
+   "__cxa_guard_release",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   true
+  ],
+  [
+   "__cxa_pure_virtual",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "__cxa_rethrow",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "__cxa_throw",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "__errno_location",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "__gxx_personality_v0",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "__nnmusl_init_dso",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   true
+  ],
+  [
+   "abort",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "abs",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "acos",
+   "C y C++ (libc, cxa)",
+   "pure",
+   true
+  ],
+  [
+   "acosf",
+   "C y C++ (libc, cxa)",
+   "pure",
+   true
+  ],
+  [
+   "asinf",
+   "C y C++ (libc, cxa)",
+   "pure",
+   true
+  ],
+  [
+   "atan2f",
+   "C y C++ (libc, cxa)",
+   "pure",
+   true
+  ],
+  [
+   "atanf",
+   "C y C++ (libc, cxa)",
+   "pure",
+   true
+  ],
+  [
+   "atoi",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "atol",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "cbrtf",
+   "C y C++ (libc, cxa)",
+   "pure",
+   true
+  ],
+  [
+   "clock",
+   "C y C++ (libc, cxa)",
+   "pure",
+   true
+  ],
+  [
+   "clock_gettime",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "close",
+   "C y C++ (libc, cxa)",
+   "service",
+   false
+  ],
+  [
+   "closedir",
+   "C y C++ (libc, cxa)",
+   "service",
+   false
+  ],
+  [
+   "cos",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "cosf",
+   "C y C++ (libc, cxa)",
+   "pure",
+   true
+  ],
+  [
+   "exp2",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "exp2f",
+   "C y C++ (libc, cxa)",
+   "pure",
+   true
+  ],
+  [
+   "expf",
+   "C y C++ (libc, cxa)",
+   "pure",
+   true
+  ],
+  [
+   "fclose",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "ferror",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "fflush",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "fgets",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "fmod",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "fmodf",
+   "C y C++ (libc, cxa)",
+   "pure",
+   true
+  ],
+  [
+   "fopen",
+   "C y C++ (libc, cxa)",
+   "service",
+   false
+  ],
+  [
+   "fprintf",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "fputc",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "fputs",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "fread",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "frexp",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "fseek",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "fstat",
+   "C y C++ (libc, cxa)",
+   "service",
+   false
+  ],
+  [
+   "ftell",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "fwrite",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "getentropy",
+   "C y C++ (libc, cxa)",
+   "service",
+   false
+  ],
+  [
+   "getenv",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "getpid",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "gettimeofday",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "glslcCompile",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "glslcCompilePreSpecialized",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "glslcCompileSpecialized",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "glslcFinalize",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "glslcGetDefaultOptions",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "glslcGetVersion",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "glslcInitialize",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "glslcSetAllocator",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "gmtime",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "gmtime_r",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "htons",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "inet_ntop",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "inet_pton",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "isalpha",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "isprint",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "ldexp",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "ldexpf",
+   "C y C++ (libc, cxa)",
+   "pure",
+   true
+  ],
+  [
+   "localtime",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "localtime_r",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "log10f",
+   "C y C++ (libc, cxa)",
+   "pure",
+   true
+  ],
+  [
+   "log2",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "logb",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "logf",
+   "C y C++ (libc, cxa)",
+   "pure",
+   true
+  ],
+  [
+   "longjmp",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "memchr",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "memcmp",
+   "C y C++ (libc, cxa)",
+   "pure",
+   true
+  ],
+  [
+   "memcpy",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "memmove",
+   "C y C++ (libc, cxa)",
+   "pure",
+   true
+  ],
+  [
+   "memset",
+   "C y C++ (libc, cxa)",
+   "pure",
+   true
+  ],
+  [
+   "memset_s",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "mktime",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "nanosleep",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "nnResultGetDescription",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "nnResultGetModule",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "nnResultIsFailure",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "nnResultIsSuccess",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "nndetailDiagAbortNoMessageImpl",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "nnosConvertTickToNanoSeconds",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "nnosCreateThread",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "nnosDestroyThread",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "nnosFinalizeEvent",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "nnosFinalizeMutex",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "nnosGetCurrentThread",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "nnosGetSystemTick",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "nnosGetSystemTickFrequency",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "nnosGetThreadCoreMask",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "nnosGetThreadPriority",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "nnosInitializeEvent",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "nnosInitializeMutex",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "nnosLockMutex",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   true
+  ],
+  [
+   "nnosSetThreadCoreMask",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "nnosSetThreadNamePointer",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "nnosSignalEvent",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "nnosSleepThread",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "nnosStartThread",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "nnosUnlockMutex",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   true
+  ],
+  [
+   "nnosWaitEvent",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "nnosWaitThread",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "nnsocketAccept",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "nnsocketBind",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "nnsocketClose",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "nnsocketConnect",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "nnsocketFcntl",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "nnsocketFreeAddrInfo",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "nnsocketGAIStrError",
+   "C y C++ (libc, cxa)",
+   "service",
+   false
+  ],
+  [
+   "nnsocketGetAddrInfo",
+   "C y C++ (libc, cxa)",
+   "service",
+   false
+  ],
+  [
+   "nnsocketGetAddrInfoWithOptions",
+   "C y C++ (libc, cxa)",
+   "service",
+   false
+  ],
+  [
+   "nnsocketGetLastErrno",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "nnsocketGetPeerName",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "nnsocketGetSockName",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "nnsocketGetSockOpt",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "nnsocketInetHtonl",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "nnsocketInetHtons",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "nnsocketInetNtohl",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "nnsocketInetNtohs",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "nnsocketListen",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "nnsocketPoll",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "nnsocketRecv",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "nnsocketRecvMsg",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "nnsocketResolverGetOption",
+   "C y C++ (libc, cxa)",
+   "service",
+   false
+  ],
+  [
+   "nnsocketResolverSetOption",
+   "C y C++ (libc, cxa)",
+   "service",
+   false
+  ],
+  [
+   "nnsocketSend",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "nnsocketSendMsg",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "nnsocketSetLastErrno",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "nnsocketSetSockOpt",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "nnsocketShutdown",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "nnsocketSocket",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "nnsslConnectionCreate",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "nnsslConnectionDestroy",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "nnsslConnectionDoHandshakeWithCertBuffer",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "nnsslConnectionGetConnectionId",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "nnsslConnectionGetNextAlpnProto",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "nnsslConnectionGetVerifyCertError",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "nnsslConnectionPeek",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "nnsslConnectionPending",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "nnsslConnectionRead",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "nnsslConnectionSetHostName",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "nnsslConnectionSetIoMode",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "nnsslConnectionSetNextAlpnProto",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "nnsslConnectionSetOption",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "nnsslConnectionSetSessionCacheMode",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "nnsslConnectionSetSocketDescriptor",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "nnsslConnectionSetVerifyOption",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "nnsslConnectionWrite",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "nnsslContextDestroy",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "nnsslContextGetContextId",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "nnsslFinalize",
+   "C y C++ (libc, cxa)",
+   "service",
+   false
+  ],
+  [
+   "nnsslInitialize",
+   "C y C++ (libc, cxa)",
+   "service",
+   false
+  ],
+  [
+   "ntohs",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "nvnBootstrapLoader",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "nvnPrivate0",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "open",
+   "C y C++ (libc, cxa)",
+   "service",
+   false
+  ],
+  [
+   "opendir",
+   "C y C++ (libc, cxa)",
+   "service",
+   false
+  ],
+  [
+   "pow",
+   "C y C++ (libc, cxa)",
+   "pure",
+   true
+  ],
+  [
+   "powf",
+   "C y C++ (libc, cxa)",
+   "pure",
+   true
+  ],
+  [
+   "printf",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "pthread_cond_broadcast",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "pthread_cond_destroy",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "pthread_cond_init",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "pthread_cond_signal",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "pthread_cond_timedwait",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "pthread_cond_wait",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "pthread_condattr_init",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "pthread_mutex_destroy",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "pthread_mutex_init",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "pthread_mutex_lock",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "pthread_mutex_unlock",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "pthread_once",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   true
+  ],
+  [
+   "pthread_rwlock_destroy",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "pthread_rwlock_init",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "pthread_rwlock_rdlock",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "pthread_rwlock_unlock",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "pthread_rwlock_wrlock",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "pthread_self",
+   "C y C++ (libc, cxa)",
+   "pure",
+   true
+  ],
+  [
+   "qsort",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "rand",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "read",
+   "C y C++ (libc, cxa)",
+   "service",
+   false
+  ],
+  [
+   "readdir",
+   "C y C++ (libc, cxa)",
+   "service",
+   false
+  ],
+  [
+   "rewind",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "scalbn",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "setjmp",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "sin",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "sinf",
+   "C y C++ (libc, cxa)",
+   "pure",
+   true
+  ],
+  [
+   "snprintf",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "sprintf",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "sqrt",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "sqrtf",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "sscanf",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "stat",
+   "C y C++ (libc, cxa)",
+   "service",
+   false
+  ],
+  [
+   "stderr",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "stdin",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "stdout",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "strcasecmp",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "strcat",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "strchr",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "strcmp",
+   "C y C++ (libc, cxa)",
+   "pure",
+   true
+  ],
+  [
+   "strcpy",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "strcspn",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "strdup",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "strerror",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "strerror_r",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "strftime",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "strlen",
+   "C y C++ (libc, cxa)",
+   "pure",
+   true
+  ],
+  [
+   "strncasecmp",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "strncat",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "strncmp",
+   "C y C++ (libc, cxa)",
+   "pure",
+   true
+  ],
+  [
+   "strncpy",
+   "C y C++ (libc, cxa)",
+   "pure",
+   true
+  ],
+  [
+   "strnlen",
+   "C y C++ (libc, cxa)",
+   "pure",
+   true
+  ],
+  [
+   "strrchr",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "strspn",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "strstr",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "strtod",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "strtof",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "strtok",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "strtol",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "strtoll",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "strtoul",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "strtoull",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "tanf",
+   "C y C++ (libc, cxa)",
+   "pure",
+   true
+  ],
+  [
+   "time",
+   "C y C++ (libc, cxa)",
+   "pure",
+   true
+  ],
+  [
+   "tolower",
+   "C y C++ (libc, cxa)",
+   "pure",
+   true
+  ],
+  [
+   "toupper",
+   "C y C++ (libc, cxa)",
+   "pure",
+   false
+  ],
+  [
+   "vfprintf",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ],
+  [
+   "vsnprintf",
+   "C y C++ (libc, cxa)",
+   "kernel",
+   false
+  ]
+ ],
+ "nvn2": {
+  "nvnBlendStateGetAdvancedMode": 0,
+  "nvnBlendStateGetAdvancedNormalizedDst": 0,
+  "nvnBlendStateGetAdvancedOverlap": 0,
+  "nvnBlendStateGetAdvancedPremultipliedSrc": 0,
+  "nvnBlendStateGetBlendEquation": 0,
+  "nvnBlendStateGetBlendFunc": 0,
+  "nvnBlendStateGetBlendTarget": 0,
+  "nvnBlendStateSetAdvancedMode": 6,
+  "nvnBlendStateSetAdvancedNormalizedDst": 0,
+  "nvnBlendStateSetAdvancedOverlap": 0,
+  "nvnBlendStateSetAdvancedPremultipliedSrc": 0,
+  "nvnBlendStateSetBlendEquation": 6,
+  "nvnBlendStateSetBlendFunc": 8,
+  "nvnBlendStateSetBlendTarget": 8,
+  "nvnBlendStateSetDefaults": 0,
+  "nvnBufferBuilderGetDevice": 9,
+  "nvnBufferBuilderGetMemoryOffset": 0,
+  "nvnBufferBuilderGetMemoryPool": 0,
+  "nvnBufferBuilderGetSize": 0,
+  "nvnBufferBuilderSetDefaults": 16,
+  "nvnBufferBuilderSetDevice": 0,
+  "nvnBufferBuilderSetStorage": 25,
+  "nvnBufferFinalize": 1,
+  "nvnBufferFlushMappedRange": 77,
+  "nvnBufferGetAddress": 3,
+  "nvnBufferGetDebugID": 0,
+  "nvnBufferGetMemoryOffset": 0,
+  "nvnBufferGetMemoryPool": 2,
+  "nvnBufferGetSize": 0,
+  "nvnBufferInitialize": 0,
+  "nvnBufferInvalidateMappedRange": 3,
+  "nvnBufferMap": 22,
+  "nvnBufferSetDebugLabel": 25,
+  "nvnChannelMaskStateGetChannelMask": 7,
+  "nvnChannelMaskStateSetChannelMask": 2,
+  "nvnChannelMaskStateSetDefaults": 0,
+  "nvnColorStateGetAlphaTest": 0,
+  "nvnColorStateGetBlendEnable": 0,
+  "nvnColorStateGetLogicOp": 0,
+  "nvnColorStateSetAlphaTest": 8,
+  "nvnColorStateSetBlendEnable": 8,
+  "nvnColorStateSetDefaults": 0,
+  "nvnColorStateSetLogicOp": 7,
+  "nvnCommandBufferAddCommandMemory": 0,
+  "nvnCommandBufferAddControlMemory": 5,
+  "nvnCommandBufferBarrier": 0,
+  "nvnCommandBufferBeginDeviceCommands": 0,
+  "nvnCommandBufferBeginRecording": 10,
+  "nvnCommandBufferBeginTransformFeedback": 5,
+  "nvnCommandBufferBindAccelerationStructure": 20,
+  "nvnCommandBufferBindAccelerationStructures": 0,
+  "nvnCommandBufferBindAccelerationStructuresDeferred": 0,
+  "nvnCommandBufferBindBlendState": 0,
+  "nvnCommandBufferBindChannelMaskState": 5,
+  "nvnCommandBufferBindColorState": 10,
+  "nvnCommandBufferBindCoverageModulationTable": 0,
+  "nvnCommandBufferBindDepthStencilState": 11,
+  "nvnCommandBufferBindDeviceMessageBuffer": 0,
+  "nvnCommandBufferBindDeviceMessageBufferDeferred": 0,
+  "nvnCommandBufferBindImage": 0,
+  "nvnCommandBufferBindImages": 2,
+  "nvnCommandBufferBindImagesDeferred": 0,
+  "nvnCommandBufferBindMultisampleState": 10,
+  "nvnCommandBufferBindPolygonState": 3,
+  "nvnCommandBufferBindProgram": 57,
+  "nvnCommandBufferBindSeparateSampler": 0,
+  "nvnCommandBufferBindSeparateSamplers": 0,
+  "nvnCommandBufferBindSeparateSamplersDeferred": 0,
+  "nvnCommandBufferBindSeparateTexture": 1,
+  "nvnCommandBufferBindSeparateTextures": 0,
+  "nvnCommandBufferBindSeparateTexturesDeferred": 0,
+  "nvnCommandBufferBindShadingRateImage": 7,
+  "nvnCommandBufferBindStorageBuffer": 0,
+  "nvnCommandBufferBindStorageBuffers": 0,
+  "nvnCommandBufferBindStorageBuffersDeferred": 0,
+  "nvnCommandBufferBindTexture": 0,
+  "nvnCommandBufferBindTextures": 26,
+  "nvnCommandBufferBindTexturesDeferred": 0,
+  "nvnCommandBufferBindTransformFeedbackBuffer": 0,
+  "nvnCommandBufferBindTransformFeedbackBuffers": 0,
+  "nvnCommandBufferBindUniformBuffer": 0,
+  "nvnCommandBufferBindUniformBuffers": 33,
+  "nvnCommandBufferBindUniformBuffersDeferred": 0,
+  "nvnCommandBufferBindVertexAttribState": 10,
+  "nvnCommandBufferBindVertexBuffer": 18,
+  "nvnCommandBufferBindVertexBuffers": 48,
+  "nvnCommandBufferBindVertexStreamState": 51,
+  "nvnCommandBufferBuildAccelerationStructures": 0,
+  "nvnCommandBufferCallCommands": 10,
+  "nvnCommandBufferClearBuffer": 0,
+  "nvnCommandBufferClearColor": 0,
+  "nvnCommandBufferClearColori": 9,
+  "nvnCommandBufferClearColorui": 0,
+  "nvnCommandBufferClearDepthStencil": 0,
+  "nvnCommandBufferClearTexture": 4,
+  "nvnCommandBufferClearTexturei": 1,
+  "nvnCommandBufferClearTextureui": 0,
+  "nvnCommandBufferCompactAccelerationStructure": 0,
+  "nvnCommandBufferComputeDirtyTileMap": 0,
+  "nvnCommandBufferCopyAccelerationStructure": 0,
+  "nvnCommandBufferCopyBufferToBuffer": 4,
+  "nvnCommandBufferCopyBufferToTexture": 0,
+  "nvnCommandBufferCopyCommands": 15,
+  "nvnCommandBufferCopyTextureToBuffer": 2,
+  "nvnCommandBufferCopyTextureToTexture": 1,
+  "nvnCommandBufferDiscardColor": 5,
+  "nvnCommandBufferDiscardDepthStencil": 0,
+  "nvnCommandBufferDispatchCompute": 9,
+  "nvnCommandBufferDispatchComputeIndirect": 27,
+  "nvnCommandBufferDispatchRays": 0,
+  "nvnCommandBufferDispatchRaysIndirect": 0,
+  "nvnCommandBufferDownsample": 0,
+  "nvnCommandBufferDownsampleTextureView": 0,
+  "nvnCommandBufferDrawArrays": 0,
+  "nvnCommandBufferDrawArraysIndirect": 9,
+  "nvnCommandBufferDrawArraysInstanced": 5,
+  "nvnCommandBufferDrawElements": 7,
+  "nvnCommandBufferDrawElementsBaseVertex": 49,
+  "nvnCommandBufferDrawElementsIndirect": 0,
+  "nvnCommandBufferDrawElementsInstanced": 1,
+  "nvnCommandBufferDrawMeshTasks": 7,
+  "nvnCommandBufferDrawMeshTasks3D": 0,
+  "nvnCommandBufferDrawMeshTasks3DIndirect": 0,
+  "nvnCommandBufferDrawMeshTasksIndirect": 9,
+  "nvnCommandBufferDrawTexture": 0,
+  "nvnCommandBufferDrawTransformFeedback": 0,
+  "nvnCommandBufferEnableExclusiveScissor": 0,
+  "nvnCommandBufferEndDeviceCommands": 0,
+  "nvnCommandBufferEndRecording": 7,
+  "nvnCommandBufferEndTransformFeedback": 0,
+  "nvnCommandBufferEvaluateDlss": 0,
+  "nvnCommandBufferFenceSync": 0,
+  "nvnCommandBufferFinalize": 6,
+  "nvnCommandBufferGetCommandMemoryFree": 14,
+  "nvnCommandBufferGetCommandMemorySize": 6,
+  "nvnCommandBufferGetCommandMemoryUsed": 0,
+  "nvnCommandBufferGetControlMemoryFree": 13,
+  "nvnCommandBufferGetControlMemorySize": 0,
+  "nvnCommandBufferGetControlMemoryUsed": 0,
+  "nvnCommandBufferGetCopyImageStride": 0,
+  "nvnCommandBufferGetCopyRowStride": 0,
+  "nvnCommandBufferGetMemoryCallback": 0,
+  "nvnCommandBufferGetMemoryCallbackData": 0,
+  "nvnCommandBufferInitialize": 0,
+  "nvnCommandBufferInsertCheckpointDynamic": 0,
+  "nvnCommandBufferInsertCheckpointStatic": 0,
+  "nvnCommandBufferInsertDebugMarker": 0,
+  "nvnCommandBufferInsertDebugMarkerCompute": 0,
+  "nvnCommandBufferInsertDebugMarkerGraphics": 0,
+  "nvnCommandBufferIsRecording": 0,
+  "nvnCommandBufferMultiDrawArraysIndirectCount": 4,
+  "nvnCommandBufferMultiDrawElementsIndirectCount": 0,
+  "nvnCommandBufferMultiDrawMeshTasks3DIndirect": 0,
+  "nvnCommandBufferMultiDrawMeshTasks3DIndirectCount": 0,
+  "nvnCommandBufferMultiDrawMeshTasksIndirect": 0,
+  "nvnCommandBufferMultiDrawMeshTasksIndirectCount": 0,
+  "nvnCommandBufferOverrideSubtileSize": 0,
+  "nvnCommandBufferPauseTransformFeedback": 0,
+  "nvnCommandBufferPopDebugGroup": 0,
+  "nvnCommandBufferPopDebugGroupCompute": 0,
+  "nvnCommandBufferPopDebugGroupGraphics": 0,
+  "nvnCommandBufferPushComputeConstants": 0,
+  "nvnCommandBufferPushComputeConstantsDeferred": 0,
+  "nvnCommandBufferPushDebugGroup": 0,
+  "nvnCommandBufferPushDebugGroupCompute": 0,
+  "nvnCommandBufferPushDebugGroupGraphics": 1,
+  "nvnCommandBufferPushGraphicsConstants": 0,
+  "nvnCommandBufferPushGraphicsConstantsDeferred": 1,
+  "nvnCommandBufferRelocateAccelerationStructure": 0,
+  "nvnCommandBufferReportCounter": 14,
+  "nvnCommandBufferReportValue": 1,
+  "nvnCommandBufferResetCounter": 9,
+  "nvnCommandBufferResetDeviceMessageBuffer": 0,
+  "nvnCommandBufferResetDeviceMessageBufferDeferred": 0,
+  "nvnCommandBufferResolveDepthBuffer": 0,
+  "nvnCommandBufferRestoreZCullData": 0,
+  "nvnCommandBufferResumeTransformFeedback": 0,
+  "nvnCommandBufferSaveZCullData": 1,
+  "nvnCommandBufferSetAlphaRef": 6,
+  "nvnCommandBufferSetBlendColor": 10,
+  "nvnCommandBufferSetColorReductionEnable": 0,
+  "nvnCommandBufferSetColorReductionThresholds": 2,
+  "nvnCommandBufferSetCommandMemoryCallbackEnabled": 6,
+  "nvnCommandBufferSetComputeEnable": 13,
+  "nvnCommandBufferSetComputeEnableConditional": 0,
+  "nvnCommandBufferSetComputeOverlapMode": 0,
+  "nvnCommandBufferSetConservativeRasterDilate": 2,
+  "nvnCommandBufferSetConservativeRasterEnable": 7,
+  "nvnCommandBufferSetConservativeRasterMode": 0,
+  "nvnCommandBufferSetControlMemoryCallbackEnabled": 5,
+  "nvnCommandBufferSetCopyEnable": 0,
+  "nvnCommandBufferSetCopyEnableConditional": 0,
+  "nvnCommandBufferSetCopyImageStride": 0,
+  "nvnCommandBufferSetCopyRowStride": 0,
+  "nvnCommandBufferSetDebugLabel": 6,
+  "nvnCommandBufferSetDepthBounds": 20,
+  "nvnCommandBufferSetDepthClamp": 2,
+  "nvnCommandBufferSetDepthRange": 2,
+  "nvnCommandBufferSetDepthRanges": 2,
+  "nvnCommandBufferSetExclusiveScissor": 2,
+  "nvnCommandBufferSetExclusiveScissors": 0,
+  "nvnCommandBufferSetGeometryProcessingMode": 0,
+  "nvnCommandBufferSetInnerTessellationLevels": 1,
+  "nvnCommandBufferSetLineWidth": 4,
+  "nvnCommandBufferSetMemoryCallback": 0,
+  "nvnCommandBufferSetMemoryCallbackData": 6,
+  "nvnCommandBufferSetOuterTessellationLevels": 0,
+  "nvnCommandBufferSetPatchSize": 0,
+  "nvnCommandBufferSetPointSize": 8,
+  "nvnCommandBufferSetPolygonOffsetClamp": 4,
+  "nvnCommandBufferSetPrimitiveRestart": 0,
+  "nvnCommandBufferSetProgramSubroutines": 0,
+  "nvnCommandBufferSetProvokingVertexMode": 0,
+  "nvnCommandBufferSetRasterizerDiscard": 2,
+  "nvnCommandBufferSetRecordingMode": 0,
+  "nvnCommandBufferSetRenderEnable": 1,
+  "nvnCommandBufferSetRenderEnableConditional": 12,
+  "nvnCommandBufferSetRenderTargets": 0,
+  "nvnCommandBufferSetRepresentativeFragmentTest": 0,
+  "nvnCommandBufferSetSampleMask": 0,
+  "nvnCommandBufferSetSamplerPool": 2,
+  "nvnCommandBufferSetScissor": 0,
+  "nvnCommandBufferSetScissors": 8,
+  "nvnCommandBufferSetShaderScratchMemory": 1,
+  "nvnCommandBufferSetShadingRatePaletteMode": 5,
+  "nvnCommandBufferSetStencilCullCriteria": 4,
+  "nvnCommandBufferSetStencilMask": 10,
+  "nvnCommandBufferSetStencilRef": 10,
+  "nvnCommandBufferSetStencilValueMask": 0,
+  "nvnCommandBufferSetSubpixelPrecisionBias": 0,
+  "nvnCommandBufferSetTexturePool": 0,
+  "nvnCommandBufferSetTiledCacheAction": 2,
+  "nvnCommandBufferSetTiledCacheTileSize": 2,
+  "nvnCommandBufferSetViewport": 0,
+  "nvnCommandBufferSetViewportSwizzles": 2,
+  "nvnCommandBufferSetViewports": 17,
+  "nvnCommandBufferSetZCullZF32CompressionEnable": 0,
+  "nvnCommandBufferShadingRateImagePalette": 1,
+  "nvnCommandBufferSignalEvent": 3,
+  "nvnCommandBufferSubmitDeviceCommands": 0,
+  "nvnCommandBufferTiledDownsample": 0,
+  "nvnCommandBufferTiledDownsampleTextureView": 0,
+  "nvnCommandBufferUpdateUniformBuffer": 0,
+  "nvnCommandBufferWaitEvent": 0,
+  "nvnCommandBufferWaitSync": 58,
+  "nvnDepthStencilStateGetDepthFunc": 0,
+  "nvnDepthStencilStateGetDepthTestEnable": 2,
+  "nvnDepthStencilStateGetDepthWriteEnable": 0,
+  "nvnDepthStencilStateGetStencilFunc": 0,
+  "nvnDepthStencilStateGetStencilOp": 0,
+  "nvnDepthStencilStateGetStencilTestEnable": 0,
+  "nvnDepthStencilStateSetDefaults": 0,
+  "nvnDepthStencilStateSetDepthFunc": 8,
+  "nvnDepthStencilStateSetDepthTestEnable": 1,
+  "nvnDepthStencilStateSetDepthWriteEnable": 8,
+  "nvnDepthStencilStateSetStencilFunc": 8,
+  "nvnDepthStencilStateSetStencilOp": 9,
+  "nvnDepthStencilStateSetStencilTestEnable": 8,
+  "nvnDeviceBuilderGetFlags": 1,
+  "nvnDeviceBuilderSetFlags": 1,
+  "nvnDeviceCalculateAccelerationStructureMemoryRequirements": 0,
+  "nvnDeviceCommandBufferGetHandle": 0,
+  "nvnDeviceCommandBufferSetCommandMemorySize": 0,
+  "nvnDeviceCommandBufferSetComputeMemorySize": 0,
+  "nvnDeviceCommandBufferSetDefaults": 0,
+  "nvnDeviceCommandBufferSetDevice": 0,
+  "nvnDeviceCommandBufferSetStorage": 0,
+  "nvnDeviceCompactAccelerationStructure": 0,
+  "nvnDeviceCopyAccelerationStructure": 0,
+  "nvnDeviceFinalize": 0,
+  "nvnDeviceFinalizeCommandHandle": 1,
+  "nvnDeviceGenerateDebugDomainId": 1,
+  "nvnDeviceGetCommandHandleMemorySize": 0,
+  "nvnDeviceGetCurrentTimestampInNanoseconds": 5,
+  "nvnDeviceGetDepthMode": 0,
+  "nvnDeviceGetFlags": 0,
+  "nvnDeviceGetImageHandle": 0,
+  "nvnDeviceGetInteger": 0,
+  "nvnDeviceGetProcAddress": 0,
+  "nvnDeviceGetSeparateSamplerHandle": 0,
+  "nvnDeviceGetSeparateTextureHandle": 0,
+  "nvnDeviceGetTexelFetchHandle": 19,
+  "nvnDeviceGetTextureHandle": 0,
+  "nvnDeviceGetTimestampInNanoseconds": 0,
+  "nvnDeviceGetUniformBufferHandle": 0,
+  "nvnDeviceGetWindowOriginMode": 0,
+  "nvnDeviceInitialize": 0,
+  "nvnDeviceInstallDebugCallback": 1,
+  "nvnDeviceIsExternalDebuggerAttached": 0,
+  "nvnDeviceMessageBufferBeginMessages": 0,
+  "nvnDeviceMessageBufferEndMessages": 0,
+  "nvnDeviceMessageBufferGetNextMessage": 0,
+  "nvnDeviceMessageBufferReset": 0,
+  "nvnDeviceMessageBufferSetDefaults": 2,
+  "nvnDeviceMessageBufferSetDevice": 0,
+  "nvnDeviceMessageBufferSetStorage": 0,
+  "nvnDeviceRegisterFastClearColor": 1,
+  "nvnDeviceRegisterFastClearColorIndex": 0,
+  "nvnDeviceRegisterFastClearColori": 0,
+  "nvnDeviceRegisterFastClearColoriIndex": 0,
+  "nvnDeviceRegisterFastClearColorui": 0,
+  "nvnDeviceRegisterFastClearColoruiIndex": 0,
+  "nvnDeviceRegisterFastClearDepth": 0,
+  "nvnDeviceRegisterFastClearStencil": 0,
+  "nvnDeviceRelocateAccelerationStructure": 0,
+  "nvnDeviceSetAutomaticCheckpointsByDebugGroup": 0,
+  "nvnDeviceSetAutomaticCheckpointsEnable": 0,
+  "nvnDeviceSetAutomaticCheckpointsMask": 0,
+  "nvnDeviceSetAutomaticCheckpointsSamplingInterval": 0,
+  "nvnDeviceSetCheckpointCallStacksEnable": 0,
+  "nvnDeviceSetCheckpointMaxCallStacksDepth": 0,
+  "nvnDeviceSetDebugLabel": 0,
+  "nvnDeviceSetDepthMode": 0,
+  "nvnDeviceSetIntermediateShaderCache": 0,
+  "nvnDeviceSetWindowOriginMode": 0,
+  "nvnDeviceWalkDebugDatabase": 0,
+  "nvnDlssNetworkBuilderGetDevice": 0,
+  "nvnDlssNetworkBuilderGetFlags": 0,
+  "nvnDlssNetworkBuilderGetMaxEvaluationEntries": 0,
+  "nvnDlssNetworkBuilderGetMemory": 0,
+  "nvnDlssNetworkBuilderGetMemorySize": 0,
+  "nvnDlssNetworkBuilderGetMethod": 0,
+  "nvnDlssNetworkBuilderGetOptimalSettings": 0,
+  "nvnDlssNetworkBuilderGetOutputResolution": 0,
+  "nvnDlssNetworkBuilderGetPreset": 0,
+  "nvnDlssNetworkBuilderGetStorageSize": 0,
+  "nvnDlssNetworkBuilderSetDefaults": 0,
+  "nvnDlssNetworkBuilderSetDevice": 0,
+  "nvnDlssNetworkBuilderSetFlags": 0,
+  "nvnDlssNetworkBuilderSetMaxEvaluationEntries": 0,
+  "nvnDlssNetworkBuilderSetMethod": 0,
+  "nvnDlssNetworkBuilderSetOutputResolution": 0,
+  "nvnDlssNetworkBuilderSetPreset": 0,
+  "nvnDlssNetworkBuilderSetStorage": 0,
+  "nvnDlssNetworkBuilderSetTextureIDs": 0,
+  "nvnDlssNetworkFinalize": 0,
+  "nvnDlssNetworkInitialize": 0,
+  "nvnDlssParametersGetBiasCurrentColorSubrectangleBase": 0,
+  "nvnDlssParametersGetDepthSubrectangleBase": 0,
+  "nvnDlssParametersGetEvaluationIndex": 0,
+  "nvnDlssParametersGetHistoryReset": 0,
+  "nvnDlssParametersGetInputColorSubrectangleBase": 0,
+  "nvnDlssParametersGetInputSubrectangleSize": 0,
+  "nvnDlssParametersGetJitterOffset": 0,
+  "nvnDlssParametersGetMotionVectorScale": 0,
+  "nvnDlssParametersGetMotionVectorSubrectangleBase": 0,
+  "nvnDlssParametersGetOutputSubrectangleBase": 0,
+  "nvnDlssParametersGetPreExposure": 0,
+  "nvnDlssParametersSetBiasCurrentColorMask": 0,
+  "nvnDlssParametersSetBiasCurrentColorSubrectangleBase": 0,
+  "nvnDlssParametersSetDefaults": 0,
+  "nvnDlssParametersSetDepth": 0,
+  "nvnDlssParametersSetDepthSubrectangleBase": 0,
+  "nvnDlssParametersSetEvaluationIndex": 0,
+  "nvnDlssParametersSetExposureTexture": 0,
+  "nvnDlssParametersSetHistoryReset": 0,
+  "nvnDlssParametersSetInputColor": 0,
+  "nvnDlssParametersSetInputColorSubrectangleBase": 0,
+  "nvnDlssParametersSetInputSubrectangleSize": 0,
+  "nvnDlssParametersSetJitterOffset": 0,
+  "nvnDlssParametersSetMotionVectorScale": 0,
+  "nvnDlssParametersSetMotionVectorSubrectangleBase": 0,
+  "nvnDlssParametersSetMotionVectors": 0,
+  "nvnDlssParametersSetOutputColor": 0,
+  "nvnDlssParametersSetOutputSubrectangleBase": 0,
+  "nvnDlssParametersSetOverlayDebugLayer": 0,
+  "nvnDlssParametersSetOverlayFullScreen": 0,
+  "nvnDlssParametersSetOverlayJitterDebug": 0,
+  "nvnDlssParametersSetOverlayShowNans": 0,
+  "nvnDlssParametersSetPreExposure": 0,
+  "nvnEventBuilderGetMemoryOffset": 0,
+  "nvnEventBuilderGetMemoryPool": 0,
+  "nvnEventBuilderGetStorage": 0,
+  "nvnEventBuilderSetDefaults": 0,
+  "nvnEventBuilderSetStorage": 2,
+  "nvnEventFinalize": 1,
+  "nvnEventGetMemoryOffset": 0,
+  "nvnEventGetMemoryPool": 0,
+  "nvnEventGetValue": 0,
+  "nvnEventInitialize": 0,
+  "nvnEventSignal": 0,
+  "nvnMemoryPoolBuilderGetDevice": 15,
+  "nvnMemoryPoolBuilderGetFlags": 0,
+  "nvnMemoryPoolBuilderGetMemory": 0,
+  "nvnMemoryPoolBuilderGetSize": 0,
+  "nvnMemoryPoolBuilderSetDefaults": 8,
+  "nvnMemoryPoolBuilderSetDevice": 0,
+  "nvnMemoryPoolBuilderSetFlags": 15,
+  "nvnMemoryPoolBuilderSetStorage": 12,
+  "nvnMemoryPoolFinalize": 1,
+  "nvnMemoryPoolFlushMappedRange": 4,
+  "nvnMemoryPoolGetBufferAddress": 4,
+  "nvnMemoryPoolGetFlags": 1,
+  "nvnMemoryPoolGetSize": 5,
+  "nvnMemoryPoolInitialize": 0,
+  "nvnMemoryPoolInvalidateMappedRange": 70,
+  "nvnMemoryPoolMap": 14,
+  "nvnMemoryPoolMapVirtual": 3,
+  "nvnMemoryPoolSetDebugLabel": 14,
+  "nvnMultisampleStateGetAlphaToCoverageDither": 0,
+  "nvnMultisampleStateGetAlphaToCoverageEnable": 0,
+  "nvnMultisampleStateGetCoverageModulationMode": 0,
+  "nvnMultisampleStateGetCoverageToColorEnable": 0,
+  "nvnMultisampleStateGetCoverageToColorOutput": 0,
+  "nvnMultisampleStateGetCoverageTruncationEnable": 0,
+  "nvnMultisampleStateGetMultisampleEnable": 0,
+  "nvnMultisampleStateGetRasterSamples": 0,
+  "nvnMultisampleStateGetSampleLocationsEnable": 0,
+  "nvnMultisampleStateGetSampleLocationsGrid": 0,
+  "nvnMultisampleStateGetSampleLocationsGridEnable": 0,
+  "nvnMultisampleStateGetSamples": 0,
+  "nvnMultisampleStateSetAlphaToCoverageDither": 0,
+  "nvnMultisampleStateSetAlphaToCoverageEnable": 0,
+  "nvnMultisampleStateSetCoverageModulationMode": 0,
+  "nvnMultisampleStateSetCoverageToColorEnable": 0,
+  "nvnMultisampleStateSetCoverageToColorOutput": 0,
+  "nvnMultisampleStateSetCoverageTruncationEnable": 0,
+  "nvnMultisampleStateSetDefaults": 0,
+  "nvnMultisampleStateSetMultisampleEnable": 1,
+  "nvnMultisampleStateSetRasterSamples": 0,
+  "nvnMultisampleStateSetSampleLocations": 0,
+  "nvnMultisampleStateSetSampleLocationsEnable": 0,
+  "nvnMultisampleStateSetSampleLocationsGridEnable": 0,
+  "nvnMultisampleStateSetSamples": 0,
+  "nvnPolygonStateGetCullFace": 7,
+  "nvnPolygonStateGetFrontFace": 0,
+  "nvnPolygonStateGetPolygonMode": 0,
+  "nvnPolygonStateGetPolygonOffsetEnables": 0,
+  "nvnPolygonStateSetCullFace": 2,
+  "nvnPolygonStateSetDefaults": 0,
+  "nvnPolygonStateSetFrontFace": 8,
+  "nvnPolygonStateSetPolygonMode": 9,
+  "nvnPolygonStateSetPolygonOffsetEnables": 9,
+  "nvnProgramBuilderGetDebugDataHashes": 0,
+  "nvnProgramBuilderGetDevice": 3,
+  "nvnProgramBuilderGetMaxCallableRecursionDepth": 0,
+  "nvnProgramBuilderGetMaxTraceRecursionDepth": 0,
+  "nvnProgramBuilderGetProgramRayTracingFlags": 0,
+  "nvnProgramBuilderGetSampleShading": 0,
+  "nvnProgramBuilderGetShaderCount": 0,
+  "nvnProgramBuilderGetShaders": 3,
+  "nvnProgramBuilderGetSubroutineLinkage": 0,
+  "nvnProgramBuilderGetSubroutineLinkageCount": 0,
+  "nvnProgramBuilderSetDebugDataHashes": 0,
+  "nvnProgramBuilderSetDefaults": 0,
+  "nvnProgramBuilderSetDevice": 0,
+  "nvnProgramBuilderSetMaxCallableRecursionDepth": 0,
+  "nvnProgramBuilderSetMaxTraceRecursionDepth": 0,
+  "nvnProgramBuilderSetProgramRayTracingFlags": 0,
+  "nvnProgramBuilderSetRayTracingModules": 0,
+  "nvnProgramBuilderSetSampleShading": 0,
+  "nvnProgramBuilderSetShaders": 0,
+  "nvnProgramBuilderSetSubroutineLinkage": 0,
+  "nvnProgramFinalize": 2,
+  "nvnProgramGetDeviceComputeMemorySize": 0,
+  "nvnProgramGetScratchBytesPerWarp": 0,
+  "nvnProgramGetShaderGroupHandle": 0,
+  "nvnProgramGetSubtileSize": 0,
+  "nvnProgramInitialize": 3,
+  "nvnProgramInitializeFromBuilder": 0,
+  "nvnProgramSetDebugLabel": 5,
+  "nvnProgramSetSampleShading": 1,
+  "nvnProgramSetShaders": 0,
+  "nvnProgramSetShadersExt": 3,
+  "nvnProgramSetSubroutineLinkage": 0,
+  "nvnQueueBuilderGetCommandFlushThreshold": 0,
+  "nvnQueueBuilderGetCommandMemorySize": 0,
+  "nvnQueueBuilderGetComputeMemorySize": 0,
+  "nvnQueueBuilderGetControlMemorySize": 0,
+  "nvnQueueBuilderGetDevice": 0,
+  "nvnQueueBuilderGetFlags": 0,
+  "nvnQueueBuilderGetMemory": 0,
+  "nvnQueueBuilderGetMemorySize": 0,
+  "nvnQueueBuilderGetQueueMemorySize": 0,
+  "nvnQueueBuilderGetQueuePriority": 0,
+  "nvnQueueBuilderGetRayTracingMemorySize": 0,
+  "nvnQueueBuilderSetCommandFlushThreshold": 2,
+  "nvnQueueBuilderSetCommandMemorySize": 2,
+  "nvnQueueBuilderSetComputeMemorySize": 2,
+  "nvnQueueBuilderSetControlMemorySize": 2,
+  "nvnQueueBuilderSetDefaults": 2,
+  "nvnQueueBuilderSetDevice": 0,
+  "nvnQueueBuilderSetFlags": 2,
+  "nvnQueueBuilderSetPrimaryQueue": 0,
+  "nvnQueueBuilderSetQueueMemory": 2,
+  "nvnQueueBuilderSetQueuePriority": 0,
+  "nvnQueueBuilderSetRayTracingMemorySize": 2,
+  "nvnQueueFenceSync": 0,
+  "nvnQueueFinalize": 2,
+  "nvnQueueFinish": 4,
+  "nvnQueueFlush": 6,
+  "nvnQueueGetError": 0,
+  "nvnQueueGetTotalCommandMemoryUsed": 0,
+  "nvnQueueGetTotalComputeMemoryUsed": 0,
+  "nvnQueueGetTotalControlMemoryUsed": 0,
+  "nvnQueueGetTotalRayTracingMemoryUsed": 0,
+  "nvnQueueInitialize": 1,
+  "nvnQueuePresentTexture": 2,
+  "nvnQueueResetMemoryUsageCounts": 0,
+  "nvnQueueSetDebugLabel": 0,
+  "nvnQueueSubmitCommands": 0,
+  "nvnQueueWaitSync": 4,
+  "nvnSamplerBuilderGetBorderColor": 0,
+  "nvnSamplerBuilderGetBorderColori": 0,
+  "nvnSamplerBuilderGetBorderColorui": 0,
+  "nvnSamplerBuilderGetCompare": 0,
+  "nvnSamplerBuilderGetDevice": 0,
+  "nvnSamplerBuilderGetLodBias": 0,
+  "nvnSamplerBuilderGetLodClamp": 0,
+  "nvnSamplerBuilderGetLodSnap": 0,
+  "nvnSamplerBuilderGetMaxAnisotropy": 0,
+  "nvnSamplerBuilderGetMinMagFilter": 0,
+  "nvnSamplerBuilderGetReductionFilter": 0,
+  "nvnSamplerBuilderGetWrapMode": 0,
+  "nvnSamplerBuilderSetBorderColor": 2,
+  "nvnSamplerBuilderSetBorderColori": 1,
+  "nvnSamplerBuilderSetBorderColorui": 0,
+  "nvnSamplerBuilderSetCompare": 2,
+  "nvnSamplerBuilderSetDefaults": 2,
+  "nvnSamplerBuilderSetDevice": 0,
+  "nvnSamplerBuilderSetLodBias": 2,
+  "nvnSamplerBuilderSetLodClamp": 1,
+  "nvnSamplerBuilderSetLodSnap": 1,
+  "nvnSamplerBuilderSetMaxAnisotropy": 0,
+  "nvnSamplerBuilderSetMinMagFilter": 4,
+  "nvnSamplerBuilderSetReductionFilter": 3,
+  "nvnSamplerBuilderSetWrapMode": 4,
+  "nvnSamplerCompare": 0,
+  "nvnSamplerFinalize": 4,
+  "nvnSamplerGetBorderColor": 1,
+  "nvnSamplerGetBorderColori": 0,
+  "nvnSamplerGetBorderColorui": 0,
+  "nvnSamplerGetCompare": 1,
+  "nvnSamplerGetDebugID": 0,
+  "nvnSamplerGetLodBias": 0,
+  "nvnSamplerGetLodClamp": 0,
+  "nvnSamplerGetMaxAnisotropy": 0,
+  "nvnSamplerGetMinMagFilter": 1,
+  "nvnSamplerGetReductionFilter": 1,
+  "nvnSamplerGetWrapMode": 1,
+  "nvnSamplerInitialize": 0,
+  "nvnSamplerPoolFinalize": 0,
+  "nvnSamplerPoolGetMemoryOffset": 0,
+  "nvnSamplerPoolGetMemoryPool": 0,
+  "nvnSamplerPoolGetSize": 0,
+  "nvnSamplerPoolInitialize": 0,
+  "nvnSamplerPoolRegisterSampler": 0,
+  "nvnSamplerPoolRegisterSamplerBuilder": 1,
+  "nvnSamplerPoolSetDebugLabel": 0,
+  "nvnSamplerSetDebugLabel": 3,
+  "nvnSyncCreateGLSync": 0,
+  "nvnSyncFinalize": 3,
+  "nvnSyncInitialize": 0,
+  "nvnSyncInitializeFromFencedGLSync": 0,
+  "nvnSyncSetDebugLabel": 1,
+  "nvnSyncWait": 0,
+  "nvnTextureBuilderGetDepth": 0,
+  "nvnTextureBuilderGetDepthStencilMode": 0,
+  "nvnTextureBuilderGetDevice": 1,
+  "nvnTextureBuilderGetFlags": 0,
+  "nvnTextureBuilderGetFormat": 0,
+  "nvnTextureBuilderGetGLTextureName": 0,
+  "nvnTextureBuilderGetHeight": 0,
+  "nvnTextureBuilderGetLevels": 0,
+  "nvnTextureBuilderGetMemoryOffset": 0,
+  "nvnTextureBuilderGetMemoryPool": 2,
+  "nvnTextureBuilderGetPackagedTextureData": 0,
+  "nvnTextureBuilderGetPackagedTextureLayout": 0,
+  "nvnTextureBuilderGetRawStorageClass": 0,
+  "nvnTextureBuilderGetSamples": 0,
+  "nvnTextureBuilderGetSparseTileLayout": 0,
+  "nvnTextureBuilderGetStorageAlignment": 7,
+  "nvnTextureBuilderGetStorageClass": 0,
+  "nvnTextureBuilderGetStorageSize": 4,
+  "nvnTextureBuilderGetStride": 0,
+  "nvnTextureBuilderGetSwizzle": 0,
+  "nvnTextureBuilderGetTarget": 1,
+  "nvnTextureBuilderGetViewOffset": 6,
+  "nvnTextureBuilderGetWidth": 0,
+  "nvnTextureBuilderGetZCullStorageSize": 0,
+  "nvnTextureBuilderSetDefaults": 6,
+  "nvnTextureBuilderSetDepth": 4,
+  "nvnTextureBuilderSetDepthStencilMode": 1,
+  "nvnTextureBuilderSetDevice": 0,
+  "nvnTextureBuilderSetFlags": 8,
+  "nvnTextureBuilderSetFormat": 6,
+  "nvnTextureBuilderSetGLTextureName": 2,
+  "nvnTextureBuilderSetHeight": 5,
+  "nvnTextureBuilderSetLevels": 0,
+  "nvnTextureBuilderSetPackagedTextureData": 7,
+  "nvnTextureBuilderSetPackagedTextureLayout": 0,
+  "nvnTextureBuilderSetSamples": 8,
+  "nvnTextureBuilderSetSize1D": 4,
+  "nvnTextureBuilderSetSize2D": 0,
+  "nvnTextureBuilderSetSize3D": 3,
+  "nvnTextureBuilderSetStorage": 0,
+  "nvnTextureBuilderSetStride": 2,
+  "nvnTextureBuilderSetSwizzle": 5,
+  "nvnTextureBuilderSetTarget": 6,
+  "nvnTextureBuilderSetWidth": 8,
+  "nvnTextureCompare": 0,
+  "nvnTextureFinalize": 0,
+  "nvnTextureFlushTexels": 0,
+  "nvnTextureGetDebugID": 0,
+  "nvnTextureGetDepth": 4,
+  "nvnTextureGetDepthStencilMode": 2,
+  "nvnTextureGetFlags": 0,
+  "nvnTextureGetFormat": 2,
+  "nvnTextureGetHeight": 3,
+  "nvnTextureGetLevels": 3,
+  "nvnTextureGetMemoryOffset": 1,
+  "nvnTextureGetMemoryPool": 0,
+  "nvnTextureGetRawStorageClass": 0,
+  "nvnTextureGetSamples": 3,
+  "nvnTextureGetSparseTileLayout": 0,
+  "nvnTextureGetStorageClass": 1,
+  "nvnTextureGetStorageSize": 1,
+  "nvnTextureGetStride": 0,
+  "nvnTextureGetSwizzle": 2,
+  "nvnTextureGetTarget": 9,
+  "nvnTextureGetTextureAddress": 0,
+  "nvnTextureGetViewOffset": 0,
+  "nvnTextureGetWidth": 5,
+  "nvnTextureGetZCullStorageSize": 7,
+  "nvnTextureInitialize": 0,
+  "nvnTextureInvalidateTexels": 1,
+  "nvnTexturePoolFinalize": 0,
+  "nvnTexturePoolGetMemoryOffset": 0,
+  "nvnTexturePoolGetMemoryPool": 0,
+  "nvnTexturePoolGetSize": 0,
+  "nvnTexturePoolInitialize": 85,
+  "nvnTexturePoolRegisterImage": 1,
+  "nvnTexturePoolRegisterTexture": 0,
+  "nvnTexturePoolSetDebugLabel": 1,
+  "nvnTextureReadTexels": 0,
+  "nvnTextureReadTexelsStrided": 0,
+  "nvnTextureSetDebugLabel": 5,
+  "nvnTextureViewCompare": 1,
+  "nvnTextureViewGetDepthStencilMode": 0,
+  "nvnTextureViewGetFormat": 1,
+  "nvnTextureViewGetLayers": 1,
+  "nvnTextureViewGetLevels": 5,
+  "nvnTextureViewGetSwizzle": 0,
+  "nvnTextureViewGetTarget": 0,
+  "nvnTextureViewSetDefaults": 0,
+  "nvnTextureViewSetDepthStencilMode": 0,
+  "nvnTextureViewSetFormat": 12,
+  "nvnTextureViewSetLayers": 19,
+  "nvnTextureViewSetLevels": 25,
+  "nvnTextureViewSetSwizzle": 2,
+  "nvnTextureViewSetTarget": 1,
+  "nvnTextureWriteTexels": 0,
+  "nvnTextureWriteTexelsStrided": 1,
+  "nvnVertexAttribStateGetFormat": 2,
+  "nvnVertexAttribStateGetStreamIndex": 0,
+  "nvnVertexAttribStateSetDefaults": 0,
+  "nvnVertexAttribStateSetFormat": 3,
+  "nvnVertexAttribStateSetStreamIndex": 3,
+  "nvnVertexStreamStateGetDivisor": 0,
+  "nvnVertexStreamStateGetStride": 2,
+  "nvnVertexStreamStateSetDefaults": 0,
+  "nvnVertexStreamStateSetDivisor": 3,
+  "nvnVertexStreamStateSetStride": 3,
+  "nvnWindowAcquireTexture": 0,
+  "nvnWindowBuilderGetColorSpace": 0,
+  "nvnWindowBuilderGetDevice": 0,
+  "nvnWindowBuilderGetHdrContentMetadata": 0,
+  "nvnWindowBuilderGetHdrDisplayMetadata": 0,
+  "nvnWindowBuilderGetNativeWindow": 0,
+  "nvnWindowBuilderGetNumActiveTextures": 0,
+  "nvnWindowBuilderGetNumTextures": 0,
+  "nvnWindowBuilderGetPresentInterval": 0,
+  "nvnWindowBuilderGetTexture": 0,
+  "nvnWindowBuilderSetColorSpace": 2,
+  "nvnWindowBuilderSetDefaults": 2,
+  "nvnWindowBuilderSetDevice": 0,
+  "nvnWindowBuilderSetHdrContentMetadata": 0,
+  "nvnWindowBuilderSetHdrDisplayMetadata": 0,
+  "nvnWindowBuilderSetNativeWindow": 2,
+  "nvnWindowBuilderSetNumActiveTextures": 2,
+  "nvnWindowBuilderSetPresentInterval": 2,
+  "nvnWindowBuilderSetTextures": 2,
+  "nvnWindowFinalize": 2,
+  "nvnWindowGetCrop": 0,
+  "nvnWindowGetHdrContentMetadata": 0,
+  "nvnWindowGetHdrDisplayMetadata": 0,
+  "nvnWindowGetNativeWindow": 3,
+  "nvnWindowGetNumActiveTextures": 1,
+  "nvnWindowGetNumTextures": 0,
+  "nvnWindowGetPresentInterval": 0,
+  "nvnWindowInitialize": 0,
+  "nvnWindowSetCrop": 1,
+  "nvnWindowSetDebugLabel": 1,
+  "nvnWindowSetHdrContentMetadata": 0,
+  "nvnWindowSetHdrDisplayMetadata": 2,
+  "nvnWindowSetNumActiveTextures": 0,
+  "nvnWindowSetPresentInterval": 0
+ },
+ "opcodes": {
+  "ALD": 37513,
+  "AST": 50603,
+  "ATOMG": 38,
+  "BAR": 547,
+  "BRA": 77774,
+  "BREAK": 60,
+  "BRX": 315,
+  "BRXU": 1,
+  "BSSY": 18246,
+  "BSYNC": 18246,
+  "CALL": 523,
+  "CS2R": 12538,
+  "DEPBAR": 27113,
+  "ERRBAR": 22,
+  "EXIT": 22095,
+  "F2FP": 796,
+  "F2I": 33441,
+  "FADD": 692273,
+  "FFMA": 1296258,
+  "FLO": 218,
+  "FMNMX": 116317,
+  "FMUL": 1346088,
+  "FRND": 29626,
+  "FSEL": 34717,
+  "FSET": 22668,
+  "FSETP": 82700,
+  "FSWZADD": 102,
+  "HADD2": 5768,
+  "HMMA": 6336,
+  "HMNMX2": 3000,
+  "HSETP2": 134,
+  "I2F": 713,
+  "I2FP": 41601,
+  "IABS": 15764,
+  "IADD3": 98792,
+  "IMAD": 57300,
+  "IMNMX": 2988,
+  "IPA": 109582,
+  "ISBERD": 80,
+  "ISBEWR": 944,
+  "ISETP": 36692,
+  "KILL": 2772,
+  "LDC": 54497,
+  "LDG": 51423,
+  "LDL": 43,
+  "LDS": 6390,
+  "LDSM": 754,
+  "LEA": 12352,
+  "LOP3": 38749,
+  "MATCH": 25,
+  "MEMBAR": 22,
+  "MOV": 426459,
+  "MOVM": 3168,
+  "MUFU": 321093,
+  "NOP": 135004,
+  "P2R": 341,
+  "PLOP3": 3319,
+  "POPC": 109,
+  "PRMT": 3314,
+  "R2P": 3924,
+  "R2UR": 102,
+  "RED": 184,
+  "REDUX": 9,
+  "RET": 238,
+  "S2R": 2354,
+  "S2UR": 9,
+  "SEL": 29743,
+  "SGXT": 682,
+  "SHF": 20469,
+  "SHFL": 2086,
+  "STG": 4740,
+  "STL": 537,
+  "STS": 3083,
+  "SUATOM": 2,
+  "SULD": 221,
+  "SURED": 1,
+  "SUST": 1185,
+  "TEX": 82740,
+  "TLD": 2895,
+  "TLD4": 1136,
+  "TMML": 4463,
+  "TXQ": 599,
+  "UBREV": 49,
+  "UFLO": 56,
+  "UIADD3": 1287,
+  "UIMAD": 129,
+  "UISETP": 3882,
+  "ULDC": 22348,
+  "ULEA": 37,
+  "ULOP3": 541,
+  "UMOV": 1412,
+  "UP2UR": 37,
+  "UPLOP3": 105,
+  "UPOPC": 2,
+  "USEL": 32,
+  "USHF": 670,
+  "VOTE": 233,
+  "VOTEU": 180,
+  "WARPSYNC": 120
+ },
+ "programs": {
+  "ok": 11561,
+  "total": 11561
+ }
+}

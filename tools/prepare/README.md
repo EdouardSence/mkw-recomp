@@ -1,0 +1,5 @@
+# tools/prepare
+
+| Script | What it does | Usage |
+|---|---|---|
+| `prepare.py` | Prepares the game in the executable's folder from the player's copy: checks it is 1.0.0 (`main`'s build id, RomFS files), copies `exefs/` and copies or links `romfs/` (`mkw.ini`), generates the C, builds it into `mkwgame.so`/`mkwgame.dll` with zig (or clang), translates the shaders to `spirv/` (as many processes as cores fit in free memory, 0.75 GB each) and starts the game for a minute (no focus, no sound, with a separate profile) to leave the pipeline cache and its list ready for the first game. The internal resolution is not a step: it is the `MKW_RESOLUTION` option (`runtime/sdk/fs/romfs_res.c`). One event per output line (`step`, `progress`, `skip`, `done`, `error`) for the start screen; each step saves its key in `setup-state.json` and an interrupted setup resumes after the last step done | From the start screen (Game files → Prepare); by hand: `python prepare.py --source DIR --game DIR [--romfs copy\|link]` |

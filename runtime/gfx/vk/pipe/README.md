@@ -1,0 +1,12 @@
+# runtime/gfx/vk/pipe
+
+Pipelines: creation and cache, pipeline library, key file and prewarm, SPIR-V rewrites and specialized variants.
+
+| File | What it is |
+|---|---|
+| `vk_pipeline.c`, `vk_pipe_internal.h` | Graphics and compute pipelines, descriptor layouts and their caches; the header, the state and types it shares with `vk_pipe_gpl.c` and `vk_pipe_keys.c` |
+| `vk_pipe_layout.c` | Descriptor layouts: bindings of each stage, set layouts with their write templates, layouts shared by binding list and vertex outputs the fragment shader asks for |
+| `vk_pipe_gpl.c` | Graphics pipeline library (`vk_caps.gpl`): the four libraries per stage, with their cache, and the fast link of a draw's pipeline |
+| `vk_pipe_keys.c` | Pipeline key file (`pipeline-keys.bin`), background build threads and prewarm at boot |
+| `vk_spirv_patch.c`, `vk_spirv_patch.h` | Rewrites of the translated SPIR-V before the module is created: bindings and set for the pipeline library, dual-source blending, missing outputs, fixes for every module |
+| `vk_spec.c` | MKW's own: shader variants with the stable words of the constant bank fixed (`MKW_SPEC`, off); `MKW_CB_CENSUS` census |

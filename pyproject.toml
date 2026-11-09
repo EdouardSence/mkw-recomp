@@ -1,0 +1,26 @@
+[project]
+name = "mkw-recomp"
+version = "0.0.0"
+description = "Static recompilation of Mario Kart World (Switch 2): generator and analysis tools"
+requires-python = ">=3.14"
+dependencies = ["lz4>=4.4", "numpy>=2.3"]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.14",
+    "pytest>=8.4",
+    "capstone>=5.0.9",
+    "cogapp>=3.6.0",
+]
+
+[tool.ruff]
+line-length = 120
+extend-exclude = ["recomp", "sm86/decode"]  # vendored (totk-pc-recomp, nvsass-disassembler): kept close to upstream
+
+[tool.ruff.lint]
+# Real bugs only (syntax errors, pyflakes: undefined names, unused variables), fixed here so the CI does not change
+# with the ruff version (0.17 widened its defaults).
+select = ["E9", "F"]
+
+[tool.uv]
+package = false

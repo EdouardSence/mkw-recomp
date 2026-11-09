@@ -1,0 +1,173 @@
+# Spin waits of MKW 1.0.0 (tools/cpu/spin_waits.py, 30/10/2026): loops only another thread can end. Their back-edges
+# go through rt_spin_gate, an opaque call, so the C compiler cannot hoist the polled load out of the loop.
+# main: 102 spin waits
+spin main a0 a8   # 3 instructions; loads
+spin main b4c b54   # 3 instructions; loads
+spin main 41908 41958   # 7 instructions; loads
+spin main 41968 419b8   # 7 instructions; loads
+spin main 419c4 41a14   # 7 instructions; loads
+spin main 18fb58 18fb60   # 3 instructions; loads
+spin main 18fccc 18fcd4   # 3 instructions; loads
+spin main 18fde4 18fdec   # 3 instructions; loads
+spin main 190508 190510   # 3 instructions; loads
+spin main 1cc878 1cc880   # 3 instructions; loads
+spin main 25ee8c 25eea8   # 4 instructions; loads
+spin main 381b08 381b54   # 4 instructions; loads
+spin main 57db78 57dd68   # 11 instructions; loads
+spin main 5d0918 5d0924   # 4 instructions; loads
+spin main 5d0ac0 5d0acc   # 4 instructions; loads
+spin main 5d0b84 5d0b90   # 4 instructions; loads
+spin main 7f8768 7f8790   # 3 instructions; loads
+spin main 8e83f0 8e83f8   # 3 instructions; loads
+spin main 8fbf84 8fbf90   # 4 instructions; loads
+spin main 975ff4 976000   # 4 instructions; loads
+spin main 9760bc 9760c8   # 4 instructions; loads
+spin main 976614 976620   # 4 instructions; loads
+spin main 976fd8 976fe4   # 4 instructions; loads
+spin main a4b398 a4b3a4   # 4 instructions; loads
+spin main a4b464 a4b470   # 4 instructions; loads
+spin main a4b534 a4b540   # 4 instructions; loads
+spin main a733bc a733c8   # 4 instructions; loads
+spin main a73488 a73494   # 4 instructions; loads
+spin main a73730 a7373c   # 4 instructions; loads
+spin main a738e8 a738f4   # 4 instructions; loads
+spin main aa01fc aa021c   # 4 instructions; loads
+spin main abbb48 abbcdc   # 10 instructions; loads
+spin main ac5940 ac594c   # 4 instructions; loads
+spin main ac59e8 ac59f4   # 4 instructions; loads
+spin main ac5aa4 ac5ab0   # 4 instructions; loads
+spin main ac5b64 ac5b70   # 4 instructions; loads
+spin main bbfcb0 bbfcb8   # 3 instructions; loads
+spin main bca654 bca6ac   # 14 instructions; loads
+spin main c047e4 c047f0   # 4 instructions; loads
+spin main c048b0 c048bc   # 4 instructions; loads
+spin main c04b54 c04b60   # 4 instructions; loads
+spin main c33e90 c33ebc   # 4 instructions; loads
+spin main c89d74 c89dac   # 5 instructions; loads
+spin main d14330 d1433c   # 4 instructions; loads
+spin main e32c0c e32c14   # 3 instructions; loads
+spin main e32d28 e32d30   # 3 instructions; loads
+spin main e33464 e3346c   # 3 instructions; loads
+spin main f344c0 f344d8   # 7 instructions; loads
+spin main fcd36c fcd3a0   # 13 instructions; loads
+spin main fd5f6c fd5f70   # 2 instructions; loads
+spin main 108bea8 108bf5c   # 19 instructions; stc
+spin main 10a6948 10a696c   # 10 instructions; loads
+spin main 14f2ff0 14f2ff8   # 3 instructions; loads
+spin main 1568104 1568164   # 9 instructions; loads
+spin main 1575d4c 1575da4   # 14 instructions; loads
+spin main 15a89c0 15a89cc   # 4 instructions; loads
+spin main 15bc140 15bc150   # 5 instructions; loads
+spin main 1727d44 1727d50   # 4 instructions; loads
+spin main 189a58c 189a5a0   # 6 instructions; loads
+spin main 1921bc8 1921c64   # 6 instructions; loads
+spin main 1977dc8 1977e64   # 6 instructions; loads
+spin main 1a0afac 1a0afc0   # 6 instructions; loads
+spin main 1a0ca00 1a0ca0c   # 4 instructions; loads
+spin main 1a0e898 1a0e8b4 1a0e8c0   # 11 instructions; loads
+spin main 1a0ed54 1a0ed60   # 4 instructions; loads
+spin main 1f85f14 1f85f50   # 10 instructions; loads
+spin main 218d154 218d17c   # 3 instructions; loads
+spin main 22ed11c 22ed144   # 3 instructions; loads
+spin main 2323034 232303c   # 3 instructions; loads
+spin main 23531dc 23531f4   # 7 instructions; loads
+spin main 23b1a30 23b1a78   # 3 instructions; loads
+spin main 23bacd4 23bad44   # 8 instructions; loads
+spin main 23bae24 23bae94   # 8 instructions; loads
+spin main 23c7070 23c7090   # 4 instructions; loads
+spin main 23c7154 23c7174   # 4 instructions; loads
+spin main 23dcfac 23dcfac 23dcfb4   # 3 instructions; loads
+spin main 2577468 2577470   # 3 instructions; loads
+spin main 257847c 2578484   # 3 instructions; loads
+spin main 25789f8 2578a00   # 3 instructions; loads
+spin main 2579304 257930c   # 3 instructions; loads
+spin main 25793bc 25793c4   # 3 instructions; loads
+spin main 2579448 2579450   # 3 instructions; loads
+spin main 2579b50 2579b58   # 3 instructions; loads
+spin main 2579c2c 2579c34   # 3 instructions; loads
+spin main 257a430 257a438   # 3 instructions; loads
+spin main 257a58c 257a594   # 3 instructions; loads
+spin main 257a67c 257a684   # 3 instructions; loads
+spin main 257a848 257a850   # 3 instructions; loads
+spin main 257a930 257a938   # 3 instructions; loads
+spin main 257bd74 257bd7c   # 3 instructions; loads
+spin main 257be28 257be30   # 3 instructions; loads
+spin main 257bfb0 257bfb8   # 3 instructions; loads
+spin main 257d69c 257d6a4   # 3 instructions; loads
+spin main 257d754 257d75c   # 3 instructions; loads
+spin main 257e6f8 257e700   # 3 instructions; loads
+spin main 257e7c8 257e7d0   # 3 instructions; loads
+spin main 2582934 258293c   # 3 instructions; loads
+spin main 25831c8 25831d0   # 3 instructions; loads
+spin main 2583240 2583248   # 3 instructions; loads
+spin main 258e238 258e244 258e284   # 20 instructions; loads
+spin main 261d5d4 261d5d8   # 2 instructions; loads
+spin main 27b47d4 27b47dc   # 3 instructions; loads
+# subsdk0: 10 spin waits
+spin subsdk0 14160 14210 14250 14268   # 16 instructions; loads
+spin subsdk0 1c880 1c8a8   # 11 instructions; loads
+spin subsdk0 1cad4 1caf8   # 10 instructions; loads
+spin subsdk0 386a0 386d0   # 5 instructions; loads
+spin subsdk0 38724 387a4   # 5 instructions; loads
+spin subsdk0 3bf88 3bfa8   # 9 instructions; loads
+spin subsdk0 3c008 3c028   # 9 instructions; loads
+spin subsdk0 3f640 3f644   # 2 instructions; loads
+spin subsdk0 3f670 3f6f0   # 11 instructions; loads
+spin subsdk0 21344c 213454   # 3 instructions; loads
+# sdk: 5 spin waits
+spin sdk 239ccc 239cd4   # 3 instructions; loads
+spin sdk 239d4c 239d50   # 2 instructions; loads
+spin sdk 2e1344 2e1358   # 6 instructions; loads
+spin sdk 52d844 52d864   # 9 instructions; loads
+spin sdk 6559a0 655b04   # 32 instructions; loads
+
+# zstd on the host's libzstd (runtime/sdk/ov/ov_zstd.c): in run50 18.5 % of the CPU was the lifted zstd decoder.
+# main+0x407e00 is ZSTD_decompressMultiFrame (dctx, dst, cap, src, size, dict, dict size, ddict; it uses OF_base,
+# ML_base, LL_base and BIT_mask through main+0x408310); main+0x407d34, the game's one-shot wrapper, and main+0x87ea40
+# call it. MKW_ZSTD_NATIVE=0 keeps the guest decoder.
+set zstd MKW_ZSTD_NATIVE 1
+site zstd main 407dc8 9400000e 94c0248a   # bl ZSTD_decompressMultiFrame -> host_multiframe (patch page + 0xff0)
+site zstd main 87ec68 97ee2466 94ae48e2   # same
+# The loads stream: main+0x6532b4 (stream, src, size, ddict) feeds chunks to ZSTD_decompressContinue (main+0x653620)
+# with its state in the stream object; its only call is from main+0x653238.
+site zstd main 653274 94000010 94b6f75b   # bl main+0x6532b4 -> host_stream (patch page + 0xfe0)
+
+# The game's output size (the window textures and the main 2560x1440 target, GraphicsSystem's constructor
+# main+0xcf3514): fixed in code, not in the RomFS. With MKW_RESOLUTION
+# other than original the runtime turns this on and writes width | height << 32 at patch page + 0xfd0 (patches.c).
+set output MKW_OUTPUT_PATCH 0
+site output main cf3574 d281400a @page:x10 f947e94a   # mov x10, #0xa00 -> adrp x10, page; ldr x10, [x10, #0xfd0]
+site output main cf3578 f2c0b40a d503201f            # movk x10, #0x5a0, lsl #32 -> nop
+
+# Cascaded shadow map size (MKW_SHADOW_SIZE): the game fixes 3072 docked / 2048 handheld
+# in code before this call; main+0x233358 creates the gsys RenderBuffer and reads its width and height from [x0+0x68]
+# and [x0+0x88], as do later passes (shadow_map_reduce_depth). The host function sets them and calls it.
+set shadow MKW_SHADOW_PATCH 0
+site shadow main 22d5a0 9400176e 94c78e88   # bl main+0x233358 -> host_shadow_rb (patch page + 0xfc0)
+
+# Same randomness every run (MKW_SEED): main+0xf0c80 seeds the game's random generator (sead's
+# xorshift: seed ^ seed >> 30 times 0x6c078965) from nn::os::GetSystemTick, and 20 more functions do the same inline
+# (scratchpad search of the lifted C: a GetSystemTick call followed by that constant; hk-s1/hk-s2: the title's course
+# changed with only the first). The host function gives the seed's sequence instead of the clock (core/hacks/seed.c).
+set seed MKW_SEED_PATCH 0
+site seed main f0ca0 949ce9b4 94cc80c4   # bl nn::os::GetSystemTick -> host_seed_tick (patch page + 0xfb0)
+site seed main 266238 9497144e 94c6ab5e   # same
+site seed main 2c2d68 9495a182 94c53892   # same
+site seed main 2c9068 949588c2 94c51fd2   # same
+site seed main 2ce03c 949574cd 94c50bdd   # same
+site seed main 2ce0d4 949574a7 94c50bb7   # same
+site seed main 2ce14c 94957489 94c50b99   # same
+site seed main 4bf8b4 948daeaf 94bd45bf   # same
+site seed main 640104 9487ac9b 94b743ab   # same
+site seed main 922084 947c24bb 94abbbcb   # same
+site seed main 932c74 947be1bf 94ab78cf   # same
+site seed main 974ae0 947ada24 94aa7134   # same
+site seed main 99a9a8 947a4272 94a9d982   # same
+site seed main 99b918 947a3e96 94a9d5a6   # same
+site seed main aa5690 94761738 94a5ae48   # same
+site seed main aa76f4 94760f1f 94a5a62f   # same
+site seed main ab7900 9475ce9c 94a565ac   # same
+site seed main abdbf0 9475b5e0 94a54cf0   # same
+site seed main b15488 947457ba 94a3eeca   # same
+site seed main c006e0 9470ab24 94a04234   # same
+site seed main 15585a4 944b4b73 947ae283   # same

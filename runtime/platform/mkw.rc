@@ -1,0 +1,5 @@
+/* The application manifest of mkw.exe (mkw.manifest): UTF-8 process code page, and its icon (mkw.ico, drawn by
+   tools/build/icon.py into the object directory: a checkered flag of our own, no art of the game). tools/build/build.py
+   --target windows compiles it with the runtime objects (as totk-pc-recomp's totk.rc, with an icon of our own). */
+1 ICON "mkw.ico"
+1 24 "mkw.manifest"

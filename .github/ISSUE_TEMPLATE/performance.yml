@@ -1,0 +1,85 @@
+name: Performance report
+description: Frame times of a scene on your machine, so the performance table can show more than our own hardware.
+title: "perf: "
+labels: [performance]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Reports go into [docs/performance.md](https://github.com/adriadam10/mkw-recomp/blob/main/docs/performance.md) with the date of the issue, so later reports show what changed.
+
+        - Turn on the performance overlay in Full mode (F1 → Display → Performance overlay, or F10 in game) and read the frame time there.
+        - Play the scene once and restart the game, so the shader and pipeline caches are warm.
+        - Use the settings the start screen gave you unless you say otherwise below.
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: The release you downloaded, or the commit you built.
+      placeholder: v0.1.0, or 1a2b3c4
+    validations:
+      required: true
+  - type: input
+    id: gpu
+    attributes:
+      label: GPU and driver
+      placeholder: Radeon 660M (Mesa 26.2 RADV), RTX 3060 (NVIDIA 580.95)
+    validations:
+      required: true
+  - type: input
+    id: cpu
+    attributes:
+      label: CPU and RAM
+      placeholder: Ryzen 5 7535HS, 16 GB
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: Windows 11 24H2, Arch Linux (kernel 6.18)
+    validations:
+      required: true
+  - type: input
+    id: resolution
+    attributes:
+      label: Internal resolution and quality
+      description: Display tab → Internal resolution, and the quality preset or the rows you changed.
+      placeholder: Original (1080p), preset High
+    validations:
+      required: true
+  - type: dropdown
+    id: scene
+    attributes:
+      label: Scene
+      options:
+        - Race (Grand Prix or VS)
+        - Time trial
+        - Free roam
+        - Menus
+        - Cup intro movie
+    validations:
+      required: true
+  - type: input
+    id: course
+    attributes:
+      label: Course or screen
+      placeholder: Mario Bros. Circuit, 12 racers
+  - type: input
+    id: frametime
+    attributes:
+      label: Frame time
+      description: Typical and worst frame time in ms from the overlay, over at least 20 seconds of the scene.
+      placeholder: typical 22 ms, worst 35 ms
+    validations:
+      required: true
+  - type: textarea
+    id: log
+    attributes:
+      label: Log
+      description: Attach `logs/mkw.log` from the game folder (drag it into this field). It holds the GPU, driver and settings the game saw.
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      description: Stutter, a setting that changed a lot, other machines you tried.

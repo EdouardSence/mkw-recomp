@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# Refuse a commit that stages code generated from the game (recomp/gen.py writes GENERATED_MARKER into every file) or
+# files the repo never holds (NSO, NCA, keys), and docs out of step with the repo (tools/docs/check.py).
+# Installed by: git config core.hooksPath tools/git
+set -euo pipefail
+
+marker='MKW_RECOMP_'"GENERATED_FROM_GAME_CODE"
+bad=$(git diff --cached --name-only -z --diff-filter=ACM | xargs -0 -r grep -l --binary-files=text -F "$marker" -- || true)
+if [[ -n $bad ]]; then
+    echo "pre-commit: game-derived generated code staged:" >&2
+    echo "$bad" >&2
+    exit 1
+fi
+blocked=$(git diff --cached --name-only --diff-filter=ACM | grep -Ei '\.(nso|nca|nsp|xci|keys|bfsha|bntx|zs)$|(^|/)(main|sdk|subsdk[0-9]|rtld)$' || true)
+if [[ -n $blocked ]]; then
+    echo "pre-commit: files from the game or console staged:" >&2
+    echo "$blocked" >&2
+    exit 1
+fi
+# A setting read with cfg_value/int/double/bool needs its row in runtime/core/base/cfg.c, or the game stops when it runs.
+uv run --quiet tools/git/cfg_rows.py
+# Docs that no longer match the repo (READMEs, links, progress bars): tools/docs/check.py lists them.
+uv run --quiet tools/docs/check.py
+# A maintainer's private notes, cloned as dev/ (ignored), bring their own checks.
+if [[ -x dev/tools/pre-commit ]]; then
+    dev/tools/pre-commit --public
+fi

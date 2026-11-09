@@ -1,0 +1,396 @@
+"""Set the game up on the player's machine from their own copy: check it, copy it, build the game code, translate the
+shaders and write the 720p resolution overlay, into the folder of the executable.
+
+Why: nothing of the game ships with the port. The start screen (runtime/ui/launcher/launcher.cpp) runs this with the Python of
+the player's package and shows its progress; the same steps run from a source checkout with the system's tools. The
+order follows totk-pc-recomp's installer (docs/installer.md, MIT): check before writing, one key per step so a
+cancelled or failed run resumes from the last finished step.
+
+Steps, into --game (the folder of mkw / mkw.exe):
+  check     exefs/main is MKW 1.0.0 (NSO build id), the RomFS has at least 95 % of its 205 660 files
+  exefs     exefs/ copied (40 MB)
+  romfs     romfs/ copied (23 GB), or --romfs link: its path written to mkw.ini (romfs = ...)
+  generate  recomp/gen.py: the game code as C, in <game>/setup-work
+  compile   that C with the package's zig (or clang) into mkwgame.so / mkwgame.dll
+  shaders   tools/shaders/extract.py and translate.py into spirv/
+  warm      the game run once for a minute: the driver's pipeline cache and the pipeline keys for the first start
+  cleanup   setup-work removed
+
+Output: one event per line on stdout, for the start screen: "step <name>", "progress <done> <total>", "skip <name>",
+"done", "error <name> <message>". Exit codes: 0 done, 1 failed, 2 bad command line.
+
+Usage: python prepare.py --source DIR --game DIR [--romfs copy|link] [--jobs N] [--cc CMD] [--glslc PATH]
+                         [--target linux|windows]
+"""
+
+import argparse
+import hashlib
+import json
+import os
+import shutil
+import subprocess
+import sys
+import time
+from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[2]  # the repository, or the package's setup/src
+sys.path.insert(0, str(ROOT / "tools/build"))
+import build  # (GEN_FLAGS, module_glue, game_id: the same game code as build.py --dist)
+
+PREP_VERSION = 1  # bump when a step's output changes meaning: every step runs again
+MAIN_BUILD_ID = "9e244438c3d8ef1c"  # MKW 1.0.0 exefs/main, the first 8 bytes of the NSO build id at 0x40
+ROMFS_FILES = 205_660  # files of the 1.0.0 RomFS (06/11/2026)
+ROMFS_MARGIN = 0.95  # a few short still passes: some dumping tools skip empty files
+STEPS = ("check", "exefs", "romfs", "generate", "compile", "shaders", "warm", "cleanup")
+WARM_SECONDS = 60  # the driver cache is saved every 20 s and the pipeline keys every 2 (vk_pipeline.c, vk_pipe_keys.c)
+
+
+class Failed(Exception):
+    """A step that cannot go on: its message is for the player."""
+
+
+def emit(*words: object) -> None:
+    print(*words, flush=True)
+
+
+# ---- the package's tools (setup/ next to the executable), else the system's
+def package_dir(game: Path) -> Path:
+    return game / "setup"
+
+
+def default_cc(game: Path, target: str) -> list[str]:
+    zig = package_dir(game) / "zig" / ("zig.exe" if os.name == "nt" else "zig")
+    if zig.is_file():
+        return [str(zig), "cc", "-target", "x86_64-windows-gnu" if target == "windows" else "x86_64-linux-gnu"]
+    return ["clang"]
+
+
+def default_glslc(game: Path) -> str:
+    base = package_dir(game) / "glslc"
+    exe = base / ("glslc.exe" if os.name == "nt" else "bin/glslc")
+    return str(exe) if exe.is_file() else "glslc"
+
+
+def tool_env(glslc: str) -> dict[str, str]:
+    """The package's glslc finds its libraries beside it (conda-forge layout: bin/ and lib/)."""
+    env = dict(os.environ)
+    lib = Path(glslc).parent.parent / "lib"
+    if os.name != "nt" and lib.is_dir():
+        env["LD_LIBRARY_PATH"] = f"{lib}:{env['LD_LIBRARY_PATH']}" if env.get("LD_LIBRARY_PATH") else str(lib)
+    return env
+
+
+def own_children() -> None:
+    """A cancel from the start screen ends this process: its tools (gen.py's workers, the compilers, glslc) must end with
+    it. POSIX: our own process group, killed on SIGTERM. Windows: a job object that kills its processes when its last
+    handle, ours, closes (SDL_KillProcess is TerminateProcess there)."""
+    if os.name != "nt":
+        import signal
+
+        os.setpgrp()
+        signal.signal(signal.SIGTERM, lambda *_: os.killpg(0, signal.SIGKILL))
+        return
+    import ctypes
+    from ctypes import wintypes
+
+    class Limits(ctypes.Structure):  # JOBOBJECT_EXTENDED_LIMIT_INFORMATION
+        _fields_ = [("basic", ctypes.c_byte * 64), ("io", ctypes.c_byte * 48), ("process_memory", ctypes.c_size_t),
+                    ("job_memory", ctypes.c_size_t), ("peak_process", ctypes.c_size_t), ("peak_job", ctypes.c_size_t)]  # fmt: skip
+
+    k32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    # Started by the start screen (a GUI program) python.exe gets a console window of its own; hidden here, and every
+    # tool below (gen.py's workers, zig, glslc) shares that console instead of opening one each.
+    k32.GetConsoleWindow.restype = wintypes.HWND
+    console = k32.GetConsoleWindow()
+    if console:
+        ctypes.WinDLL("user32").ShowWindow(console, 0)  # SW_HIDE
+    k32.CreateJobObjectW.restype = wintypes.HANDLE
+    k32.GetCurrentProcess.restype = wintypes.HANDLE
+    job = k32.CreateJobObjectW(None, None)
+    lim = Limits()
+    ctypes.c_uint32.from_buffer(lim.basic, 16).value = 0x2000  # LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE
+    k32.SetInformationJobObject(wintypes.HANDLE(job), 9, ctypes.byref(lim), ctypes.sizeof(lim))
+    k32.AssignProcessToJobObject(wintypes.HANDLE(job), wintypes.HANDLE(k32.GetCurrentProcess()))
+
+
+def mem_available_gb() -> float:
+    """Memory free for new work now (MemAvailable on Linux, ullAvailPhys on Windows); 8 when unknown."""
+    if os.name == "nt":
+        import ctypes
+
+        class Status(ctypes.Structure):  # MEMORYSTATUSEX
+            _fields_ = [("length", ctypes.c_uint32), ("load", ctypes.c_uint32), ("total", ctypes.c_uint64),
+                        ("avail", ctypes.c_uint64), ("rest", ctypes.c_uint64 * 5)]  # fmt: skip
+
+        st = Status(length=ctypes.sizeof(Status))
+        return st.avail / 2**30 if ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(st)) else 8.0
+    try:
+        with open("/proc/meminfo") as f:
+            for line in f:
+                if line.startswith("MemAvailable:"):
+                    return int(line.split()[1]) / 2**20
+    except OSError:
+        pass
+    return 8.0
+
+
+def shader_jobs() -> int:
+    """Every core, as far as memory goes: a worker and its glslc take ~0.25 GB (four took 1.0 GB, 06/11/2026) and up
+    to 0.75 GB on the largest programs (translate.py). Half the cores, as before, left 8 of 12 idle: 40 min."""
+    return max(1, min(os.cpu_count() or 1, int(mem_available_gb() / 0.75)))
+
+
+def mem_gb() -> float:
+    try:
+        return build.mem_total_gb()
+    except OSError:
+        return 8.0
+
+
+# ---- check
+def find_game(src: Path) -> tuple[Path, Path]:
+    """exefs/ and romfs/ in src or up to two levels below it."""
+    for depth in range(3):
+        for d in [src, *src.glob("/".join(["*"] * depth))] if depth else [src]:
+            if (d / "exefs/main").is_file() and (d / "romfs").is_dir():
+                return d / "exefs", d / "romfs"
+    raise Failed(f"no exefs/main and romfs/ in {src}")
+
+
+def count_files(top: Path, enough: int) -> int:
+    n = 0
+    for _, _, files in os.walk(top):
+        n += len(files)
+        if n >= enough:
+            break
+    return n
+
+
+def check(src: Path) -> tuple[Path, Path]:
+    exefs, romfs = find_game(src)
+    head = (exefs / "main").read_bytes()[:0x48]
+    if head[:4] != b"NSO0":
+        raise Failed(f"{exefs / 'main'} is not an NSO: decrypted exefs needed")
+    got = head[0x40:0x48].hex()
+    if got != MAIN_BUILD_ID:
+        raise Failed(f"exefs/main is not Mario Kart World 1.0.0 (build id {got})")
+    need = int(ROMFS_FILES * ROMFS_MARGIN)
+    n = count_files(romfs, need)
+    if n < need:
+        raise Failed(f"the RomFS has {n} files, 1.0.0 has {ROMFS_FILES}: an incomplete copy")
+    return exefs, romfs
+
+
+# ---- copies
+def copy_tree(src: Path, dst: Path, total: int) -> None:
+    """src into dst, file by file, with progress; files already there with the same size are kept (resume)."""
+    done = 0
+    for d, _, files in os.walk(src):
+        out = dst / Path(d).relative_to(src)
+        out.mkdir(parents=True, exist_ok=True)
+        for f in files:
+            s, t = Path(d, f), out / f
+            if not (t.is_file() and t.stat().st_size == s.stat().st_size):
+                part = t.with_name(t.name + ".part")
+                shutil.copyfile(s, part)
+                part.replace(t)
+            done += 1
+            if done % 500 == 0 or done == total:
+                emit("progress", done, total)
+
+
+def ini_set(ini: Path, key: str, value: str) -> None:
+    """key = value in mkw.ini (runtime/core/base/cfg.c format), replacing a line with that key."""
+    lines = ini.read_text(encoding="utf-8").splitlines() if ini.is_file() else []
+    norm = key.upper().removeprefix("MKW_")
+    keep = [ln for ln in lines if ln.split("=", 1)[0].strip().upper().removeprefix("MKW_") != norm]
+    ini.write_text("\n".join([*keep, f"{key} = {value}"]) + "\n", encoding="utf-8")
+
+
+# ---- the game code
+def run(cmd: list[str], env: dict[str, str] | None = None, progress_prefix: str = "") -> None:
+    """A tool's run; its 'progress n total' lines (translate.py) pass through, the rest goes to stderr."""
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, env=env)
+    tail = []
+    for line in p.stdout:
+        if progress_prefix and line.startswith(progress_prefix):
+            emit(line.strip())
+        else:
+            sys.stderr.write(line)
+            tail = (tail + [line.strip()])[-5:]
+    if p.wait():
+        raise Failed(f"{Path(cmd[1] if len(cmd) > 1 else cmd[0]).name} failed: {' / '.join(tail)}")
+
+
+def generate(exefs: Path, work: Path, jobs: int) -> None:
+    gen = work / "generated"
+    run([sys.executable, str(ROOT / "recomp/gen.py"), "--exefs", str(exefs), "--out", str(gen), "--jobs", str(jobs),
+         "--patches", str(ROOT / "recomp/patches-mkw.txt")])  # fmt: skip
+
+
+def compile_game(game: Path, exefs: Path, work: Path, cc: list[str], target: str, jobs: int) -> None:
+    gen, obj = work / "generated", work / "obj"
+    windows = target == "windows"
+    flags = [*build.GEN_FLAGS, *([] if windows else ["-fPIC"])]
+    if Path(cc[0]).stem == "zig":
+        # zig cc turns -O1 into -O2 with both vectorizers, keeps frame pointers, adds debug info and UBSan, and spells
+        # the CPU its own way: 182 126 instructions on a chunk clang -O1 makes in 150 969. With these, 150 745 (the
+        # rest is LLVM 22 against 23), as SavageWindRecomp's GAMELIB_ZIGFLAGS (runtime/gamebuild.c, MIT).
+        flags = [f.replace("-march=x86-64-v3", "-mcpu=x86_64_v3") for f in flags]
+        flags += ["-Xclang", "-O1", "-fno-vectorize", "-fno-slp-vectorize", "-fomit-frame-pointer", "-g0",
+                  "-fno-sanitize=all"]  # fmt: skip
+    srcs = sorted(p for mod in build.MODULES for p in (gen / mod).glob("*.c"))
+    obj.mkdir(parents=True, exist_ok=True)
+    (obj / "modules.c").write_text(build.module_glue(gen, exefs, True))
+    gid = f'-DRT_GAME_ID="{build.game_id()}"'
+    inc = [f"-I{ROOT / 'runtime/cpu'}", f"-I{ROOT / 'runtime/core'}", f"-I{gen}"]
+    jobs_c = [(src, obj / f"{src.parent.name}_{src.stem}.o", [*flags, f"-I{ROOT / 'runtime/cpu'}"]) for src in srcs]
+    jobs_c.append((obj / "modules.c", obj / "modules.o", [*flags, gid, *inc]))
+    total, done = len(jobs_c), 0
+
+    def one(job: tuple[Path, Path, list[str]]) -> str:
+        src, out, f = job
+        if out.is_file() and out.stat().st_mtime >= src.stat().st_mtime:
+            return ""
+        r = subprocess.run(
+            [*cc, "-std=gnu11", *f, "-c", str(src), "-o", str(out)], capture_output=True, text=True, check=False
+        )
+        return "" if not r.returncode else f"{src.name}: {r.stderr.strip()[-300:]}"
+
+    with ThreadPoolExecutor(jobs) as pool:
+        for err in pool.map(one, jobs_c):
+            if err:
+                raise Failed(f"compiling the game code failed: {err}")
+            done += 1
+            emit("progress", done, total)
+    lib = game / ("mkwgame.dll" if windows else "mkwgame.so")
+    part = lib.with_name(lib.name + ".part")
+    objs = [str(o) for _, o, _ in jobs_c]
+    rsp = obj / "link.rsp"  # ~360 objects: past the Windows command line limit
+    rsp.write_text("\n".join(f'"{o}"' for o in objs).replace("\\", "/"))
+    extra = [str(package_dir(game) / "lib/libmkw.dll.a")] if windows else ["-Wl,-z,noexecstack"]
+    r = subprocess.run(
+        [*cc, "-shared", "-o", str(part), f"@{rsp}", *extra], capture_output=True, text=True, check=False
+    )
+    if r.returncode:
+        raise Failed(f"linking the game code failed: {r.stderr.strip()[-300:]}")
+    part.replace(lib)
+    (game / "mkwgame.id").write_text(build.game_id())  # runtime/core/boot/gamelib.c rt_game_present
+
+
+# ---- shaders and the overlay
+def shaders(exefs: Path, romfs: Path, game: Path, work: Path, glslc: str, jobs: int) -> None:
+    sh = work / "shaders"
+    run([sys.executable, str(ROOT / "tools/shaders/extract.py"), "--romfs", str(romfs), "--exefs", str(exefs),
+         "--out", str(sh)])  # fmt: skip
+    run([sys.executable, str(ROOT / "tools/shaders/translate.py"), "--shaders", str(sh), "--out", str(game / "spirv"),
+         "--glslc", glslc, "--no-validate", "--progress", "--jobs", str(jobs),
+         "--spec", str(ROOT / "build/sm86/instructions.json")], env=tool_env(glslc), progress_prefix="progress")  # fmt: skip
+    for p in (game / "spirv").glob("*.glsl"):  # the runtime reads .spv and .res.json; the GLSL only made them
+        p.unlink()
+
+
+def warm(game: Path, work: Path) -> None:
+    """The game run once to its title, so the first real start finds pipeline-cache.bin and pipeline-keys.bin
+   . Its saves go to a scratch profile: the player's first start stays
+    a first start. The window opens without taking focus and without sound; the run is ended after WARM_SECONDS."""
+    exe = game / ("mkw.exe" if os.name == "nt" else "mkw")
+    env = dict(os.environ, MKW_LAUNCHED="1", MKW_ASSUME_FOCUS="1", MKW_AUDIO="none",
+               MKW_PROFILE_DIR=str(work / "warm-profile"))  # fmt: skip
+    p = subprocess.Popen([str(exe)], env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    for t in range(WARM_SECONDS):
+        if p.poll() is not None:
+            raise Failed(f"the game stopped while warming up (exit {p.returncode}); its log is in {game / 'logs'}")
+        emit("progress", t, WARM_SECONDS)
+        time.sleep(1)
+    p.terminate()
+    try:
+        p.wait(10)
+    except subprocess.TimeoutExpired:
+        p.kill()
+    emit("progress", WARM_SECONDS, WARM_SECONDS)
+
+
+def load_state(game: Path) -> dict:
+    p = game / "setup-state.json"
+    try:
+        s = json.loads(p.read_text())
+    except OSError, ValueError:
+        return {"done": {}}
+    return s if s.get("version") == PREP_VERSION else {"done": {}}
+
+
+def save_state(game: Path, state: dict) -> None:
+    state["version"] = PREP_VERSION
+    p = game / "setup-state.json"
+    p.with_suffix(".tmp").write_text(json.dumps(state, indent=1))
+    p.with_suffix(".tmp").replace(p)
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    ap.add_argument("--source", type=Path, required=True, help="the folder with the player's exefs/ and romfs/")
+    ap.add_argument("--game", type=Path, required=True, help="the folder of mkw / mkw.exe")
+    ap.add_argument("--romfs", choices=("copy", "link"), default="copy")
+    ap.add_argument("--jobs", type=int, default=0, help="parallel jobs (default: from cores and memory)")
+    ap.add_argument("--cc", help="the C compiler command (default: the package's zig cc, else clang)")
+    ap.add_argument("--glslc", help="(default: the package's, else glslc on PATH)")
+    ap.add_argument("--target", choices=("linux", "windows"), default="windows" if os.name == "nt" else "linux")
+    args = ap.parse_args()
+    own_children()
+    game, src = args.game.resolve(), args.source.resolve()
+    jobs = args.jobs or max(1, min(os.cpu_count() or 1, int(mem_gb() * 0.6)))
+    cc = args.cc.split() if args.cc else default_cc(game, args.target)
+    glslc = args.glslc or default_glslc(game)
+    work = game / "setup-work"
+    state = load_state(game)
+    try:
+        emit("step", "check")
+        exefs_src, romfs_src = check(src)
+        romfs = game / "romfs" if args.romfs == "copy" else romfs_src
+        keys = {
+            "exefs": str(exefs_src),
+            "romfs": f"{args.romfs} {romfs_src}",
+            "generate": f"{build.game_id()} {exefs_src}",
+            "compile": f"{build.game_id()} {exefs_src} {args.target}",
+            "shaders": f"{exefs_src} {romfs_src} {hashlib.sha256((ROOT / 'tools/shaders/translate.py').read_bytes()).hexdigest()[:16]}",
+            "warm": f"{build.game_id()} {romfs_src}",
+        }
+        for step in STEPS[1:]:
+            key = keys.get(step, "")
+            if step != "cleanup" and state["done"].get(step) == key:
+                emit("skip", step)
+                continue
+            emit("step", step)
+            if step == "exefs":
+                copy_tree(exefs_src, game / "exefs", sum(1 for p in exefs_src.iterdir() if p.is_file()))
+            elif step == "romfs":
+                if args.romfs == "copy":
+                    copy_tree(romfs_src, romfs, ROMFS_FILES)
+                    ini_set(game / "mkw.ini", "romfs", "romfs")
+                else:
+                    ini_set(game / "mkw.ini", "romfs", str(romfs_src))
+            elif step == "generate":
+                generate(game / "exefs", work, jobs)
+            elif step == "compile":
+                compile_game(game, game / "exefs", work, cc, args.target, jobs)
+            elif step == "shaders":
+                shaders(game / "exefs", romfs, game, work, glslc, args.jobs or shader_jobs())
+            elif step == "warm":
+                warm(game, work)
+            elif step == "cleanup":
+                shutil.rmtree(work, ignore_errors=True)
+            state["done"][step] = key
+            save_state(game, state)
+        emit("done")
+    except Failed as e:
+        emit("error", "failed", str(e))
+        sys.exit(1)
+    except OSError as e:
+        emit("error", "io", str(e))
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,502 @@
+// The settings pages: the tab bar (L / R or Q / E switch tabs) and the rows of each tab over the cfg settings (core/base/cfg.h),
+// shared by the in-game menu (ui/menu/menu.cpp) and the start screen (ui/launcher/launcher.cpp). Split from menu.cpp, whose look
+// follows SavageWindRecomp's runtime/ui/menu.mm (MIT); the rows are option_rows.cpp's.
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "imgui.h"
+#include "ui/menu/binds_page.h"
+#include "ui/menu/option_rows.h"
+#include "ui/glyphs/glyphs.h"
+#include "ui/menu/settings_tabs.h"
+
+extern "C" {
+#include "cfg.h"
+#include "input.h"
+#include "input_map.h"
+#include "platform/platform.h"
+#include "sysinfo.h"
+#include "ui/menu/menu.h"
+#include "ui_text.h"
+void rt_log(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
+}
+
+// ---- the lists the Screen and Game tabs build
+enum { MAX_GPUS = 8 };
+static char g_gpu_names[MAX_GPUS][VK_MAX_PHYSICAL_DEVICE_NAME_SIZE];
+static int g_gpu_n = -1;   // -1: not listed yet
+
+// The Vulkan devices in vkEnumeratePhysicalDevices order, which MKW_GPU_INDEX counts in (vk_device.c pick_device).
+void settings_list_gpus(VkInstance inst) {
+    if (g_gpu_n >= 0) return;
+    VkPhysicalDevice pd[MAX_GPUS];
+    uint32_t n = MAX_GPUS;
+    if (vkEnumeratePhysicalDevices(inst, &n, pd) < 0) n = 0;   // VK_INCOMPLETE keeps the first MAX_GPUS
+    for (uint32_t i = 0; i < n; i++) {
+        VkPhysicalDeviceProperties p;
+        vkGetPhysicalDeviceProperties(pd[i], &p);
+        snprintf(g_gpu_names[i], sizeof g_gpu_names[i], "%s", p.deviceName);
+    }
+    g_gpu_n = (int)n;
+}
+
+// Window sizes: the common 16:9 sizes that fit the monitor, the 1920x1080 default and the current size.
+static const int kSizes[][2] = {{1280, 720}, {1366, 768}, {1600, 900}, {1920, 1080}, {2560, 1440}, {3200, 1800},
+                                {3840, 2160}};
+enum { MAX_SIZES = sizeof kSizes / sizeof *kSizes + 1 };
+
+static void row_window_size(void) {
+    int sz[MAX_SIZES][2], n = 0, mw = 0, mh = 0, cw = 0, ch = 0;
+    int have = gfx_window_monitor_size(&mw, &mh);
+    int cur_ok = sscanf(cfg_value("MKW_WINDOW_SIZE"), "%dx%d", &cw, &ch) == 2;
+    bool listed = false;
+    for (size_t i = 0; i < sizeof kSizes / sizeof *kSizes; i++) {
+        int w = kSizes[i][0], h = kSizes[i][1];
+        bool cur = cur_ok && w == cw && h == ch;
+        if (have && (w > mw || h > mh) && !cur && !(w == 1920 && h == 1080)) continue;
+        listed |= cur;
+        sz[n][0] = w, sz[n][1] = h, n++;
+    }
+    if (cur_ok && !listed) {   // the current size where its area puts it
+        int at = n;
+        while (at > 0 && (long)sz[at - 1][0] * sz[at - 1][1] > (long)cw * ch) at--;
+        memmove(sz[at + 1], sz[at], sizeof sz[0] * (n - at));
+        sz[at][0] = cw, sz[at][1] = ch, n++;
+    }
+    char vals[MAX_SIZES][24], shown[MAX_SIZES][32];
+    const char *pv[MAX_SIZES], *pn[MAX_SIZES];
+    for (int i = 0; i < n; i++) {
+        snprintf(vals[i], sizeof vals[i], "%dx%d", sz[i][0], sz[i][1]);
+        snprintf(shown[i], sizeof shown[i], "%d × %d", sz[i][0], sz[i][1]);   // U+00D7, the multiplication sign
+        pv[i] = vals[i];
+        pn[i] = shown[i];
+    }
+    opt_choice_list("MKW_WINDOW_SIZE", UI_MENU_WINDOW_SIZE, pv, pn, n, UI_MENU_WINDOW_SIZE_DESC);
+}
+
+static void row_gpu(void) {
+    const char *vals[MAX_GPUS + 1], *names[MAX_GPUS + 1];
+    char idx[MAX_GPUS][4];
+    vals[0] = "";
+    names[0] = menu_text(UI_MENU_GPU_AUTO);
+    for (int i = 0; i < g_gpu_n; i++) {
+        snprintf(idx[i], sizeof idx[i], "%d", i);
+        vals[i + 1] = idx[i];
+        names[i + 1] = g_gpu_names[i];
+    }
+    opt_choice_list("MKW_GPU_INDEX", UI_MENU_GPU, vals, names, g_gpu_n + 1, UI_MENU_GPU_DESC);
+}
+
+// The game language: one entry per language MKW ships (romfs/Mals: a Switch code that names it), each under its
+// own name.
+static void row_game_lang(void) {
+    static const struct { const char *code; UiTextId name; } langs[] = {
+        {"en-US", UI_MENU_LANGNAME_EN}, {"ja", UI_MENU_LANGNAME_JA}, {"fr", UI_MENU_LANGNAME_FR},
+        {"de", UI_MENU_LANGNAME_DE}, {"it", UI_MENU_LANGNAME_IT}, {"es", UI_MENU_LANGNAME_ES},
+        {"nl", UI_MENU_LANGNAME_NL}, {"pt", UI_MENU_LANGNAME_PT}, {"ru", UI_MENU_LANGNAME_RU},
+        {"zh-CN", UI_MENU_LANGNAME_ZH_HANS}, {"zh-TW", UI_MENU_LANGNAME_ZH_HANT}, {"ko", UI_MENU_LANGNAME_KO},
+    };
+    enum { N = sizeof langs / sizeof *langs + 1 };
+    const char *vals[N], *names[N];
+    vals[0] = "";
+    names[0] = menu_text(UI_MENU_GAME_LANG_AUTO);
+    const char *now = cfg_value("MKW_LANG");
+    int cur = *now ? -1 : 0;
+    for (int i = 1; i < N; i++) {
+        vals[i] = langs[i - 1].code;
+        names[i] = menu_text(langs[i - 1].name);
+        if (*now && !strcmp(ui_text_lang(now), ui_text_lang(vals[i]))) cur = i;   // en-GB is English too
+    }
+    opt_choice_list("MKW_LANG", UI_MENU_GAME_LANG, vals, names, N, UI_MENU_GAME_LANG_DESC, cur);
+}
+
+// The menu's name of a MKW_VK_PRESENT mode (gfx_window_present_mode); NULL for another.
+const char *settings_present_name(const char *mode) {
+    static const struct { const char *mode; UiTextId name; } names[] = {
+        {"mailbox", UI_MENU_PRESENT_MAILBOX}, {"fifo", UI_MENU_PRESENT_VSYNC}, {"immediate", UI_MENU_PRESENT_IMMEDIATE},
+    };
+    for (const auto &n : names)
+        if (!strcmp(n.mode, mode)) return menu_text(n.name);
+    return nullptr;
+}
+
+// "in use: VSync" under the Presentation value when the swapchain got another mode than the setting (a driver without
+// mailbox gets fifo); NULL when they agree or before the first swapchain.
+static const char *present_note(void) {
+    const char *got = gfx_window_present_mode(), *name = settings_present_name(got);
+    if (!*got || !strcmp(got, cfg_value("MKW_VK_PRESENT")) || !name) return nullptr;
+    static char note[96];
+    snprintf(note, sizeof note, menu_text(UI_MENU_PRESENT_IN_USE), name);
+    return note;
+}
+
+// ---- the tabs
+static void tab_screen(float scale) {
+    opt_begin("##screen", scale);
+    opt_toggle("MKW_FULLSCREEN", UI_MENU_FULLSCREEN, UI_MENU_FULLSCREEN_DESC);
+    row_window_size();
+    static const UiTextId present[] = {UI_MENU_PRESENT_MAILBOX, UI_MENU_PRESENT_VSYNC, UI_MENU_PRESENT_IMMEDIATE};
+    opt_choice("MKW_VK_PRESENT", UI_MENU_PRESENT, present, 3, UI_MENU_PRESENT_DESC, present_note());
+    row_gpu();
+    static const UiTextId perf[] = {UI_MENU_PERF_OFF, UI_MENU_PERF_FPS, UI_MENU_PERF_FULL};
+    opt_choice("MKW_PERF_OVERLAY", UI_MENU_PERF_OVERLAY, perf, 3, UI_MENU_PERF_OVERLAY_DESC);
+    {   // the game's present interval (core/boot/game.c), live
+        static const char *const vals[] = {"auto", "30", "60"};
+        const char *names[3] = {menu_text(UI_MENU_FPS_AUTO), "30", "60"};
+        opt_choice_list("MKW_FPS", UI_MENU_FPS, vals, names, 3, UI_MENU_FPS_DESC);
+    }
+    opt_group(UI_MENU_GRAPHICS);
+    static const UiTextId fit[] = {UI_MENU_PICTURE_FIT_KEEP, UI_MENU_PICTURE_FIT_STRETCH};
+    opt_choice("MKW_PICTURE_FIT", UI_MENU_PICTURE_FIT, fit, 2, UI_MENU_PICTURE_FIT_DESC);
+    opt_end();
+}
+
+// The Quality presets: the values each one gives the four rows below it, in the order
+// of kQualityKeys. Console is every row's default. The others are a first guess until each row's cost is measured on
+// the Radeon 660M and the GTX 1050 Ti (its PLAN).
+static const char *const kQualityKeys[] = {"MKW_ANISO", "MKW_TEX_QUALITY", "MKW_DETAIL_DISTANCE", "MKW_SHADOW_SIZE"};
+static const struct { const char *name; const char *v[4]; } kPresets[] = {
+    {"low", {"game", "quarter", "1", "1024"}},     {"medium", {"game", "half", "1.5", "2048"}},
+    {"console", {"game", "full", "2", "console"}}, {"high", {"8", "full", "3", "4096"}},
+    {"ultra", {"16", "full", "4", "4096"}},
+};
+enum { NPRESETS = sizeof kPresets / sizeof *kPresets };
+
+// The preset whose values the four rows hold now; NPRESETS (Custom) when none.
+static int quality_now(void) {
+    for (int p = 0; p < NPRESETS; p++) {
+        int k = 0;
+        while (k < 4 && !strcmp(cfg_value(kQualityKeys[k]), kPresets[p].v[k])) k++;
+        if (k == 4) return p;
+    }
+    return NPRESETS;
+}
+
+static void row_quality(void) {
+    const char *vals[NPRESETS + 1], *names[NPRESETS + 1];
+    static const UiTextId shown[] = {UI_MENU_DETAIL_LOW, UI_MENU_DETAIL_MEDIUM, UI_MENU_DETAIL_CONSOLE,
+                                     UI_MENU_DETAIL_HIGH, UI_MENU_DETAIL_ULTRA};
+    for (int p = 0; p < NPRESETS; p++) vals[p] = kPresets[p].name, names[p] = menu_text(shown[p]);
+    vals[NPRESETS] = "custom", names[NPRESETS] = menu_text(UI_MENU_QUALITY_CUSTOM);
+    if (!opt_choice_list("MKW_QUALITY", UI_MENU_QUALITY, vals, names, NPRESETS + 1, UI_MENU_QUALITY_DESC,
+                         quality_now()))
+        return;
+    const char *picked = cfg_value("MKW_QUALITY");
+    for (int p = 0; p < NPRESETS; p++)
+        if (!strcmp(picked, kPresets[p].name))
+            for (int k = 0; k < 4; k++) cfg_set(kQualityKeys[k], kPresets[p].v[k]);
+}
+
+// What the graphics card draws and how much: each row defaults to the console's.
+static void tab_graphics(float scale) {
+    opt_begin("##graphics", scale);
+    {   // the game's internal render resolution (sdk/fs/romfs_res.c), read at start
+        static const char *const vals[] = {"original", "540", "720", "900", "1080", "1440"};
+        const char *names[6] = {menu_text(UI_MENU_RESOLUTION_ORIGINAL), "540p", "720p", "900p", "1080p", "1440p"};
+        opt_choice_list("MKW_RESOLUTION", UI_MENU_RESOLUTION, vals, names, 6, UI_MENU_RESOLUTION_DESC);
+    }
+    static const UiTextId up[] = {UI_MENU_UPSCALER_FSR, UI_MENU_UPSCALER_BILINEAR};
+    opt_choice("MKW_UPSCALER", UI_MENU_UPSCALER, up, 2, UI_MENU_UPSCALER_DESC);
+    opt_slider("MKW_SHARPNESS", UI_MENU_SHARPNESS, 0, 100, UI_MENU_SHARPNESS_DESC, 5, "%.0f %%");
+    row_quality();
+    {   // a floor on anisotropic filtering (gfx/vk/tex/vk_tex_slots.c make_sampler)
+        static const char *const vals[] = {"game", "2", "4", "8", "16"};
+        const char *names[5] = {menu_text(UI_MENU_ANISO_GAME), "2x", "4x", "8x", "16x"};
+        opt_choice_list("MKW_ANISO", UI_MENU_ANISO, vals, names, 5, UI_MENU_ANISO_DESC);
+    }
+    static const UiTextId texq[] = {UI_MENU_TEX_QUALITY_FULL, UI_MENU_TEX_QUALITY_HALF, UI_MENU_TEX_QUALITY_QUARTER};
+    opt_choice("MKW_TEX_QUALITY", UI_MENU_TEX_QUALITY, texq, 3, UI_MENU_TEX_QUALITY_DESC);
+    {   // the game's LODDistanceRatio (sdk/fs/romfs_res.c), 2 on the console
+        static const char *const vals[] = {"1", "1.5", "2", "3", "4"};
+        const char *names[5] = {menu_text(UI_MENU_DETAIL_LOW), menu_text(UI_MENU_DETAIL_MEDIUM),
+                                menu_text(UI_MENU_DETAIL_CONSOLE), menu_text(UI_MENU_DETAIL_HIGH),
+                                menu_text(UI_MENU_DETAIL_ULTRA)};
+        opt_choice_list("MKW_DETAIL_DISTANCE", UI_MENU_DETAIL, vals, names, 5, UI_MENU_DETAIL_DESC);
+    }
+    {   // the cascaded shadow map size (core/boot/patches.c, set shadow)
+        static const char *const vals[] = {"console", "1024", "2048", "3072", "4096"};
+        const char *names[5] = {menu_text(UI_MENU_DETAIL_CONSOLE), "1024", "2048", "3072", "4096"};
+        opt_choice_list("MKW_SHADOW_SIZE", UI_MENU_SHADOW, vals, names, 5, UI_MENU_SHADOW_DESC);
+    }
+    static const UiTextId mode[] = {UI_MENU_MODE_DOCKED, UI_MENU_MODE_HANDHELD};
+    opt_choice("MKW_OPERATION_MODE", UI_MENU_OPERATION_MODE, mode, 2, UI_MENU_OPERATION_MODE_DESC);
+    opt_end();
+}
+
+static void tab_game(float scale) {
+    opt_begin("##game", scale);
+    row_game_lang();
+    opt_end();
+}
+
+static void tab_sound(float scale) {
+    opt_begin("##sound", scale);
+    opt_slider("MKW_VOLUME", UI_MENU_VOLUME, 0, 100, UI_MENU_VOLUME_DESC, 5, "%.0f %%");
+    opt_end();
+}
+
+// "in use: Xbox" under the layout when it is Automatic and a gamepad is connected; NULL otherwise.
+static const char *pad_layout_note(void) {
+    int got = input_pad_layout();
+    if (got < 0 || strcmp(cfg_value("MKW_PAD_LAYOUT"), "auto")) return nullptr;
+    static char note[96];
+    snprintf(note, sizeof note, menu_text(UI_MENU_PAD_LAYOUT_IN_USE),
+             menu_text(got == PAD_LAYOUT_XBOX ? UI_MENU_PAD_LAYOUT_XBOX : UI_MENU_PAD_LAYOUT_NINTENDO));
+    return note;
+}
+
+// "in use: Xbox" under the icons when they are Automatic; NULL otherwise.
+static const char *button_icons_note(void) {
+    if (strcmp(cfg_value("MKW_BUTTON_ICONS"), "auto")) return nullptr;
+    static const UiTextId names[] = {UI_MENU_ICONS_NINTENDO, UI_MENU_ICONS_XBOX, UI_MENU_ICONS_PLAYSTATION,
+                                     UI_MENU_ICONS_KEYBOARD};
+    static char note[96];
+    snprintf(note, sizeof note, menu_text(UI_MENU_ICONS_IN_USE), menu_text(names[glyphs_kind()]));
+    return note;
+}
+
+static void tab_controls(float scale) {
+    opt_begin("##controls", scale);
+    static const UiTextId layout[] = {UI_MENU_PAD_LAYOUT_AUTO, UI_MENU_PAD_LAYOUT_NINTENDO, UI_MENU_PAD_LAYOUT_XBOX};
+    opt_choice("MKW_PAD_LAYOUT", UI_MENU_PAD_LAYOUT, layout, 3, UI_MENU_PAD_LAYOUT_DESC, pad_layout_note());
+    static const UiTextId icons[] = {UI_MENU_AUTO, UI_MENU_ICONS_NINTENDO, UI_MENU_ICONS_XBOX, UI_MENU_ICONS_PLAYSTATION,
+                                     UI_MENU_ICONS_KEYBOARD};
+    opt_choice("MKW_BUTTON_ICONS", UI_MENU_BUTTON_ICONS, icons, 5, UI_MENU_BUTTON_ICONS_DESC, button_icons_note());
+    opt_toggle("MKW_MOTION", UI_MENU_MOTION, UI_MENU_MOTION_DESC);
+    opt_slider("MKW_RUMBLE_STRENGTH", UI_MENU_RUMBLE_STRENGTH, 0, 300, UI_MENU_RUMBLE_STRENGTH_DESC, 10, "%.0f %%");
+    opt_slider("MKW_RUMBLE_CURVE", UI_MENU_RUMBLE_CURVE, 0.2f, 1.5f, UI_MENU_RUMBLE_CURVE_DESC, 0.05f, "%.2f");
+    opt_toggle("MKW_RUMBLE_TRIGGERS", UI_MENU_RUMBLE_TRIGGERS, UI_MENU_RUMBLE_TRIGGERS_DESC);
+    opt_slider("MKW_MOUSE_SENS", UI_MENU_MOUSE_SENS, 0, 10, UI_MENU_MOUSE_SENS_DESC, 0.1f, "%.1f");
+    binds_rows(scale);
+    opt_end();
+    binds_after_page();
+}
+
+static void tab_menu(float scale) {
+    opt_begin("##menu", scale);
+    static const UiTextId langs[] = {UI_MENU_MENU_LANG_AUTO, UI_MENU_LANGNAME_EN, UI_MENU_LANGNAME_RU,
+                                     UI_MENU_LANGNAME_ES};
+    opt_choice("MKW_MENU_LANG", UI_MENU_MENU_LANG, langs, 4, UI_MENU_MENU_LANG_DESC);
+    opt_end();
+}
+
+// ---- Advanced: the testing and troubleshooting keys, the bug report helpers and the reset of every setting
+static bool g_modal;   // the reset confirmation is open: B and Esc close it, not the menu; L / R stay on the page
+
+// A free-text key shown as Off (unset) / On (value set): On writes on_value, any set value reads as On.
+static void row_set_or_not(const char *key, UiTextId label, UiTextId desc, const char *on_value) {
+    const char *vals[] = {"", on_value}, *names[] = {menu_text(UI_MENU_OFF), menu_text(UI_MENU_ON)};
+    opt_choice_list(key, label, vals, names, 2, desc, *cfg_value(key) ? 1 : 0);
+}
+
+static bool validation_layer_present(void) {
+    static int have = -1;
+    if (have < 0) {
+        uint32_t n = 0;
+        vkEnumerateInstanceLayerProperties(&n, nullptr);
+        VkLayerProperties *l = (VkLayerProperties *)calloc(n ? n : 1, sizeof *l);
+        if (l && vkEnumerateInstanceLayerProperties(&n, l) >= 0)
+            for (uint32_t i = 0; i < n && have <= 0; i++) have = !strcmp(l[i].layerName, "VK_LAYER_KHRONOS_validation");
+        free(l);
+        if (have < 0) have = 0;
+    }
+    return have != 0;
+}
+
+// Every setting the menu shows back to its default (the environment's keys stay), written to mkw.ini.
+static void reset_all(void) {
+    const char *keys[128];
+    int n = 0;
+    for (const CfgMeta *m; n < 128 && (m = cfg_meta_at(n)); n++) keys[n] = m->key;
+    int done = cfg_reset(keys, n);
+    opt_save_soon();
+    rt_log("menu: reset %d settings to their defaults", done);
+}
+
+// A button's result shown in its value for a few seconds: 1 done (done_text), -1 failed.
+struct ActionNote { uint64_t until; int result; };
+
+static const char *action_value(const ActionNote &a, UiTextId done_text) {
+    if (!a.result || plat_now_ns() > a.until) return "";
+    return menu_text(a.result > 0 ? done_text : UI_MENU_ACTION_FAILED);
+}
+
+static void action_done(ActionNote &a, bool ok) { a = {plat_now_ns() + 3000000000ull, ok ? 1 : -1}; }
+
+static void tab_advanced(float scale) {
+    static ActionNote copy_note, log_note;
+    opt_begin("##advanced", scale);
+    opt_text(UI_MENU_ADV_WARNING, true);
+
+    opt_group(UI_MENU_GROUP_SCHED);
+    static const UiTextId preempt[] = {UI_MENU_PREEMPT_OFF, UI_MENU_PREEMPT_ON, UI_MENU_PREEMPT_INHERIT};   // 0|1|2
+    opt_choice("MKW_ASYNC_PREEMPT", UI_MENU_ASYNC_PREEMPT, preempt, 3, UI_MENU_ASYNC_PREEMPT_DESC);
+    opt_toggle("MKW_REPLAY_ASYNC", UI_MENU_REPLAY_ASYNC, UI_MENU_REPLAY_ASYNC_DESC);
+    opt_toggle("MKW_FREE_CORES", UI_MENU_FREE_CORES, UI_MENU_FREE_CORES_DESC);
+    opt_toggle("MKW_TIMER_1MS", UI_MENU_TIMER_1MS, UI_MENU_TIMER_1MS_DESC);
+
+    opt_group(UI_MENU_GROUP_SHADERS);
+    static const UiTextId wait[] = {UI_MENU_PIPE_WAIT_DEFAULT, UI_MENU_PIPE_WAIT_DRAW};
+    opt_choice("MKW_PIPE_WAIT", UI_MENU_PIPE_WAIT, wait, 2, UI_MENU_PIPE_WAIT_DESC);
+    static const UiTextId skip[] = {UI_MENU_PIPE_SKIP_STRICT, UI_MENU_PIPE_SKIP_ANY, UI_MENU_PIPE_SKIP_FULLSCREEN};
+    opt_choice("MKW_PIPE_SKIP", UI_MENU_PIPE_SKIP, skip, 3, UI_MENU_PIPE_SKIP_DESC);
+    opt_toggle("MKW_PIPE_PREBUILD", UI_MENU_PIPE_PREBUILD, UI_MENU_PIPE_PREBUILD_DESC);
+    opt_toggle("MKW_GPL", UI_MENU_GPL, UI_MENU_GPL_DESC);
+
+    opt_group(UI_MENU_GROUP_TEXMEM);
+    static const UiTextId astc[] = {UI_MENU_ASTC_AUTO, UI_MENU_ASTC_GPU, UI_MENU_ASTC_NATIVE, UI_MENU_ASTC_CPU};
+    opt_choice("MKW_ASTC", UI_MENU_ASTC, astc, 4, UI_MENU_ASTC_DESC);
+    static const UiTextId mem[] = {UI_MENU_MEMORY_AUTO, UI_MENU_MEMORY_IMPORT, UI_MENU_MEMORY_MIRROR,
+                                   UI_MENU_MEMORY_VERIFY};
+    opt_choice("MKW_MEMORY", UI_MENU_MEMORY, mem, 4, UI_MENU_MEMORY_DESC);
+    opt_toggle("MKW_TEX_ALIAS", UI_MENU_TEX_ALIAS, UI_MENU_TEX_ALIAS_DESC);
+
+    opt_group(UI_MENU_GROUP_FIXES);
+    opt_toggle("MKW_FIX_C0", UI_MENU_FIX_C0, UI_MENU_FIX_C0_DESC);
+    opt_toggle("MKW_FIX_ZERO", UI_MENU_FIX_ZERO, UI_MENU_FIX_ZERO_DESC);
+    opt_toggle("MKW_BIND_SKIP", UI_MENU_BIND_SKIP, UI_MENU_BIND_SKIP_DESC);
+    opt_toggle("MKW_SHADER_MEMO", UI_MENU_SHADER_MEMO, UI_MENU_SHADER_MEMO_DESC);
+    opt_toggle("MKW_PIPE_MEMO", UI_MENU_PIPE_MEMO, UI_MENU_PIPE_MEMO_DESC);
+    opt_toggle("MKW_TEX_MEMO", UI_MENU_TEX_MEMO, UI_MENU_TEX_MEMO_DESC);
+    opt_toggle("MKW_DESC_TEMPLATE", UI_MENU_DESC_TEMPLATE, UI_MENU_DESC_TEMPLATE_DESC);
+    opt_toggle("MKW_PUSH_SKIP", UI_MENU_PUSH_SKIP, UI_MENU_PUSH_SKIP_DESC);
+    opt_slider("MKW_SPLIT_DRAWS", UI_MENU_SPLIT_DRAWS, 0, 1000, UI_MENU_SPLIT_DRAWS_DESC, 8, "%.0f");
+
+    opt_group(UI_MENU_GROUP_VULKAN);
+    if (!validation_layer_present() && !cfg_bool("MKW_VK_VALIDATION")) opt_disable_next(UI_MENU_VK_VALIDATION_MISSING);
+    opt_toggle("MKW_VK_VALIDATION", UI_MENU_VK_VALIDATION, UI_MENU_VK_VALIDATION_DESC);
+    static const UiTextId dyn[] = {UI_MENU_AUTO, UI_MENU_OFF, UI_MENU_ON};   // unset, 0, 1
+    opt_choice("MKW_VK_DYN_VERTEX", UI_MENU_VK_DYN_VERTEX, dyn, 3, UI_MENU_VK_DYN_VERTEX_DESC);
+    opt_toggle("MKW_VK_SUBGROUP_PIN", UI_MENU_VK_SUBGROUP_PIN, UI_MENU_VK_SUBGROUP_PIN_DESC);
+
+    opt_group(UI_MENU_GROUP_DIAG);
+    row_set_or_not("MKW_TRACE", UI_MENU_TRACE, UI_MENU_TRACE_DESC, "perf");
+    opt_toggle("MKW_FLIGHT", UI_MENU_FLIGHT, UI_MENU_FLIGHT_DESC);
+    opt_slider("MKW_FLIGHT_SPIKE_MS", UI_MENU_FLIGHT_SPIKE_MS, 20, 1000, UI_MENU_FLIGHT_SPIKE_MS_DESC, 10, "%.0f");
+    static char rec_path[600];   // the recording goes beside the log
+    if (!rec_path[0]) {
+        char dir[512];
+        snprintf(rec_path, sizeof rec_path, "%s/input-record.txt", sysinfo_log_folder(dir, sizeof dir) ? dir : ".");
+    }
+    row_set_or_not("MKW_INPUT_RECORD", UI_MENU_INPUT_RECORD, UI_MENU_INPUT_RECORD_DESC, rec_path);
+    if (opt_button("##open_log", UI_MENU_OPEN_LOG, UI_MENU_OPEN_LOG_DESC, action_value(log_note, UI_MENU_OPEN_LOG))) {
+        char dir[512];
+        bool ok = sysinfo_log_folder(dir, sizeof dir) && plat_open_folder(dir);
+        if (!ok) action_done(log_note, false);   // success shows as the opened folder
+    }
+    if (opt_button("##copy_info", UI_MENU_COPY_INFO, UI_MENU_COPY_INFO_DESC,
+                   action_value(copy_note, UI_MENU_COPY_INFO_DONE))) {
+        static char text[16384];
+        action_done(copy_note, sysinfo_text(text, sizeof text) > 0 && plat_clipboard_set(text));
+    }
+    bool ask = opt_button("##reset", UI_MENU_RESET, UI_MENU_RESET_DESC);
+    opt_end();
+    if (ask) ImGui::OpenPopup("##reset_confirm");   // at the level BeginPopupModal looks it up
+
+    // the confirmation, over the menu; Cancel has the cursor first
+    g_modal = false;
+    ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+    if (ImGui::BeginPopupModal("##reset_confirm", nullptr,
+                               ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize)) {
+        g_modal = true;
+        ImGui::TextUnformatted(menu_text(UI_MENU_RESET_CONFIRM));
+        ImGui::Spacing();
+        const char *yes = menu_text(UI_MENU_RESET_YES), *no = menu_text(UI_MENU_RESET_NO);
+        const ImGuiStyle &st = ImGui::GetStyle();
+        float bw = fmaxf(ImGui::CalcTextSize(yes).x, ImGui::CalcTextSize(no).x) + st.FramePadding.x * 4;
+        bool close = false;
+        if (ImGui::Button(no, ImVec2(bw, 0))) close = true;
+        if (ImGui::IsWindowAppearing()) ImGui::SetItemDefaultFocus();
+        ImGui::SameLine();
+        if (ImGui::Button(yes, ImVec2(bw, 0))) {
+            reset_all();
+            close = true;
+        }
+        if (ImGui::IsKeyPressed(ImGuiKey_Escape, false) || ImGui::IsKeyPressed(ImGuiKey_GamepadFaceRight, false))
+            close = true;
+        if (close) {
+            ImGui::CloseCurrentPopup();
+            opt_focus_key("##reset");   // back on the row it came from
+        }
+        ImGui::EndPopup();
+    }
+}
+
+// Shortcuts the console does not have (core/hacks/): all off by default, marked experimental.
+static void tab_hacks(float scale) {
+    opt_begin("##hacks", scale);
+    opt_text(UI_MENU_HACKS_WARNING, true);
+    // the first four values; "until" is the run scripts' (core/hacks/turbo.c)
+    static const UiTextId turbo[] = {UI_MENU_OFF, UI_MENU_TURBO_HOLD, UI_MENU_TURBO_TOGGLE, UI_MENU_ON};
+    opt_choice("MKW_TURBO", UI_MENU_TURBO, turbo, 4, UI_MENU_TURBO_DESC);
+    opt_slider("MKW_TURBO_SPEED", UI_MENU_TURBO_SPEED, 2, 8, UI_MENU_TURBO_SPEED_DESC, 1, "x%.0f");
+    opt_toggle("MKW_SKIP_MOVIES", UI_MENU_SKIP_MOVIES, UI_MENU_SKIP_MOVIES_DESC);
+    row_set_or_not("MKW_SEED", UI_MENU_SEED, UI_MENU_SEED_DESC, "1");
+    opt_toggle("MKW_UNLOCK_ALL", UI_MENU_UNLOCK_ALL, UI_MENU_UNLOCK_ALL_DESC);
+    static const UiTextId quick[] = {UI_MENU_OFF, UI_MENU_QUICK_RACE_TT, UI_MENU_QUICK_RACE_FREE};
+    opt_choice("MKW_QUICK_RACE", UI_MENU_QUICK_RACE, quick, 3, UI_MENU_QUICK_RACE_DESC);
+    opt_toggle("MKW_FREEZE_KEYS", UI_MENU_FREEZE_KEYS, UI_MENU_FREEZE_KEYS_DESC);
+    opt_end();
+}
+
+static const UiTextId kTabNames[TAB_COUNT] = {UI_MENU_TAB_SCREEN, UI_MENU_TAB_GRAPHICS, UI_MENU_TAB_GAME,
+                                              UI_MENU_TAB_SOUND, UI_MENU_TAB_CONTROLS, UI_MENU_TAB_MENU,
+                                              UI_MENU_TAB_ADVANCED, UI_MENU_TAB_HACKS};
+static int g_tab;               // the tab shown
+static int g_tab_request = -1;  // select this tab at the next layout; -1 none
+static int g_focus_page = -1;   // this tab's first row takes the cursor once it is shown; -1 none
+
+void settings_select(int tab) { g_tab_request = tab; }
+
+void settings_opened(void) {
+    g_focus_page = g_tab_request >= 0 ? g_tab_request : g_tab;   // the first row has the cursor
+    g_modal = false;
+}
+
+bool settings_modal(void) { return g_modal || binds_modal(); }
+
+void settings_tabs(float scale, float bottom) {
+    int step = settings_modal()                                                                          ? 0
+             : ImGui::IsKeyPressed(ImGuiKey_GamepadR1, false) || ImGui::IsKeyPressed(ImGuiKey_E, false) ? 1
+             : ImGui::IsKeyPressed(ImGuiKey_GamepadL1, false) || ImGui::IsKeyPressed(ImGuiKey_Q, false) ? -1
+                                                                                                         : 0;
+    if (step) g_tab_request = (g_tab + step + TAB_COUNT) % TAB_COUNT;
+    if (g_tab_request >= 0) g_focus_page = g_tab_request;   // the new page's first row takes the cursor
+
+    if (ImGui::BeginTabBar("##tabs", ImGuiTabBarFlags_NoTabListScrollingButtons)) {
+        for (int k = 0; k < TAB_COUNT; k++) {
+            char label[128];
+            snprintf(label, sizeof label, "  %s  ###tab%d", menu_text(kTabNames[k]), k);   // the id stays per language
+            if (!ImGui::BeginTabItem(label, nullptr, g_tab_request == k ? ImGuiTabItemFlags_SetSelected : 0)) continue;
+            g_tab = k;
+            if (g_focus_page == k) {
+                opt_focus_first();
+                g_focus_page = -1;
+            }
+            ImGui::Spacing();
+            // the page's rows are a NavFlattened child of this window itself: ImGui clips the items of a direct child
+            // only, so behind a second child level the rows scrolled out above the tabs won D-pad moves from the
+            // buttons and the tabs (up from "Continue" went to the tabs, down from the tabs to "Continue")
+            opt_reserve_bottom(bottom);
+            switch (k) {
+            case TAB_SCREEN: tab_screen(scale); break;
+            case TAB_GRAPHICS: tab_graphics(scale); break;
+            case TAB_GAME: tab_game(scale); break;
+            case TAB_SOUND: tab_sound(scale); break;
+            case TAB_CONTROLS: tab_controls(scale); break;
+            case TAB_MENU: tab_menu(scale); break;
+            case TAB_ADVANCED: tab_advanced(scale); break;
+            case TAB_HACKS: tab_hacks(scale); break;
+            }
+            ImGui::EndTabItem();
+        }
+        g_tab_request = -1;
+        ImGui::EndTabBar();
+    }
+}
+
+void settings_tabs_done(void) {
+    if (g_tab != TAB_ADVANCED) g_modal = false;
+}

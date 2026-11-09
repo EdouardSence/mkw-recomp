@@ -1,0 +1,318 @@
+"""Build the game: compile the generated C (build/generated, from recomp/gen.py) and the runtime, link build/mkw (or
+build/mkw.exe with --target windows).
+
+Why: the generated code is ~0.9 GB of C in ~355 chunks; Ninja recompiles only what changed and runs the chunks in
+parallel. Each job can take several hundred MB, so the job count comes from a memory budget, not the core count.
+
+Flags, libraries and the module glue follow totk-pc-recomp tools/build_game.py on its Linux port branch (linux-port
+@ eccf4dd, MIT): GEN_FLAGS, RT_FLAGS, LINK_FLAGS, LINK_LIBS and module_glue(). build/obj/rt/modules.c carries the game
+code's tables (runtime/core/boot/gamelib.h: module layout, function tables, the SHA-256 of each ExeFS file read now from the
+game copy, patch sets); build/obj/rt/defaults.c the default game paths.
+
+--target windows cross-compiles build/mkw.exe from Linux with llvm-mingw and the MSYS2 UCRT64 libraries that
+tools/build/windeps.py puts in build/win (totk-pc-recomp's --toolchain build: its LLVM_LINK_LIBS). Objects go to
+build/obj-win. The window, input, keyboard and menu are SDL3 on both systems; platform/win32.c replaces platform/linux.c.
+
+Usage: uv run tools/build/build.py [--target linux|windows] [--gen build/generated] [--exefs DIR] [--romfs DIR]
+       [--jobs N] [--frame-pointers] [--dry-run]
+Heavy (all cores, several GB): our runs go through tools/run/job.sh.
+"""
+
+import argparse
+import hashlib
+import json
+import os
+import shutil
+import subprocess
+import sys
+from dataclasses import dataclass
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[2]
+RUNTIME = ROOT / "runtime"
+GAME = Path(os.environ.get("MKW_GAME", ROOT / "game"))
+WIN = ROOT / "build/win"  # tools/build/windeps.py
+GEN_FLAGS = ["-O1", "-fno-strict-aliasing", "-Wno-return-type", "-Wno-unused-label", "-fvisibility=hidden",
+             "-march=x86-64-v3"]  # fmt: skip
+RT_FLAGS = ["-O2", "-g", "-Wall", "-fno-strict-aliasing", "-march=x86-64-v3"]
+MODULES = ("main", "subsdk0", "sdk")
+
+
+@dataclass(frozen=True)
+class Target:
+    cc: str
+    cxx: str
+    ar: str
+    exe: Path
+    rt_flags: list[str]
+    link_flags: list[str]
+    link_libs: list[str]
+    vma: Path  # the directory with vk_mem_alloc.h
+    windres: str = ""  # Windows: compiles runtime/platform/mkw.rc (the exe's manifest)
+
+
+LINUX = Target(
+    "clang", "clang++", "llvm-ar", ROOT / "build/mkw",
+    ["-D_GNU_SOURCE"],
+    # -no-pie: the function tables (hundreds of thousands of pointers) need no load-time relocation.
+    ["-fuse-ld=lld", "-no-pie", "-Wl,-z,noexecstack", "-Wl,-Map=$builddir/mkw.map"],
+    ["-lvulkan", "-lSDL3", "-lopus", "-lvpx", "-lzstd", "-l:libstdc++.a", "-lm", "-lpthread", "-ldl"],
+    ROOT / "scratchpad/vma",  # vk_mem_alloc.h 3.4.0 (AUR only on Arch); fetched as in tools/build/README.md
+)  # fmt: skip
+WINDOWS = Target(
+    str(WIN / "llvm-mingw/bin/x86_64-w64-mingw32-clang"), str(WIN / "llvm-mingw/bin/x86_64-w64-mingw32-clang++"),
+    str(WIN / "llvm-mingw/bin/llvm-ar"), ROOT / "build/mkw.exe",
+    [f"-I{WIN / 'deps/include'}"],
+    # 16 MiB main-thread stack, as mkw; the map as on Linux.
+    [f"-L{WIN / 'deps/lib'}", "-fuse-ld=lld", "-Wl,--stack,16777216", "-Wl,--Map=$builddir/mkw.map"],
+    ["-lpsapi", "-lbcrypt", "-luser32", "-lole32", "-luuid", "-lshell32", "-lgdi32", "-ldwmapi", "-lwinmm", "-lvulkan-1", "-lSDL3", "-lopus",
+     "-l:libvpx.a", "-l:libzstd.a", "-l:libc++.a", "-l:libc++abi.a", "-l:libunwind.a", "-l:libwinpthread.a"],
+    WIN / "deps/include/vma",
+    str(WIN / "llvm-mingw/bin/x86_64-w64-mingw32-windres"),
+)  # fmt: skip
+
+
+def mem_total_gb() -> float:
+    with open("/proc/meminfo") as f:
+        for line in f:
+            if line.startswith("MemTotal:"):
+                return int(line.split()[1]) / 1024**2
+    raise RuntimeError("MemTotal missing from /proc/meminfo")
+
+
+def runtime_sources(target: Target) -> list[Path]:
+    """Every runtime .c/.cpp of the target. Linux: no Win32 file (*_win.*, platform/win32*.c). Windows: no
+    platform/linux*.c."""
+    srcs = [*RUNTIME.rglob("*.c"), *RUNTIME.rglob("*.cpp")]
+    if target is LINUX:
+        return sorted(p for p in srcs if not p.stem.endswith("_win") and not p.stem.startswith("win32"))
+    return sorted(p for p in srcs if not p.stem.startswith("linux"))
+
+
+def c_string(s: str) -> str:
+    return json.dumps(s)
+
+
+def game_id() -> str:
+    """RT_GAME_ID: the headers the generated code is compiled against and its flags. A game code library built with
+    another id is not loaded (runtime/core/boot/gamelib.c)."""
+    h = hashlib.sha256(" ".join(GEN_FLAGS).encode())
+    for p in sorted([*(RUNTIME / "cpu").glob("*.h"), RUNTIME / "core/boot/gamelib.h"]):
+        h.update(p.read_bytes())
+    return h.hexdigest()[:16]
+
+
+def module_glue(gen: Path, exefs: Path, library: bool) -> str:
+    """modules.c: the game code's tables (runtime/core/boot/gamelib.h): layout, function tables, the SHA-256 of each ExeFS
+    file read now from the game copy, the patch sets of the generated patches.h, and the data the generated code reads
+    on every call. library: the entry point of mkwgame.so / mkwgame.dll instead of rt_game_builtin."""
+    layout = [m["name"] for m in json.loads((gen / "layout.json").read_text())]
+    out = ["// Game code tables written by tools/build/build.py; do not edit.", '#include "gamelib.h"',
+           '#include "layout.h"', '#if __has_include("patches.h")', '#include "patches.h"', "#endif", ""]  # fmt: skip
+    for name in layout:
+        out += [f"extern const uint64_t {name}_fn_addrs[];", f"extern const GuestFn {name}_fn_ptrs[];",
+                f"extern const uint64_t {name}_fn_count;"]  # fmt: skip
+    out += ["", "static const RtGameModule modules[] = {"]
+    for name in layout:
+        u = name.upper()
+        out.append(f'    {{"{name}", MOD_{u}_BASE, MOD_{u}_SIZE, {name}_fn_addrs, {name}_fn_ptrs, &{name}_fn_count}},')
+    out += ["};", "", "static const RtFileHash exefs_sha256[] = {"]
+    files = sorted(p for p in exefs.iterdir() if p.is_file() and not p.name.startswith("."))
+    out += [f"    {{{c_string(p.name)}, {c_string(hashlib.sha256(p.read_bytes()).hexdigest())}}}," for p in files]
+    out += ["};", "", "#ifdef RT_PATCH_COUNT", "static const RtPatchSet patch_sets[] = {",
+            "#define X(i, n, e, d) {#n, e, d},", "    RT_PATCH_SETS(X)", "#undef X", "};", "#else",
+            "#define RT_PATCH_COUNT 0", "#define RT_PATCH_PAGE 0", "static const RtPatchSet *const patch_sets = 0;",
+            "#endif", "",
+            # 100: MKW 1.0.0, the version the menu shows
+            "volatile int g_fnprof;", "uint8_t rt_patch_on[RT_MAX_PATCH_SETS];", "",
+            "static const RtGame game = {RT_GAME_ABI, RT_GAME_ID, modules, sizeof modules / sizeof *modules,",
+            "                            exefs_sha256, sizeof exefs_sha256 / sizeof *exefs_sha256, patch_sets,",
+            "                            RT_PATCH_COUNT, RT_PATCH_PAGE, 100, &g_fnprof, rt_patch_on};", "",
+            "RT_GAME_EXPORT const RtGame *mkwgame_tables(void) { return &game; }" if library
+            else "const RtGame *rt_game_builtin(void) { return &game; }", ""]  # fmt: skip
+    return "\n".join(out)
+
+
+def defaults_glue(exefs: Path, romfs: Path, dist: bool) -> str:
+    """defaults.c: the executable's own defaults, the game copy's paths (none in the player's build: the folders next
+    to the executable, main.c portable_paths) and the port's version. The player's build gets rt_game_builtin here:
+    it has no linked game code, gamelib.c loads the library."""
+    out = ["// Defaults written by tools/build/build.py; do not edit.", '#include "gamelib.h"', '#include "host.h"', ""]
+    for name, path in (("exefs", exefs), ("romfs", romfs), ("profile", ROOT / "build/profile")):
+        out.append(f"const char rt_default_{name}[] = {c_string('' if dist else str(path.resolve()))};")
+    out += ['const char rt_port_version[] = "mkw-0.0.0";', ""]
+    if dist:
+        out += ["const RtGame *rt_game_builtin(void) { return 0; }", ""]
+    return "\n".join(out)
+
+
+# What the game code library calls in the runtime (runtime/cpu/cpu.h): the executable exports them.
+RT_EXPORTS = ("rt_dispatch", "rt_svc", "rt_udf", "rt_ticks", "rt_spin_gate", "fnprof_hit")
+
+
+def ninja_file(target: Target, gen: Path, out: Path, rt_extra: list[str], dist: Path | None,
+               runtime_only: bool = False) -> str:  # fmt: skip
+    """dist: the player's build into that folder, the runtime (mkw, mkw.exe) and the game code apart (mkwgame.so,
+    mkwgame.dll); else build/mkw with the game code linked in. runtime_only (with dist): the runtime alone, what a
+    release ships and the CI builds, without the game's generated C."""
+    inc = " ".join(f"-I{d}" for d in sorted({RUNTIME} | {p.parent for p in RUNTIME.rglob("*.h")}))
+    gid = f'-DRT_GAME_ID=\\"{game_id()}\\"'
+    pic = ["-fPIC"] if dist and target is LINUX else []
+    link_flags = list(target.link_flags)
+    if dist and target is LINUX:
+        link_flags += [f"-Wl,--export-dynamic-symbol={s}" for s in RT_EXPORTS]
+    elif dist:  # the exports (a .def file lld reads as an input) and the import library the game code links against
+        out.mkdir(parents=True, exist_ok=True)
+        (out / "mkw.def").write_text("EXPORTS\n" + "".join(f"    {s}\n" for s in RT_EXPORTS))
+        # GUI subsystem: started from Explorer or a shortcut, no console window opens (main() stays the entry)
+        link_flags += [str(out / "mkw.def"), f"-Wl,--out-implib,{out / 'libmkw.dll.a'}", "-Wl,--subsystem,windows"]
+    # ccache before the C compilers (MKW_CCACHE=0 leaves it out): a folder move changes every runtime command's -I list
+    # and a comment in runtime/cpu recompiles all the game code; ninja rebuilds both, ccache hands back the objects
+    # (07/11/2026: ~12 min per step of a bisection). Not for C++: menu_look.cpp #embeds a file ccache may not track.
+    cc = f"ccache {target.cc}" if os.environ.get("MKW_CCACHE", "1") != "0" and shutil.which("ccache") else target.cc
+    lines = [
+        f"builddir = {out}",
+        f"genflags = {' '.join(GEN_FLAGS + pic)} -I{RUNTIME / 'cpu'}",
+        f"rtflags = {' '.join(RT_FLAGS + target.rt_flags + rt_extra)} {gid} {inc} -I{gen} -I{out / 'rt'} -I{target.vma}",
+        f"tabflags = {' '.join(GEN_FLAGS + pic)} {gid} {inc} -I{gen}",
+        f"ldflags = {' '.join(link_flags)}",
+        (
+            f"rule cc\n  command = {cc} $genflags -MD -MF $out.d -c $in -o $out\n  depfile = $out.d\n  deps = gcc"
+            "\n  description = cc $in"
+        ),
+        (
+            f"rule rtcc\n  command = {cc} -std=gnu11 $rtflags -MD -MF $out.d -c $in -o $out\n  depfile = $out.d"
+            "\n  deps = gcc\n  description = rt $in"
+        ),
+        (
+            f"rule rtcxx\n  command = {target.cxx} -std=c++17 $rtflags -MD -MF $out.d -c $in -o $out\n  depfile = $out.d"
+            "\n  deps = gcc\n  description = rt $in"
+        ),
+        (
+            f"rule tabcc\n  command = {cc} -std=gnu11 $tabflags -MD -MF $out.d -c $in -o $out\n"
+            "  depfile = $out.d\n  deps = gcc\n  description = cc $in"
+        ),
+        f"rule ar\n  command = rm -f $out && {target.ar} rcs $out $in\n  description = ar $out",
+        (f"rule solink\n  command = {target.cc} -shared -fuse-ld=lld -o $out $in $solibs\n  description = link $out"),
+        (
+            f"rule link\n  command = {target.cxx} $ldflags -o $out $in {' '.join(target.link_libs)}"
+            "\n  description = link $out"
+        ),
+        f"rule rc\n  command = {target.windres} -O coff -I {out / 'rt/platform'} $in -o $out\n  description = rc $in",
+        f"rule icon\n  command = {sys.executable} $in $out\n  description = icon $out",
+    ]
+    libs = []
+    for mod in () if runtime_only else MODULES:
+        objs = []
+        for src in sorted((gen / mod).glob("*.c")):
+            obj = out / mod / (src.stem + ".o")
+            objs.append(str(obj))
+            lines.append(f"build {obj}: cc {src}")
+        lib = out / f"lib{mod}.a"
+        libs.append(str(lib))
+        lines.append(f"build {lib}: ar {' '.join(objs)}")
+    rt_objs = []
+    rt_srcs = [*runtime_sources(target), out / "rt/defaults.c"] + ([] if dist else [out / "rt/modules.c"])
+    for src in rt_srcs:
+        rel = src.relative_to(RUNTIME) if src.is_relative_to(RUNTIME) else Path(src.name)
+        obj = out / "rt" / rel.with_suffix(".o")
+        rt_objs.append(str(obj))
+        lines.append(f"build {obj}: {'rtcxx' if src.suffix == '.cpp' else 'rtcc'} {src}")
+    if target.windres:  # windres writes no depfile: the manifest and the icon it embeds are listed by hand
+        rc = RUNTIME / "platform/mkw.rc"
+        ico = out / "rt/platform/mkw.ico"  # drawn by tools/build/icon.py, never committed
+        rt_objs.append(str(out / "rt/platform/mkw_rc.o"))
+        lines.append(f"build {ico}: icon {ROOT / 'tools/build/icon.py'}")
+        lines.append(f"build {rt_objs[-1]}: rc {rc} | {rc.with_suffix('.manifest')} {ico}")
+    if not dist:
+        lines.append(f"build {target.exe}: link {' '.join(rt_objs)} {' '.join(libs)}")
+        return "\n".join(lines) + "\n"
+    exe = dist / target.exe.name
+    tab = out / "rt/modules.o"
+    if runtime_only:
+        lines.append(f"build {exe}{f' | {out}/libmkw.dll.a' if target is WINDOWS else ''}: link {' '.join(rt_objs)}")
+        return "\n".join(lines) + "\n"
+    lines.append(f"build {tab}: tabcc {out / 'rt/modules.c'}")
+    if target is LINUX:
+        lines.append(f"build {exe}: link {' '.join(rt_objs)}")
+        lines.append(f"build {dist / 'mkwgame.so'}: solink {tab} {' '.join(libs)}")
+        lines.append("  solibs = -Wl,-z,noexecstack")
+    else:
+        implib = out / "libmkw.dll.a"
+        lines.append(f"build {exe} | {implib}: link {' '.join(rt_objs)}")
+        lines.append(f"build {dist / 'mkwgame.dll'}: solink {tab} {' '.join(libs)} | {implib}")
+        lines.append(f"  solibs = {implib}")
+    return "\n".join(lines) + "\n"
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    ap.add_argument("--gen", type=Path, default=ROOT / "build/generated")
+    ap.add_argument("--target", choices=("linux", "windows"), default="linux")
+    ap.add_argument("--out", type=Path, help="object directory (default build/obj, build/obj-win for windows)")
+    ap.add_argument(
+        "--dist", action="store_true",
+        help="the player's build: runtime and game code library apart, in build/dist/<target> (objects in obj-dist)",
+    )  # fmt: skip
+    ap.add_argument(
+        "--runtime-only", action="store_true",
+        help="with --dist: the runtime alone (the release and the CI), no generated C or game copy needed",
+    )  # fmt: skip
+    ap.add_argument("--exefs", type=Path, default=GAME / "exefs")
+    ap.add_argument("--romfs", type=Path, default=GAME / "romfs")
+    ap.add_argument("--jobs", type=int, default=0, help="parallel compiles (default: from the memory budget)")
+    ap.add_argument("--job-mem-gb", type=float, default=1.0, help="memory one job may take (a main chunk: ~0.3 GB)")
+    ap.add_argument("--dry-run", action="store_true", help="write build.ninja and show what would run")
+    ap.add_argument(
+        "--frame-pointers",
+        action="store_true",
+        help="runtime with frame pointers: perf call graphs (-g) of where threads block, e.g. -e cs",
+    )
+    args = ap.parse_args()
+    if args.runtime_only and not args.dist:
+        ap.error("--runtime-only needs --dist")
+    target = WINDOWS if args.target == "windows" else LINUX
+    dist = ROOT / "build/dist" / args.target if args.dist else None
+    args.out = args.out or ROOT / ("build/obj" + ("-dist" if dist else "") + ("-win" if target is WINDOWS else ""))
+    for tool in (target.cc, target.cxx, "ninja", target.ar):
+        if not shutil.which(tool):
+            sys.exit(f"{tool} not found" + (" (uv run tools/build/windeps.py)" if target is WINDOWS else ""))
+    if not (target.vma / "vk_mem_alloc.h").is_file():
+        sys.exit(f"{target.vma}/vk_mem_alloc.h missing (tools/build/README.md)")
+    jobs = args.jobs or max(1, min(os.cpu_count() or 1, int(mem_total_gb() * 0.6 / args.job_mem_gb)))
+    (args.out / "rt").mkdir(parents=True, exist_ok=True)
+    glue = [(args.out / "rt/defaults.c", defaults_glue(args.exefs, args.romfs, dist is not None))]
+    if not args.runtime_only:
+        glue.append((args.out / "rt/modules.c", module_glue(args.gen, args.exefs, dist is not None)))
+    for path, text in glue:
+        if not path.exists() or path.read_text() != text:  # an unchanged file keeps its mtime: no rebuild
+            path.write_text(text)
+    # which headers the library is built with, for the start screen (runtime/core/boot/gamelib.c rt_game_present)
+    if dist:
+        dist.mkdir(parents=True, exist_ok=True)
+        (dist / "mkwgame.id").write_text(game_id())
+    fp = ["-fno-omit-frame-pointer", "-mno-omit-leaf-frame-pointer"] if args.frame_pointers else []
+    (args.out / "build.ninja").write_text(ninja_file(target, args.gen, args.out, fp, dist, args.runtime_only))
+    if target is LINUX and not dist:
+        write_compile_db(args.out / "build.ninja")
+    cmd = ["ninja", "-f", str(args.out / "build.ninja"), "-j", str(jobs)] + (["-n"] if args.dry_run else [])
+    print(f"{' '.join(cmd)}  ({jobs} jobs)")
+    sys.exit(subprocess.run(cmd, check=False).returncode)
+
+
+def write_compile_db(ninja: Path) -> None:
+    """build/compile_commands.json for clangd (diagnostics right after an edit, no build): runtime only, the generated
+    chunks (~0.9 GB) would keep its background index busy. ccache is dropped: clangd takes argv[0] as the compiler."""
+    out = subprocess.run(["ninja", "-f", str(ninja), "-t", "compdb", "rtcc", "rtcxx"],
+                         capture_output=True, text=True, check=True).stdout  # fmt: skip
+    entries = json.loads(out)
+    for entry in entries:
+        entry["command"] = entry["command"].removeprefix("ccache ")
+    db = ROOT / "build/compile_commands.json"
+    text = json.dumps(entries, indent=1)
+    if not db.exists() or db.read_text() != text:
+        db.write_text(text)
+
+
+if __name__ == "__main__":
+    main()

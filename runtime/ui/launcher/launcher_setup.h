@@ -1,0 +1,19 @@
+// The game files setup the start screen runs (ui/launcher/launcher_setup.cpp): tools/prepare/prepare.py in a child process, with
+// the package's Python (setup/ next to the executable) or, in a source checkout, the repository's.
+#pragma once
+
+enum { SETUP_STEPS = 8 };   // prepare.py STEPS: check, exefs, romfs, generate, compile, shaders, warm, cleanup
+
+typedef struct {
+    int running;
+    int step;                // the step being run, 0..SETUP_STEPS-1; -1 none yet
+    int done[SETUP_STEPS];   // 1 run, 2 skipped (already done by an earlier setup)
+    long progress, total;    // of the step being run; total 0: no count
+    int finished;            // 1 done, -1 failed or cancelled
+    char error[512];         // why, when it failed
+} SetupState;
+
+int setup_available(const char *exe_dir);   // the Python and the script are there
+void setup_start(const char *exe_dir, const char *source, int link_romfs);
+void setup_cancel(void);
+SetupState setup_state(void);                // a copy, any time

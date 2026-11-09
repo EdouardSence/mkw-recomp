@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # vk_mem_alloc.h 3.4.0 and its sha256 (tools/build/README.md)
+  VMA_URL: https://raw.githubusercontent.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator/v3.4.0/include/vk_mem_alloc.h
+  VMA_SHA256: 8487b7995ad3b263eb73bc5b9a77d71aa69b6bef5d58a715c02d2663afd81f1a
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - name: Lint
+        run: uv run ruff check tools sm86
+      - name: Docs match the repo
+        run: uv run tools/docs/check.py
+      - name: Every setting has its row
+        run: uv run tools/git/cfg_rows.py
+      - name: No game code or files
+        run: |
+          marker='MKW_RECOMP_'"GENERATED_FROM_GAME_CODE"
+          if git grep -l -F "$marker" -- ':!recomp/gen.py' ':!tools/git/pre-commit'; then exit 1; fi
+          if git ls-files | grep -Ei '\.(nso|nca|nsp|xci|keys|bfsha|bntx|zs)$|(^|/)(main|sdk|subsdk[0-9]|rtld)$'; then exit 1; fi
+
+  linux:
+    runs-on: ubuntu-latest
+    container: archlinux:latest
+    steps:
+      - name: Toolchain and libraries
+        run: |
+          pacman -Syu --noconfirm --needed git clang lld ninja uv python sdl3 opus libvpx zstd xxhash \
+            vulkan-headers vulkan-icd-loader
+      - uses: actions/checkout@v5
+      - name: VMA header
+        run: |
+          mkdir -p scratchpad/vma
+          curl -sSfL -o scratchpad/vma/vk_mem_alloc.h "$VMA_URL"
+          echo "$VMA_SHA256  scratchpad/vma/vk_mem_alloc.h" | sha256sum -c -
+      # The self-tests (--probe-*) need the game set up: the runtime claims the game's address space first.
+      - name: Runtime and launcher (no game)
+        run: uv run tools/build/build.py --dist --runtime-only
+
+  windows:
+    runs-on: ubuntu-latest
+    container: archlinux:latest
+    steps:
+      - name: Tools
+        run: pacman -Syu --noconfirm --needed git ninja uv python
+      - uses: actions/checkout@v5
+      - uses: actions/cache@v4
+        with:
+          path: build/win
+          key: windeps-${{ hashFiles('tools/build/windeps.py') }}
+      - name: llvm-mingw and the Windows libraries
+        run: uv run tools/build/windeps.py
+      - name: mkw.exe (no game)
+        run: uv run tools/build/build.py --target windows --dist --runtime-only
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mkw-windows-runtime
+          path: build/dist/windows/mkw.exe
+          retention-days: 7

@@ -1,0 +1,24 @@
+#version 460
+// Task/mesh as compute: between the task pass and the mesh pass, the mesh workgroups
+// the task workgroups asked for, packed. Each task record ends in its mesh count (sm86 head.py TASK_MAIN_CS); map gets
+// one word per launched mesh workgroup, task << 5 | index, and args the indirect arguments: the mesh dispatch (x, 1, 1)
+// and the indexed draw of their triangles (64 a workgroup, 3 indices each). Without it every task workgroup launched
+// 32 mesh workgroups: GPU 100-115 ms a frame of race against 28-30 without the draws (wmesh1, GTX 1050 Ti).
+// One invocation does it: MKW's draws have 1-30 task workgroups (meshn1).
+#extension GL_EXT_buffer_reference : require
+#extension GL_EXT_shader_explicit_arithmetic_types_int64 : require
+layout(local_size_x = 1) in;
+layout(buffer_reference, std430, buffer_reference_align = 4) buffer U32s { uint d[]; };
+layout(push_constant) uniform Compact { U32s trec, map, args; uint tasks; } p;
+
+const uint TASK_REC = 1025u, PER_TASK = 32u, PRIMS = 64u;
+
+void main() {
+    uint n = 0u;
+    for (uint t = 0u; t < p.tasks; t++) {
+        uint c = min(p.trec.d[t * TASK_REC + TASK_REC - 1u], PER_TASK);
+        for (uint i = 0u; i < c; i++) p.map.d[n++] = t << 5 | i;
+    }
+    p.args.d[0] = n, p.args.d[1] = 1u, p.args.d[2] = 1u;                               // VkDispatchIndirectCommand
+    p.args.d[3] = n * PRIMS * 3u, p.args.d[4] = 1u, p.args.d[5] = 0u, p.args.d[6] = 0u, p.args.d[7] = 0u;   // indexed draw
+}
