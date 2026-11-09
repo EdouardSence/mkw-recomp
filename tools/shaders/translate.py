@@ -140,6 +140,7 @@ def write_mesh_cs_vs(out: Path) -> None:
 
 
 def main() -> None:
+    global GLSLC, VALIDATE
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--shaders", type=Path, default=ROOT / "build/shaders")
     ap.add_argument("--out", type=Path, default=ROOT / "build/spirv")
@@ -182,6 +183,9 @@ def main() -> None:
         stage = sph_stage(code.read_bytes()) or "cs"
         if not args.stage or stage == args.stage:
             jobs.append((code.stem, stage, str(args.dumped), str(args.out), args.full, th))
+    # main compiles this one itself: it needs --glslc and --no-validate too, or the player's setup, which has neither
+    # glslc nor spirv-val on PATH, fails here (Windows, v0.1.2 before release, 09/11/2026)
+    GLSLC, VALIDATE = args.glslc, not args.no_validate
     write_mesh_cs_vs(args.out)
     results = Counter()
     failed: dict[str, list[str]] = {}
