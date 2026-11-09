@@ -89,7 +89,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: astral-sh/setup-uv@v6
-      - name: Notes (docs/releases/template.md with the version's docs/releases/v<version>.md)
+      - name: Notes (docs/release-template.md with the version's section of CHANGELOG.md)
         run: uv run tools/build/notes.py --version "${GITHUB_REF_NAME#v}" --out notes.md
       - uses: actions/download-artifact@v5
         with:
