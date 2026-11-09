@@ -39,6 +39,9 @@ ROOT = Path(__file__).resolve().parents[2]  # the repository, or the package's s
 sys.path.insert(0, str(ROOT / "tools/build"))
 import build  # (GEN_FLAGS, module_glue, game_id: the same game code as build.py --dist)
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from machine import default_cc, default_glslc, mem_gb, own_children, package_dir, shader_jobs, tool_env
+
 PREP_VERSION = 1  # bump when a step's output changes meaning: every step runs again
 MAIN_BUILD_ID = "9e244438c3d8ef1c"  # MKW 1.0.0 exefs/main, the first 8 bytes of the NSO build id at 0x40
 ROMFS_FILES = 205_660  # files of the 1.0.0 RomFS (06/11/2026)
@@ -53,100 +56,6 @@ class Failed(Exception):
 
 def emit(*words: object) -> None:
     print(*words, flush=True)
-
-
-# ---- the package's tools (setup/ next to the executable), else the system's
-def package_dir(game: Path) -> Path:
-    return game / "setup"
-
-
-def default_cc(game: Path, target: str) -> list[str]:
-    zig = package_dir(game) / "zig" / ("zig.exe" if os.name == "nt" else "zig")
-    if zig.is_file():
-        return [str(zig), "cc", "-target", "x86_64-windows-gnu" if target == "windows" else "x86_64-linux-gnu"]
-    return ["clang"]
-
-
-def default_glslc(game: Path) -> str:
-    base = package_dir(game) / "glslc"
-    exe = base / ("glslc.exe" if os.name == "nt" else "bin/glslc")
-    return str(exe) if exe.is_file() else "glslc"
-
-
-def tool_env(glslc: str) -> dict[str, str]:
-    """The package's glslc finds its libraries beside it (conda-forge layout: bin/ and lib/)."""
-    env = dict(os.environ)
-    lib = Path(glslc).parent.parent / "lib"
-    if os.name != "nt" and lib.is_dir():
-        env["LD_LIBRARY_PATH"] = f"{lib}:{env['LD_LIBRARY_PATH']}" if env.get("LD_LIBRARY_PATH") else str(lib)
-    return env
-
-
-def own_children() -> None:
-    """A cancel from the start screen ends this process: its tools (gen.py's workers, the compilers, glslc) must end with
-    it. POSIX: our own process group, killed on SIGTERM. Windows: a job object that kills its processes when its last
-    handle, ours, closes (SDL_KillProcess is TerminateProcess there)."""
-    if os.name != "nt":
-        import signal
-
-        os.setpgrp()
-        signal.signal(signal.SIGTERM, lambda *_: os.killpg(0, signal.SIGKILL))
-        return
-    import ctypes
-    from ctypes import wintypes
-
-    class Limits(ctypes.Structure):  # JOBOBJECT_EXTENDED_LIMIT_INFORMATION
-        _fields_ = [("basic", ctypes.c_byte * 64), ("io", ctypes.c_byte * 48), ("process_memory", ctypes.c_size_t),
-                    ("job_memory", ctypes.c_size_t), ("peak_process", ctypes.c_size_t), ("peak_job", ctypes.c_size_t)]  # fmt: skip
-
-    k32 = ctypes.WinDLL("kernel32", use_last_error=True)
-    # Started by the start screen (a GUI program) python.exe gets a console window of its own; hidden here, and every
-    # tool below (gen.py's workers, zig, glslc) shares that console instead of opening one each.
-    k32.GetConsoleWindow.restype = wintypes.HWND
-    console = k32.GetConsoleWindow()
-    if console:
-        ctypes.WinDLL("user32").ShowWindow(console, 0)  # SW_HIDE
-    k32.CreateJobObjectW.restype = wintypes.HANDLE
-    k32.GetCurrentProcess.restype = wintypes.HANDLE
-    job = k32.CreateJobObjectW(None, None)
-    lim = Limits()
-    ctypes.c_uint32.from_buffer(lim.basic, 16).value = 0x2000  # LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE
-    k32.SetInformationJobObject(wintypes.HANDLE(job), 9, ctypes.byref(lim), ctypes.sizeof(lim))
-    k32.AssignProcessToJobObject(wintypes.HANDLE(job), wintypes.HANDLE(k32.GetCurrentProcess()))
-
-
-def mem_available_gb() -> float:
-    """Memory free for new work now (MemAvailable on Linux, ullAvailPhys on Windows); 8 when unknown."""
-    if os.name == "nt":
-        import ctypes
-
-        class Status(ctypes.Structure):  # MEMORYSTATUSEX
-            _fields_ = [("length", ctypes.c_uint32), ("load", ctypes.c_uint32), ("total", ctypes.c_uint64),
-                        ("avail", ctypes.c_uint64), ("rest", ctypes.c_uint64 * 5)]  # fmt: skip
-
-        st = Status(length=ctypes.sizeof(Status))
-        return st.avail / 2**30 if ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(st)) else 8.0
-    try:
-        with open("/proc/meminfo") as f:
-            for line in f:
-                if line.startswith("MemAvailable:"):
-                    return int(line.split()[1]) / 2**20
-    except OSError:
-        pass
-    return 8.0
-
-
-def shader_jobs() -> int:
-    """Every core, as far as memory goes: a worker and its glslc take ~0.25 GB (four took 1.0 GB, 06/11/2026) and up
-    to 0.75 GB on the largest programs (translate.py). Half the cores, as before, left 8 of 12 idle: 40 min."""
-    return max(1, min(os.cpu_count() or 1, int(mem_available_gb() / 0.75)))
-
-
-def mem_gb() -> float:
-    try:
-        return build.mem_total_gb()
-    except OSError:
-        return 8.0
 
 
 # ---- check
@@ -306,9 +215,9 @@ def shaders(exefs: Path, romfs: Path, game: Path, work: Path, glslc: str, jobs: 
 
 
 def warm(game: Path, work: Path) -> None:
-    """The game run once to its title, so the first real start finds pipeline-cache.bin and pipeline-keys.bin
-   . Its saves go to a scratch profile: the player's first start stays
-    a first start. The window opens without taking focus and without sound; the run is ended after WARM_SECONDS."""
+    """The game run once to its title, so the first real start finds pipeline-cache.bin and pipeline-keys.bin. Its
+    saves go to a scratch profile: the player's first start stays a first start. The window opens without taking focus
+    and without sound; the run is ended after WARM_SECONDS."""
     exe = game / ("mkw.exe" if os.name == "nt" else "mkw")
     env = dict(os.environ, MKW_LAUNCHED="1", MKW_ASSUME_FOCUS="1", MKW_AUDIO="none",
                MKW_PROFILE_DIR=str(work / "warm-profile"))  # fmt: skip
