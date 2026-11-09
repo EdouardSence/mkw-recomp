@@ -6,6 +6,7 @@ through `job.sh`.
 | Script | What it does | Usage |
 |---|---|---|
 | `job.sh` | Runs a heavy command (a game run, a replay) through the host's job runner when there is one (`JOB_RUNNER`, memory cap and one at a time), else directly | `tools/run/job.sh run\|start NAME CMD...` |
+| `watch.sh` | Follows a run's log and prints the lines matching a pattern, plus FATAL and guard stops; exits when the run ends (the command of a Monitor) | `tools/run/watch.sh NAME [PATTERN]` |
 | `live.sh` | A run that stays alive to be inspected through its control FIFO (`MKW_CTL`, `runtime/core/base/ctl.c`), with the race runs' settings | `tools/run/live.sh NAME [SECONDS]` |
 | `ctl.sh` | Sends a command to that run and waits for its answer: `frame`, `shot PATH` (whole screenshot and `PATH-s.png` 1280 wide for viewing), `dump DIR [ubo|lut]` (dump of the next frame), `flight`, `mem ADDR SIZE PATH` (game memory to a file), `tex ADDR` (textures over that address; 0: pool images larger than their storage), `press <ticks> <button> [hold]`, `stop` | `tools/run/ctl.sh NAME COMMAND...` |
 | `at.sh` | `ctl.sh` commands when the game enters one of its phases (`AIGlobalSeq*` nodes: `TitleMenuMain`, `PartsSelectEx`, `SimpleConfirm`, `ReadyRace`, `WaitIntroMovie`…), not at a frame number. The run needs `MKW_SEQ_WATCH=1`; `MKW_SEQ_HOLD=WaitIntroMovie` lets the movie play without the script skipping it | `tools/run/at.sh NAME PHASE [+FRAMES] command [arg] [-- command...]` |

@@ -136,10 +136,13 @@ def linux(dist: Path, version: str) -> Path:
     tool, runtime = fetch(*PINS["appimagetool"]), fetch(*PINS["runtime"])
     tool.chmod(0o755)
     out = OUT / f"mkw-recomp-{version}-x86_64.AppImage"
-    # appimagetool is an AppImage itself: extracted and run, no FUSE in a container
+    # appimagetool is an AppImage itself: extracted and run, no FUSE in a container. Into a .part then renamed: an
+    # AppImage of the same name still mounted (a test of it) made mksquashfs fail with "Text file busy" (09/11/2026).
     env = dict(os.environ, ARCH="x86_64", APPIMAGE_EXTRACT_AND_RUN="1")
-    subprocess.run([str(tool), "--no-appstream", "--runtime-file", str(runtime), str(app), str(out)], env=env,
+    part = out.with_name(out.name + ".part")
+    subprocess.run([str(tool), "--no-appstream", "--runtime-file", str(runtime), str(app), str(part)], env=env,
                    check=True)  # fmt: skip
+    part.replace(out)
     shutil.rmtree(app)
     return out
 
