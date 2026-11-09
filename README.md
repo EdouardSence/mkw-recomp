@@ -59,12 +59,12 @@ into the table with the date of the report.
 </p>
 
 1. Dump Mario Kart World 1.0.0 from your Switch 2 (`exefs/` and `romfs/`, decrypted).
-2. Download the launcher from [Releases](https://github.com/adriadam10/mkw-recomp/releases): on Linux the `.AppImage`
-   (it keeps the game it builds in `~/.local/share/mkw-recomp`; glibc 2.31 or newer: Debian 11, Ubuntu 20.04, SteamOS
-   and later), with about 30 GB free. Windows has no release yet: build it from source (below).
+2. Download the launcher for your system from [Releases](https://github.com/adriadam10/mkw-recomp/releases): on Linux
+   the `.AppImage` (it keeps the game it builds in `~/.local/share/mkw-recomp`; glibc 2.31 or newer: Debian 11,
+   Ubuntu 20.04, SteamOS and later), on Windows the `.zip`, unpacked into a folder. Either needs about 30 GB free.
 3. Run the AppImage (`chmod +x` first) or `mkw.exe`, open **Game files**, point it at your dump and press **Prepare**.
-   The first setup takes a while (it compiles the whole game and downloads NVIDIA's `nvdisasm` and `ptxas`, 84 MB, to
-   describe the shader encoding on your machine); after that, **Play**.
+   The first setup takes a while (it compiles the whole game and downloads NVIDIA's `nvdisasm` and `ptxas`, 84 MB on
+   Linux and 126 MB on Windows, to describe the shader encoding on your machine); after that, **Play**.
 
 Requirements: x86-64 CPU with AVX2, a GPU with Vulkan 1.3 (`VK_EXT_mesh_shader` recommended; without it, task and
 mesh shaders run as compute), 16 GB of RAM recommended.

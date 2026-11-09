@@ -1,8 +1,8 @@
 name: Release
 
-# A tag v* publishes the release: the Linux AppImage of the start screen and its setup tools, nothing of the game
-# (tools/build/release.py) nor NVIDIA's SM86 spec (the setup builds it: sm86/spec/spec.py). The Windows zip is built
-# only by workflow_dispatch, as a run artifact, until its setup can build the spec too.
+# A tag v* publishes the release: the Linux AppImage and the Windows zip of the start screen and its setup tools,
+# nothing of the game (tools/build/release.py) nor NVIDIA's SM86 spec (the setup builds it: sm86/spec/spec.py).
+# workflow_dispatch builds both and keeps them as run artifacts only.
 on:
   push:
     tags: ["v*"]
@@ -54,7 +54,6 @@ jobs:
           retention-days: 7
 
   windows:
-    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     container: archlinux:latest
     steps:
@@ -83,7 +82,7 @@ jobs:
 
   publish:
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: linux
+    needs: [linux, windows]
     runs-on: ubuntu-latest
     permissions:
       contents: write
