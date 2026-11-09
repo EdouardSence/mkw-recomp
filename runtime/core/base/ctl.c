@@ -112,7 +112,6 @@ void ctl_init(void) {
 #include <windows.h>
 
 // (a remote run writes one, over SSH, and reads the answer from the log).
-// (tools/run/win.sh ctl writes one and reads the answer from the log).
 static void ctl_main(void *arg) {
     const char *path = arg;
     for (;;) {
