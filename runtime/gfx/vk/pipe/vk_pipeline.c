@@ -1152,8 +1152,8 @@ void vk_pipeline_save(void) {
                (unsigned long long)P.g.swaps, (unsigned long long)P.g.requeued, (unsigned long long)P.g.slow,
                (unsigned long long)P.g.dlinks, P.g.dlinks ? P.g.dlink_ms / P.g.dlinks : 0.0, P.g.dlink_max);
         if (U.waits || U.queued)
-            rt_log("vk_pipeline: gpl: library jobs for waiting draws: %llu queued, %llu built by a worker, %llu by the "
-                   "thread that needed them (no worker free), %llu waits ended at their limit",
+            rt_log("vk_pipeline: gpl: library jobs for waiting draws: %llu queued, %llu built by a worker, %llu by a "
+                   "helper thread (no worker free), %llu waits ended at their limit",
                    (unsigned long long)U.queued, (unsigned long long)U.by_worker, (unsigned long long)U.stolen,
                    (unsigned long long)U.timeouts);
         static const char *const kn[4] = {"vertex input", "pre-rasterization", "fragment shader", "fragment output"};
