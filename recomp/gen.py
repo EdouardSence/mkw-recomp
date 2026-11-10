@@ -129,12 +129,22 @@ def discover(mod):
     add = idx((w & 0xFFC00000) == 0x91000000)
     rn = ((w[add] >> 5) & 31).astype(np.int64)
     found = np.full(len(add), -1, dtype=np.int64)
+    # An instruction between the two that writes the register (data processing, or a load) ends the search: in
+    # `adrp x12, P; add x12, x10, x11; add x12, x12, #0x10` the last add is not P + 0x10. Taken as one, it made a
+    # function start in the middle of main+0x35b1c0, whose switch then lost three of its four cases (issue #40: "no
+    # function at guest pc main+0x35bdf8").
+    dp = ((w & 0x1C000000) == 0x10000000) | ((w & 0x0E000000) == 0x0A000000)
+    load = ((w & 0x0A000000) == 0x08000000) & ((w >> 22) & 1 == 1)
+    writes = (dp | load) & ~is_adrp
+    clobbered = np.zeros(len(add), dtype=bool)
     for k in range(1, 9):
         p = add - k
-        cand = (found < 0) & (p >= 0)
+        cand = (found < 0) & (p >= 0) & ~clobbered
         pc = np.where(cand, p, 0)
-        cand &= is_adrp[pc] & ((w[pc] & 31).astype(np.int64) == rn)
-        found[cand] = p[cand]
+        same = (w[pc] & 31).astype(np.int64) == rn
+        hit_k = cand & is_adrp[pc] & same
+        found[hit_k] = p[hit_k]
+        clobbered |= cand & ~hit_k & writes[pc] & same
     hit = found >= 0
     p = found[hit]
     page = ((pc0 + p * 4) & ~np.int64(0xFFF)) + (imm21(p) << 12)
