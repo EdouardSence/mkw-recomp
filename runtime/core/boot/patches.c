@@ -37,14 +37,20 @@
 // 2048 handheld). Only a square buffer of 512 or more is resized: what the site's caller (main+0x22d45c) creates.
 static uint32_t shadow_size;
 static uint64_t rb_obj, rb_heaps[8];   // the render-buffer allocator and its heap chain (host_shadow_pool)
-static int rb_pool_done;
-static void shadow_second_pool(Cpu *c);
+static int rb_pool_done, rb_pool_ok;
+static int shadow_second_pool(Cpu *c);
 static void host_shadow_rb(Cpu *c) {
     uint32_t *w = (uint32_t *)(uintptr_t)(c->x[0] + 0x68), *h = (uint32_t *)(uintptr_t)(c->x[0] + 0x88);
     if (shadow_size && *w == *h && *w >= 512) {
-        rt_log("patches: shadow map %ux%u instead of %ux%u (MKW_SHADOW_SIZE)", shadow_size, shadow_size, *w, *h);
-        *w = *h = shadow_size;
-        if (shadow_size > 3072 && !rb_pool_done) shadow_second_pool(c);
+        if (shadow_size > 3072 && !rb_pool_done) rb_pool_ok = shadow_second_pool(c);
+        // Without the second pool a map over 3072 does not fit and main+0x37b520 reads a null block (issue #48, 4096
+        // at 1440 lines: "no free second slot", then that crash after the character choice): the game's size then.
+        if (shadow_size <= 3072 || rb_pool_ok) {
+            static int logs;   // the game creates it again on every course change (#51: 43 000 lines in one log)
+            if (*w != shadow_size && logs++ < 4)
+                rt_log("patches: shadow map %ux%u instead of %ux%u (MKW_SHADOW_SIZE)", shadow_size, shadow_size, *w, *h);
+            *w = *h = shadow_size;
+        }
     }
     rt_call(c, GUEST_RENDERBUFFER_CREATE, 4, c->x[0], c->x[1], c->x[2], c->x[3]);
 }
@@ -66,14 +72,15 @@ static void host_shadow_pool(Cpu *c) {
 }
 
 // The second pool as the allocator makes one (main+0x37cdbc..0x37ce2c; its init's own, main+0x8eb85c..0x8eb890).
-static void shadow_second_pool(Cpu *c) {
+static int shadow_second_pool(Cpu *c) {
     rb_pool_done = 1;
     uint64_t a[4] = {c->x[0], c->x[1], c->x[2], c->x[3]};   // host_shadow_rb passes them on
     uint64_t size = (3 * 2 * ((uint64_t)shadow_size * shadow_size - 3072ull * 3072) + 0xffff) & ~0xffffull;
     uint64_t **table = (uint64_t **)(uintptr_t)(rb_obj + 0x2a90), heap = 0, room = 0;
     if (!rb_obj || *(int32_t *)(uintptr_t)(rb_obj + 0x2a88) < 2 || (*table)[1]) {
-        rt_log("patches: render-buffer allocator has no free second slot; no pool for the %u shadow map", shadow_size);
-        return;
+        rt_log("patches: render-buffer allocator has no free second slot; no pool for the %u shadow map: the game's "
+               "size instead", shadow_size);
+        return 0;
     }
     for (int i = 0; i < 8 && rb_heaps[i]; i++) {
         uint64_t h = rb_heaps[i], *vt = (uint64_t *)(uintptr_t)*(uint64_t *)(uintptr_t)h;
@@ -91,6 +98,7 @@ static void shadow_second_pool(Cpu *c) {
            "%#llx free)", pool ? "a" : "no room for a", (unsigned long long)size, shadow_size,
            (unsigned long long)heap, (unsigned long long)room);
     for (int i = 0; i < 4; i++) c->x[i] = a[i];
+    return pool != 0;
 }
 
 // The seed set: MKW_SEED (Hacks tab) in place of the clock the game seeds its random generator with (core/hacks/seed.c).
