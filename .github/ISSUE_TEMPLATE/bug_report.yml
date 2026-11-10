@@ -31,6 +31,18 @@ body:
     validations:
       required: true
   - type: dropdown
+    id: gpu
+    attributes:
+      label: GPU
+      description: The GPU the game runs on. It labels the issue, so reports from the same hardware end up together.
+      options:
+        - AMD (Radeon, Ryzen APU, Steam Deck, ROG Ally)
+        - NVIDIA (GeForce, RTX)
+        - Intel (Arc, Iris Xe, UHD)
+        - Other or not sure
+    validations:
+      required: true
+  - type: dropdown
     id: where
     attributes:
       label: Where
@@ -54,6 +66,6 @@ body:
     id: log
     attributes:
       label: Log
-      description: Attach `logs/mkw.log` from the game folder (or the setup's output). Screenshots help with rendering bugs.
+      description: Attach `logs/mkw.log` from the game folder, or `logs/setup.log` if the setup failed. Screenshots help with rendering bugs.
     validations:
       required: true

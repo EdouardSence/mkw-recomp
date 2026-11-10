@@ -1,0 +1,10 @@
+# Labels for new issues from the bug report form's answers (.github/ISSUE_TEMPLATE/bug_report.yml), applied by
+# .github/workflows/labeler.yml. A form renders each answer under its label as "### GPU\n\n<option>".
+gpu-amd:
+  - '### GPU\s+AMD'
+gpu-nvidia:
+  - '### GPU\s+NVIDIA'
+gpu-intel:
+  - '### GPU\s+Intel'
+setup:
+  - '### Where\s+(Start screen or setup|Building from source)'
