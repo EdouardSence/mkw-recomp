@@ -4,6 +4,7 @@ the tool processes tied to this one, and the memory that sizes the parallel jobs
 Why apart: prepare.py holds the steps; this is what they run with. Not run on its own.
 """
 
+import json
 import os
 import sys
 from pathlib import Path
@@ -33,6 +34,20 @@ def default_cc(game: Path, target: str) -> list[str]:
         os.environ["ZIG_LIB_DIR"] = str(lib)
         return [str(zig), "cc", "-target", "x86_64-windows-gnu" if target == "windows" else "x86_64-linux-gnu"]
     return ["clang"]
+
+
+def crt_link(game: Path, cc: list[str], lib: Path, out: Path, obj: Path, inputs: list[str]) -> list[str] | None:
+    """The Windows link as zig lld-link with the package's prebuilt C runtime (setup/lib/crt, tools/build/dist.py
+    windows_crt): zig never builds its libc on the player's machine, the build that never ended on many Windows PCs
+    (issue #2). None without it (a source checkout, another compiler): the caller links with zig cc."""
+    spec = package_dir(game) / "lib/crt/link.json"
+    if Path(cc[0]).stem != "zig" or not spec.is_file():
+        return None
+    s = json.loads(spec.read_text())
+    pdb = lib.with_name(lib.name + ".pdb")  # the name zig cc gave it
+    return [cc[0], "lld-link", *s["flags"], f"-OUT:{out}", f"-PDB:{pdb}", f"-PDBALTPATH:{pdb.name}",
+            f"-IMPLIB:{obj / 'mkwgame.lib'}", *inputs,
+            *(str(spec.parent / f) for f in s["files"])]  # fmt: skip
 
 
 def default_glslc(game: Path) -> str:

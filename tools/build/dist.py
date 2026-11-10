@@ -12,6 +12,7 @@ Layout of build/dist/<target>/ (after build.py --dist):
     setup/python, setup/zig, setup/glslc
     setup/src/                      recomp/, sm86/, tools/{build,prepare,romfs,shaders}, runtime/{cpu,core/boot/gamelib.h}
     setup/lib/libmkw.dll.a          (Windows) the runtime's import library the game code library links against
+    setup/lib/crt/                  (Windows) zig's C runtime for the target, prebuilt, and link.json: windows_crt()
 The desktop shortcut is the start screen's (a .desktop on Linux, a .lnk on Windows: platform.h).
 
 Usage: uv run tools/build/dist.py [--target linux|windows] [--check]
@@ -20,10 +21,13 @@ Usage: uv run tools/build/dist.py [--target linux|windows] [--check]
 
 import argparse
 import hashlib
+import json
+import os
 import shutil
 import subprocess
 import sys
 import tarfile
+import tempfile
 import urllib.request
 import zipfile
 from pathlib import Path
@@ -139,6 +143,42 @@ def unpack_wheel(wheel: Path, site: Path) -> None:
         z.extractall(site)
 
 
+def windows_crt(crt: Path) -> None:
+    """zig's C runtime for x86_64-windows-gnu (mingw's startup object, zigc, compiler_rt, the import libraries of
+    kernel32, the UCRT...) built here once, with the flags of zig's own lld-link line in link.json, so the setup links
+    with zig lld-link alone (prepare.py). zig builds them on a machine's first link, and on many players' Windows PCs that
+    build never ended (issue #2: stuck at 359/360 on 0.1.2 and 0.1.3, no "link probe" line in setup.log after 30 min;
+    84 s on our 6-thread PC). They depend only on the target and zig's version: the Linux zig of the same release builds
+    them."""
+    host = DL / "zig-host"
+    unpack_top(fetch(*PINS["linux"]["zig"]), host)
+    shutil.rmtree(crt, ignore_errors=True)
+    crt.mkdir(parents=True)
+    with tempfile.TemporaryDirectory() as tmp:
+        t = Path(tmp)
+        (t / "probe.c").write_text("int probe(void) { return 0; }\n")
+        env = {**os.environ, "ZIG_GLOBAL_CACHE_DIR": str(t / "cache"), "ZIG_LIB_DIR": str(host / "lib"),
+               "ZIG_VERBOSE_LINK": "1"}  # fmt: skip
+        r = subprocess.run([str(host / "zig"), "cc", "-target", "x86_64-windows-gnu", "-shared", "-o",
+                            str(t / "probe.dll"), str(t / "probe.c")],
+                           env=env, capture_output=True, text=True, check=True)  # fmt: skip
+        (line,) = [ln.split() for ln in (r.stdout + r.stderr).splitlines() if ln.startswith("lld-link ")]
+        flags, files = [], {}
+        for arg in line[1:]:
+            p = Path(arg)
+            if p.is_absolute() and p.suffix in (".obj", ".lib"):
+                if p.stem == "probe" or files.get(p.name) == p:
+                    continue
+                if p.name in files:
+                    sys.exit(f"zig's link line has two different {p.name}: {files[p.name]}, {p}")
+                shutil.copy2(p, crt / p.name)
+                files[p.name] = p
+            elif not arg.startswith(("-PDB:", "-PDBALTPATH:", "-OUT:", "-IMPLIB:")):
+                flags.append(arg)
+    (crt / "link.json").write_text(json.dumps({"flags": flags, "files": list(files)}, indent=1))
+    print(f"{crt}: {len(files)} files, flags {' '.join(flags)}")
+
+
 def copy_sources(src_root: Path) -> None:
     shutil.rmtree(src_root, ignore_errors=True)
     skip = shutil.ignore_patterns("__pycache__", "*.pyc", "README.md")
@@ -188,6 +228,7 @@ def main() -> None:
                 shutil.copy2(p, glslc / p.name)
         (setup / "lib").mkdir(exist_ok=True)
         shutil.copy2(ROOT / "build/obj-dist-win/libmkw.dll.a", setup / "lib/libmkw.dll.a")
+        windows_crt(setup / "lib/crt")
         for dll in WIN_DLLS:
             shutil.copy2(ROOT / "build/win/deps/bin" / dll, out / dll)
     copy_sources(setup / "src")

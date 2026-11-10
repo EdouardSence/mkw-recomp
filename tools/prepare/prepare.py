@@ -40,7 +40,17 @@ sys.path.insert(0, str(ROOT / "tools/build"))
 import build  # (GEN_FLAGS, module_glue, game_id: the same game code as build.py --dist)
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from machine import Failed, default_cc, default_glslc, mem_gb, own_children, package_dir, shader_jobs, tool_env
+from machine import (
+    Failed,
+    crt_link,
+    default_cc,
+    default_glslc,
+    mem_gb,
+    own_children,
+    package_dir,
+    shader_jobs,
+    tool_env,
+)
 
 PREP_VERSION = 1  # bump when a step's output changes meaning: every step runs again
 MAIN_BUILD_ID = "9e244438c3d8ef1c"  # MKW 1.0.0 exefs/main, the first 8 bytes of the NSO build id at 0x40
@@ -169,23 +179,26 @@ def compile_game(game: Path, exefs: Path, work: Path, cc: list[str], target: str
         )
         return "" if not r.returncode else f"{src.name}: {r.stderr.strip()[-300:]}"
 
+    lib = game / ("mkwgame.dll" if windows else "mkwgame.so")
+    part = lib.with_name(lib.name + ".part")
+    rsp = obj / "link.rsp"  # ~360 objects: past the Windows command line limit
+    link = crt_link(game, cc, lib, part, obj, [f"@{rsp}", *extra]) if windows else None
     with ThreadPoolExecutor(jobs) as pool:
-        probe = pool.submit(probe_link, cc, obj, windows)  # first, so it runs beside the compiles
+        # first, so it runs beside the compiles; not needed with the package's prebuilt C runtime (crt_link)
+        probe = None if link else pool.submit(probe_link, cc, obj, windows)
         for err in pool.map(one, jobs_c):
             if err:
                 raise Failed(f"compiling the game code failed: {err}")
             done += 1
             emit("progress", done, total)
-        probe.result()
-    lib = game / ("mkwgame.dll" if windows else "mkwgame.so")
-    part = lib.with_name(lib.name + ".part")
+        if probe:
+            probe.result()
     objs = [str(o) for _, o, _ in jobs_c]
-    rsp = obj / "link.rsp"  # ~360 objects: past the Windows command line limit
     rsp.write_text("\n".join(f'"{o}"' for o in objs).replace("\\", "/"))
     t0 = time.monotonic()
     try:
-        r = subprocess.run([*cc, "-shared", "-o", str(part), f"@{rsp}", *extra], capture_output=True, text=True,
-                           check=False, timeout=LINK_TIMEOUT)  # fmt: skip
+        r = subprocess.run(link or [*cc, "-shared", "-o", str(part), f"@{rsp}", *extra], capture_output=True,
+                           text=True, check=False, timeout=LINK_TIMEOUT)  # fmt: skip
     except subprocess.TimeoutExpired as e:
         raise Failed(f"linking the game code took over {LINK_TIMEOUT // 60} min: {tail_of(e.stderr)}") from None
     print(f"link: {time.monotonic() - t0:.1f} s, rc {r.returncode}\n{r.stderr}", file=sys.stderr)
