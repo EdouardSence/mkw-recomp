@@ -7,7 +7,8 @@ and the code: graphics stages start with a 0x80-byte program header (SPH), compu
 BNSH walk adapted from totk-pc-recomp tools/shader_census.py @ c3b9a4e (MIT).
 
 Usage: uv run tools/shaders/extract.py [--romfs DIR] [--out build/shaders]
-Writes <sha1>.ctl and <sha1>.code per stage and index.csv (sha1, stage, code bytes, source file, program index).
+Writes <sha1>.ctl and <sha1>.code per stage and index.csv (sha1, stage, code bytes, source file, program index), and
+<sha1>.c1 with the program's own constants (bank c[1]) when it has any: a BRX's jump table lives there.
 """
 
 import argparse
@@ -28,6 +29,13 @@ CONTROL_SIZE = 0xD8
 SPH_SIZE = 0x80
 NOP_LOW16 = 0x7918  # low 16 bits of the SM86 NOP encoding (padding)
 CODE_SIZE_AT = 0x44  # u32 in the control section: code bytes, SPH included
+C1_AT = 0x3C  # u32 size and u32 offset in the code blob of the program's constants, bank c[1] (vk_exec_bind.c ubo_info)
+
+
+def constants(ctl: bytes, blob: bytes) -> bytes:
+    """The program's c[1] bytes from its untrimmed code blob; b'' without them."""
+    size, off = struct.unpack_from("<2I", ctl, C1_AT)
+    return blob[off : off + size] if size and off + size <= len(blob) else b""
 SLOT_STAGES = {0x08: "vs", 0x10: "tcs", 0x18: "tes", 0x20: "gs", 0x28: "ps", 0x30: "cs"}
 # Type 3 is TES on Maxwell; MKW has no tessellation and its 12 type-3 programs match the 12 task/mesh programs
 # eden-nx2 could not lower (NX2_NOTES.md row 88), so it is named apart until the SPH fields are read.
@@ -212,6 +220,7 @@ def main() -> None:
             continue
         for index, slot_stage, ctl, code in found:
             stage = sph_stage(code) or slot_stage or "cs"
+            c1 = constants(ctl, code)
             code = trim(code, stage)
             key = hashlib.sha1(ctl + code).hexdigest()
             if key in seen:
@@ -220,6 +229,8 @@ def main() -> None:
             stages[stage] += 1
             (args.out / f"{key}.ctl").write_bytes(ctl)
             (args.out / f"{key}.code").write_bytes(code)
+            if c1:
+                (args.out / f"{key}.c1").write_bytes(c1)
             rows.append((key, stage, len(code), name, index))
     with (args.out / "index.csv").open("w", newline="") as f:
         w = csv.writer(f)

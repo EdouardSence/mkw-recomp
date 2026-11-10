@@ -306,6 +306,31 @@ def inline_single_call(insns: list[Insn]) -> list[Insn]:
     return rest[:at] + [insns[k] for k in body] + rest[at:]
 
 
+def brx_targets(insns: list[Insn], c1: bytes) -> set[int]:
+    """Where the BRX/BRXU jumps of a program may land. ptxas lowers a switch to `LDC Rn, c[0x1][Ri]` from a jump table
+    of absolute pcs in the program's own constants, then `BRX Rn` with an offset that cancels pc + 16: the targets are
+    the table's words that are instruction pcs. Without that shape every instruction may be a target, and the switch
+    then gets one case per instruction: AMD's compiler took minutes on such programs (issue #36: 9 of the first 981
+    did not finish in 120 s in amdllpc, against ~60 ms for the rest), and the first frame waited for them."""
+    pcs = {i.pc for i in insns}
+    words = struct.unpack_from(f"<{len(c1) // 4}I", c1) if c1 else ()
+    found: set[int] = set()
+    for k, i in enumerate(insns):
+        if i.op not in ("BRX", "BRXU"):
+            continue
+        ra, off = (i.v("URa"), i.sv("UR_offset")) if i.op == "BRXU" else (i.v("Ra"), i.sv("Ra_offset"))
+        src = next((p for p in reversed(insns[:k]) if p.v("Rd", None) == ra), None) if i.op == "BRX" else None
+        iv = next((v for n, v in src.f.items() if n.startswith("ConstBankAddress")), None) if src and src.op == "LDC" else None
+        if not iv or next(v for _, v in iv.slot_values) != 1:
+            return pcs
+        base = i.pc + 16 + 4 * off
+        hit = {(w + base) & 0xFFFFFFFF for w in words} & pcs
+        if not hit:
+            return pcs
+        found |= hit
+    return found
+
+
 def compute_shape(control: bytes) -> tuple[int, int, int, int]:
     """Workgroup size (x, y, z) and shared memory bytes of a compute program: words 0x58-0x64 of its 0xd8-byte NVN2
     control section (measured 31/10/2026 over the 728 compute stages: sizes 64x1x1, 32x1x1, 8x8x1, 4x4x4..., and no
@@ -315,9 +340,10 @@ def compute_shape(control: bytes) -> tuple[int, int, int, int]:
 
 
 def translate(
-    sph: Sph | None, insns: list[Insn], stage: str, shape: tuple[int, int, int, int] | None = None
+    sph: Sph | None, insns: list[Insn], stage: str, shape: tuple[int, int, int, int] | None = None, c1: bytes = b""
 ) -> tuple[str, dict]:
-    """shape: compute_shape() of a compute program; without it the workgroup is 1x1x1 (a census without controls)."""
+    """shape: compute_shape() of a compute program; without it the workgroup is 1x1x1 (a census without controls).
+    c1: the program's own constants (extract.py <sha1>.c1), where a BRX's jump table is."""
     if stage not in ("ps", "vs", "cs", "tes?"):
         raise Unsupported(f"stage {stage}")
     b = Builder(sph, stage)
@@ -341,7 +367,7 @@ def translate(
         elif i.op in ("RET", "EXIT"):
             targets.add(i.pc + 16)
     if any(i.op in ("BRX", "BRXU") for i in insns):
-        targets |= {i.pc for i in insns}  # targets come from a table in c[1] at run time: any instruction may be one
+        targets |= brx_targets(insns, c1)
     body = []
     stmts: list[str] = []  # per instruction, for the structured form (flow.py)
     branches: dict[int, tuple[int, str | None]] = {}

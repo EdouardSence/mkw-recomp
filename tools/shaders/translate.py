@@ -73,15 +73,16 @@ def work(job: tuple[str, str, str, str, bool, str]) -> tuple[str, str]:
         prev_th, _, why = done.read_text().partition("\n")
         if prev_th == th and (why != "ok" or Path(out, f"{key}.spv").exists()):
             return sha, why
-    why = translate_one(sha, stage, code, key, out, full, ctl)
+    c1 = Path(shaders, f"{sha}.c1")
+    why = translate_one(sha, stage, code, key, out, full, ctl, c1.read_bytes() if c1.exists() else b"")
     done.write_text(f"{th}\n{why}")
     return sha, why
 
 
-def translate_one(sha: str, stage: str, code: bytes, key: str, out: str, full: bool, ctl: bytes) -> str:
+def translate_one(sha: str, stage: str, code: bytes, key: str, out: str, full: bool, ctl: bytes, c1: bytes = b"") -> str:
     sph, insns = _dec.program(code, stage)
     try:
-        src, refl = glsl.translate(sph, insns, stage, glsl.compute_shape(ctl) if stage == "cs" else None)
+        src, refl = glsl.translate(sph, insns, stage, glsl.compute_shape(ctl) if stage == "cs" else None, c1)
     except glsl.Unsupported as e:
         return f"unsupported: {e}"
     except (KeyError, ValueError, IndexError) as e:  # a translator bug in one program must not stop the census
