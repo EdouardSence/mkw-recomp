@@ -4,6 +4,29 @@ Each version's section is that release's notes: `tools/build/notes.py` puts it i
 updating, known issues, reporting) for the GitHub release. A section has a summary paragraph, `### Changes` (each with
 its issue, #N), `### Tested` (what was run from the packages before publishing) and optionally `### Known issues`.
 
+## 0.1.5
+
+Local multiplayer, the game no longer runs in slow motion below 60 fps, and the start screen now updates itself.
+
+### Changes
+
+- Local multiplayer with one controller per player (#23): each connected controller is its own player (the first one
+  and the keyboard are player 1), the console's controller screen gets the number connected, and rumble goes to each
+  player's own controller. Before, Multiplayer went back to the home screen.
+- Below 60 fps the race ran in slow motion with Frame rate on Automatic: the game picks 30 or 60 fps from the time the
+  GPU reports for each frame, and ours reported the time the work was sent, so it kept choosing 60. It now reports when
+  the GPU finishes, and the game stays at 30 (on a Radeon 660M: 110 switches between 30 and 60 in 20 s of race to 0).
+- The start screen offers a newer release and installs it (Settings > Menu > Check for updates turns it off).
+- The 4096 shadow map (Settings > Graphics) no longer crashes at the kart screen (#9).
+- On scaled displays the mouse no longer lands off its place on the start screen (#27).
+
+### Tested
+
+From these packages, before publishing:
+
+- The whole setup on Linux (Radeon 660M, RADV) and on Windows 11 (GTX 1050 Ti), and the update from the start screen on
+  both.
+
 ## 0.1.4
 
 Fixes the setup that stopped at 359/360 on many Windows PCs, and the shader step failing when a worker runs out of

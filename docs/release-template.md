@@ -20,12 +20,13 @@
 
 ## Updating
 
-Linux: run the new AppImage. Windows: unpack the new zip over the same folder. Then press **Prepare** again: the steps
-already done are skipped.
+From 0.1.5 on, the start screen offers a newer release (**Update to vX**) and installs it: it downloads it, checks it,
+replaces the program and sets up again only what changed. From an older version, once by hand: Linux, run the new
+AppImage; Windows, unpack the new zip over the same folder; then press **Prepare** again (the steps already done are
+skipped).
 
 ## Known issues
 
-- Below 60 fps, set Settings > Screen > Frame rate to 30: the Automatic one does not settle at 30 yet.
 {known}
 
 ## Reporting a problem
