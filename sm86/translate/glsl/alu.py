@@ -27,10 +27,14 @@ class AluOps:
             if i.sym("fmt") == "S32":
                 a, b = f"int({a})", f"int({b})"
             c = f"(({a}) {cmp} ({b}))" if cmp else None
+            # .EX: the high words of a 64-bit compare; equal ones leave the answer to the low words' compare in Pr
+            # (Mesa NAK OpISetP fold, MIT). Was read from a field "e" that does not exist and dropped (12 in 6 programs)
+            if c and i.sym("ex") == "EX":
+                c = f"(({a}) == ({b}) ? {pred(i.v(f'{pre}Pr'), i.v(f'{pre}Pr@not'), u)} : {c})"
         if not c:
             raise Unsupported(f"{i.cls}: compare {i.sym('fcomp') or i.sym('icmp')}")
-        if i.has("X") or i.sym("e") == "EX":
-            raise Unsupported(f"{i.cls}.EX")
+        if i.has("X"):
+            raise Unsupported(f"{i.cls}.X")
         bop = BOP[i.sym("bop")]
         acc = pred(i.v(f"{pre}Pp"), i.v(f"{pre}Pp@not"), u)
         out, pv = [], "up" if u else "p"
