@@ -103,6 +103,8 @@ MUFU = {"COS": "cos({})", "SIN": "sin({})", "EX2": "exp2({})", "LG2": "log2({})"
         "RSQ": "inversesqrt({})", "SQRT": "sqrt({})"}  # fmt: skip
 # SM70+ MUFU.SIN/COS take turns: sin(2*pi*x) (eden-nx2 NX2_NOTES.md row 95)
 TURNS = {"COS", "SIN"}
+# FMUL .Dn/.Mn: the product times 1/n or n (a power of two: exact, so a multiply by the constant)
+FMUL_SCALE = {"D2": " * 0.5", "D4": " * 0.25", "D8": " * 0.125", "M2": " * 2.0", "M4": " * 4.0", "M8": " * 8.0"}
 # Float compares: glslc makes < <= > >= == ordered (false with a NaN) and != unordered (OpFUnordNotEqual); SM86's ..U
 # forms are true with a NaN and NE is ordered, as PTX setp.ltu / setp.ne. Read as the plain operator, GEU/GTU/LEU (45 %
 # of MKW's FSETP) were false with a NaN.

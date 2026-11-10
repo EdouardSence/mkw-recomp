@@ -20,7 +20,7 @@ import flow
 from program import Insn, Sph
 
 from glsl.alu import AluOps
-from glsl.common import MUFU, PT, RZ, TURNS, URZ, Unsupported, pred, reg
+from glsl.common import FMUL_SCALE, MUFU, PT, RZ, TURNS, URZ, Unsupported, pred, reg
 from glsl.head import (
     MESH_MAIN,
     MESH_MAIN_CS,
@@ -169,10 +169,13 @@ class Builder(AluOps, MemOps, TexOps, ThreadOps):
         if op == "MEMBAR":
             return "groupMemoryBarrier();" if i.sym("sco") == "CTA" else "memoryBarrier();"
         if op == "FMUL":
-            plain = self.fold_ipa_w(i)
+            # .D2/.D4/.D8 and .M2/.M4/.M8 scale the product by a power of two before .SAT; read as plain a * b they
+            # were 9 140 wrong multiplies in 4 579 programs (eden-nx2 lower_to_maxwell.h FMUL, NX2navi idea)
+            scale = FMUL_SCALE.get(i.sym("scale"), "")
+            plain = None if scale else self.fold_ipa_w(i)
             if plain:
                 return self.dst_f(i, plain)
-            return self.dst_f(i, f"({self.src_f(i, 'a')} * {self.src_f(i, 'b')})")
+            return self.dst_f(i, f"({self.src_f(i, 'a')} * {self.src_f(i, 'b')}{scale})")
         if op == "FADD":
             return self.dst_f(i, f"({self.src_f(i, 'a')} + {self.src_f(i, 'c')})")
         if op == "FFMA":
