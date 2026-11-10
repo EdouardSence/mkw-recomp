@@ -21,7 +21,11 @@ Graphics cards with more video memory now get more of it for the course's textur
 
 ### Tested
 
-Pending.
+From these packages, before publishing:
+
+- The whole setup on Linux (Radeon 660M, RADV) and the warm-up step on Windows 11 (GTX 1050 Ti), where the tile memory
+  stays at 768 MiB as before (a 4 GB card). The caps for larger cards are checked by the tests on the GPUs players
+  reported; we have no card of 6 GB or more to run them on.
 
 ## 0.1.5
 
