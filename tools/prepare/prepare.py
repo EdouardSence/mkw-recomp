@@ -22,6 +22,8 @@ Output: one event per line on stdout, for the start screen: "step <name>", "prog
 
 Usage: python prepare.py --source DIR --game DIR [--romfs copy|link] [--jobs N] [--cc CMD] [--glslc PATH]
                          [--target linux|windows]
+Without --source (the launcher after an update, tools/prepare/update.py): the copy and the RomFS mode of the last
+setup in --game, from its setup-state.json; only the steps whose key changed run again.
 """
 
 import argparse
@@ -299,16 +301,27 @@ def save_state(game: Path, state: dict) -> None:
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("--source", type=Path, required=True, help="the folder with the player's exefs/ and romfs/")
+    ap.add_argument("--source", type=Path, help="the folder with the player's exefs/ and romfs/ (default: the last's)")
     ap.add_argument("--game", type=Path, required=True, help="the folder of mkw / mkw.exe")
-    ap.add_argument("--romfs", choices=("copy", "link"), default="copy")
+    ap.add_argument("--romfs", choices=("copy", "link"), help="(default: the last setup's, else copy)")
     ap.add_argument("--jobs", type=int, default=0, help="parallel jobs (default: from cores and memory)")
     ap.add_argument("--cc", help="the C compiler command (default: the package's zig cc, else clang)")
     ap.add_argument("--glslc", help="(default: the package's, else glslc on PATH)")
     ap.add_argument("--target", choices=("linux", "windows"), default="windows" if os.name == "nt" else "linux")
     args = ap.parse_args()
     own_children()
-    game, src = args.game.resolve(), args.source.resolve()
+    game = args.game.resolve()
+    state = load_state(game)
+    if not args.source:  # the last setup's; before 0.1.5 the state kept them only in its keys
+        last = state.get("source") or (str(Path(state["done"]["exefs"]).parent) if "exefs" in state["done"] else "")
+        if not last:
+            emit("error", "source", "no earlier setup in this folder: choose the folder of your copy")
+            sys.exit(2)
+        args.source = Path(last)
+        args.romfs = args.romfs or state.get("romfs_mode") or state["done"].get("romfs", "copy").split(" ", 1)[0]
+    args.romfs = args.romfs or "copy"
+    src = args.source.resolve()
+    state["source"], state["romfs_mode"] = str(src), args.romfs
     # The start screen reads only stdout: the tools' output and the timings go to logs/setup.log, the file a report
     # attaches (issue #2 had none to give).
     (game / "logs").mkdir(parents=True, exist_ok=True)
@@ -317,7 +330,6 @@ def main() -> None:
     jobs = args.jobs or max(1, min(os.cpu_count() or 1, int(mem_gb() * 0.6)))
     glslc = args.glslc or default_glslc(game)
     work = game / "setup-work"
-    state = load_state(game)
     try:
         emit("step", "check")
         cc = args.cc.split() if args.cc else default_cc(game, args.target)

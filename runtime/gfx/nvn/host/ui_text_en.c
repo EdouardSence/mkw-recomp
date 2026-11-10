@@ -294,4 +294,11 @@ const char *const text_en[UI_TEXT_COUNT] = {
     [UI_LAUNCH_SHORTCUT] = "Desktop shortcut",
     [UI_LAUNCH_SHORTCUT_DONE] = "Shortcut made: %s",
     [UI_LAUNCH_SHORTCUT_FAILED] = "Could not make the shortcut",
+    [UI_LAUNCH_UPDATE] = "Update to %s (%d MB)",
+    [UI_LAUNCH_UPDATE_FETCHING] = "Downloading %s",
+    [UI_LAUNCH_UPDATE_FAILED] = "Update failed: %s",
+    [UI_LAUNCH_UPDATED] = "Updated to %s: setting up again what it changed",
+    [UI_MENU_UPDATE_CHECK] = "Check for updates",
+    [UI_MENU_UPDATE_CHECK_DESC] = "At start, ask GitHub for a newer release of the port and offer it on the start "
+                                  "screen (a few seconds at most, nothing offline).",
 };

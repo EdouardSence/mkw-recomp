@@ -14,6 +14,7 @@ typedef struct {
 } SetupState;
 
 int setup_available(const char *exe_dir);   // the Python and the script are there
+// source NULL: the last setup's copy and RomFS mode (after an update: only what changed runs again)
 void setup_start(const char *exe_dir, const char *source, int link_romfs);
 void setup_cancel(void);
 SetupState setup_state(void);                // a copy, any time

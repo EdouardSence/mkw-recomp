@@ -301,5 +301,12 @@ const char *const text_ru[UI_TEXT_COUNT] = {
     [UI_LAUNCH_STEP_KEPT] = "готово ранее",
     [UI_LAUNCH_SHORTCUT] = "Ярлык на рабочем столе",
     [UI_LAUNCH_SHORTCUT_DONE] = "Ярлык создан: %s",
+    [UI_LAUNCH_UPDATE] = "Обновить до %s (%d МБ)",
+    [UI_LAUNCH_UPDATE_FETCHING] = "Загрузка %s",
+    [UI_LAUNCH_UPDATE_FAILED] = "Не удалось обновить: %s",
+    [UI_LAUNCH_UPDATED] = "Обновлено до %s: заново готовится то, что изменилось",
+    [UI_MENU_UPDATE_CHECK] = "Проверять обновления",
+    [UI_MENU_UPDATE_CHECK_DESC] = "При запуске спрашивает GitHub о новой версии порта и предлагает её на начальном "
+                                  "экране (не дольше нескольких секунд, без сети — ничего).",
     [UI_LAUNCH_SHORTCUT_FAILED] = "Не удалось создать ярлык",
 };

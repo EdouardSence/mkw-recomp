@@ -13,7 +13,9 @@
 // MKW_LAUNCHER_SETUP=<folder>[:link] starts the setup from that folder at once, on the game files page.
 // MKW_LAUNCHER_SHORTCUT=1 makes the desktop shortcut at start, as its button does.
 // MKW_LAUNCHER_EXIT_AFTER_SETUP=1 quits when that setup ends, after saving the page as <shot out>-end.png (its result
-// is in the log); MKW_LAUNCHER_SHOT then takes its shot without quitting.
+// is in the log); MKW_LAUNCHER_SHOT then takes its shot without quitting. During a shot the update check runs only
+// with MKW_UPDATE_AS (tools/prepare/update.py: compare as that version). MKW_LAUNCHER_UPDATE=1 takes the update offered
+// at once, as its button does.
 #include <SDL3/SDL.h>
 #include <math.h>
 #include <stdio.h>
@@ -24,7 +26,9 @@
 #include "backends/imgui_impl_sdlrenderer3.h"
 #include "imgui.h"
 #include "ui/launcher/launcher.h"
+#include "ui/launcher/launcher_backdrop.h"
 #include "ui/launcher/launcher_setup.h"
+#include "ui/launcher/launcher_update.h"
 #include "ui/menu/menu_look.h"
 #include "ui/menu/option_rows.h"
 #include "ui/menu/settings_tabs.h"
@@ -43,8 +47,6 @@ enum Page { PAGE_MAIN, PAGE_SETTINGS, PAGE_FILES };
 static struct {
     SDL_Window *win;
     SDL_Renderer *ren;
-    SDL_Texture *splash;            // splash.png next to the executable, the player's own picture
-    int splash_w, splash_h;
     ImGuiStyle base_style;
     float scale;                    // of the style and fonts in use; 0 none yet
     ImFont *big;
@@ -61,6 +63,8 @@ static struct {
     int link_romfs;                 // 0 copy it into the game folder, 1 use it where it is
     int tools;                      // the setup tools are there
     char shortcut_note[1200];       // what the shortcut button did
+    char updated[96];               // the release the previous run installed (launcher_update.h)
+    int relaunch;                   // an update is in place: start the new program when the window is gone
 } L = {};
 
 static void exe_dir(char *out, size_t cap) {
@@ -80,17 +84,6 @@ static void list_gpus(void) {
     if (vkCreateInstance(&ci, nullptr, &inst) != VK_SUCCESS) return;
     settings_list_gpus(inst);
     vkDestroyInstance(inst, nullptr);
-}
-
-static void load_splash(void) {
-    char path[1100];
-    snprintf(path, sizeof path, "%s/splash.png", L.exe_dir);
-    if (!plat_file_exists(path)) return;
-    SDL_Surface *s = SDL_LoadPNG(path);
-    if (!s) return;
-    L.splash = SDL_CreateTextureFromSurface(L.ren, s);
-    L.splash_w = s->w, L.splash_h = s->h;
-    SDL_DestroySurface(s);
 }
 
 static void parse_test(void) {
@@ -118,48 +111,6 @@ static void restyle(float scale) {
     L.scale = scale;
 }
 
-// ---- the background: the player's splash.png scaled to cover the window, else a road drawn in perspective (no art of
-// the game ships with the port)
-static void background(ImDrawList *dl, float w, float h) {
-    if (L.splash) {
-        float k = fmaxf(w / L.splash_w, h / L.splash_h), sw = L.splash_w * k, sh = L.splash_h * k;
-        dl->AddImage((ImTextureID)(intptr_t)L.splash, ImVec2((w - sw) / 2, (h - sh) / 2), ImVec2((w + sw) / 2, (h + sh) / 2));
-        dl->AddRectFilledMultiColor(ImVec2(0, 0), ImVec2(w * 0.6f, h), IM_COL32(0, 0, 0, 170), IM_COL32(0, 0, 0, 0),
-                                    IM_COL32(0, 0, 0, 0), IM_COL32(0, 0, 0, 170));
-        return;
-    }
-    float hy = h * 0.42f;   // the horizon
-    dl->AddRectFilledMultiColor(ImVec2(0, 0), ImVec2(w, hy), IM_COL32(18, 40, 70, 255), IM_COL32(18, 40, 70, 255),
-                                IM_COL32(236, 160, 84, 255), IM_COL32(236, 160, 84, 255));
-    dl->AddRectFilledMultiColor(ImVec2(0, hy), ImVec2(w, h), IM_COL32(24, 70, 44, 255), IM_COL32(24, 70, 44, 255),
-                                IM_COL32(10, 30, 20, 255), IM_COL32(10, 30, 20, 255));
-    float vx = w * 0.62f;   // the vanishing point, right of the buttons
-    dl->AddQuadFilled(ImVec2(vx - 4, hy), ImVec2(vx + 4, hy), ImVec2(w * 1.15f, h), ImVec2(w * 0.10f, h),
-                      IM_COL32(52, 54, 60, 255));
-    float t = (float)fmod(ImGui::GetTime() * 0.6, 1.0);
-    for (int i = 0; i < 12; i++) {   // the centre dashes, moving towards the viewer
-        float a = (i + t) / 12.0f, b = (i + t + 0.45f) / 12.0f;
-        float ya = hy + (h - hy) * a * a, yb = hy + (h - hy) * b * b;
-        float xa = vx + (w * 0.625f - vx) * a * a, xb = vx + (w * 0.625f - vx) * b * b;
-        float wa = 1 + 10 * a * a, wb = 1 + 10 * b * b;
-        dl->AddQuadFilled(ImVec2(xa - wa, ya), ImVec2(xa + wa, ya), ImVec2(xb + wb, yb), ImVec2(xb - wb, yb),
-                          IM_COL32(238, 194, 84, 255));
-    }
-    for (int side = 0; side < 2; side++) {   // the kerbs, red and white
-        float ex = side ? w * 1.15f : w * 0.10f;
-        for (int i = 0; i < 16; i++) {
-            float a = i / 16.0f, b = (i + 1) / 16.0f;
-            float ya = hy + (h - hy) * a * a, yb = hy + (h - hy) * b * b;
-            float xa = vx + (ex - vx) * a * a, xb = vx + (ex - vx) * b * b, k = 1 + 18 * b * b;
-            ImU32 c = i & 1 ? IM_COL32(230, 230, 230, 255) : IM_COL32(200, 40, 40, 255);
-            float d = side ? 1 : -1;
-            dl->AddQuadFilled(ImVec2(xa, ya), ImVec2(xa + d * k * 0.6f, ya), ImVec2(xb + d * k, yb), ImVec2(xb, yb), c);
-        }
-    }
-    dl->AddRectFilledMultiColor(ImVec2(0, 0), ImVec2(w * 0.55f, h), IM_COL32(0, 0, 0, 150), IM_COL32(0, 0, 0, 0),
-                                IM_COL32(0, 0, 0, 0), IM_COL32(0, 0, 0, 150));
-}
-
 // ---- the pages
 static bool big_button(const char *label, float width, bool enabled) {
     ImGui::BeginDisabled(!enabled);
@@ -182,9 +133,33 @@ static void make_shortcut(void) {
     rt_log("launcher: desktop shortcut %s %s", ok ? "made:" : "failed", ok ? made : "");
 }
 
+// The update offered (launcher_update.h): its button, then the download's progress; once downloaded, installed and
+// the program started again. A failed check shows nothing, a failed download says why.
+static void update_row(float bw) {
+    UpdateState u = update_state();
+    char text[700];
+    if (u.phase == UPDATE_OFFER) {
+        snprintf(text, sizeof text, menu_text(UI_LAUNCH_UPDATE), u.tag, (int)((u.bytes + (1 << 19)) >> 20));
+        if (ImGui::Button(text, ImVec2(bw, 0)) || getenv("MKW_LAUNCHER_UPDATE")) update_fetch_start(L.exe_dir);
+    } else if (u.phase == UPDATE_FETCHING) {
+        snprintf(text, sizeof text, menu_text(UI_LAUNCH_UPDATE_FETCHING), u.tag);
+        ImGui::ProgressBar(u.total > 0 ? (float)u.done / (float)u.total : 0, ImVec2(bw, 0), text);
+    } else if (u.phase == UPDATE_READY) {
+        if (update_apply(L.exe_dir)) L.relaunch = 1, L.result = LAUNCHER_QUIT;
+    } else if (u.phase == UPDATE_FAILED) {
+        snprintf(text, sizeof text, menu_text(UI_LAUNCH_UPDATE_FAILED), u.error);
+        ImGui::PushTextWrapPos(ImGui::GetCursorPosX() + bw);
+        ImGui::TextColored(ImVec4(0.95f, 0.45f, 0.35f, 1), "%s", text);
+        ImGui::PopTextWrapPos();
+    } else {
+        return;
+    }
+    ImGui::Dummy(ImVec2(0, 10 * L.scale));
+}
+
 static void page_main(float w, float h) {
     float s = L.scale, bw = 420 * s;
-    bool ready = rt_game_present();
+    bool ready = rt_game_present() && update_state().phase != UPDATE_FETCHING;
     ImGui::SetNextWindowPos(ImVec2(90 * s, h * 0.18f));
     ImGui::Begin("##main", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove |
                                         ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoBackground |
@@ -194,6 +169,7 @@ static void page_main(float w, float h) {
     ImGui::PopFont();
     ImGui::TextDisabled("%s", menu_text(UI_LAUNCH_SUBTITLE));
     ImGui::Dummy(ImVec2(0, 30 * s));
+    update_row(bw);
     if (L.focus_main) {
         ImGui::SetKeyboardFocusHere();
         L.focus_main = 0;
@@ -305,6 +281,12 @@ static void page_files(float w, float h) {
     SetupState st = setup_state();
     ImGui::TextColored(ready ? ImVec4(0.55f, 0.85f, 0.6f, 1) : ImVec4(0.94f, 0.67f, 0.35f, 1), "%s",
                        menu_text(ready ? UI_LAUNCH_FILES_READY : UI_LAUNCH_FILES_MISSING));
+    update_row(ImGui::GetContentRegionAvail().x * 0.5f);   // a folder not set up starts on this page
+    if (L.updated[0]) {
+        char note[300];
+        snprintf(note, sizeof note, menu_text(UI_LAUNCH_UPDATED), L.updated);
+        ImGui::TextColored(ImVec4(0.55f, 0.85f, 0.6f, 1), "%s", note);
+    }
     ImGui::TextWrapped("%s", menu_text(UI_LAUNCH_FILES_HELP));
     ImGui::Spacing();
     ImGui::TextDisabled("%s", menu_text(UI_LAUNCH_FILES_FOLDER));
@@ -406,7 +388,7 @@ extern "C" int launcher_run(void) {
     ImGui_ImplSDL3_InitForSDLRenderer(L.win, L.ren);
     ImGui_ImplSDLRenderer3_Init(L.ren);
     list_gpus();
-    load_splash();
+    backdrop_load(L.ren, L.exe_dir);
     if (L.shot_at) {
         L.page = L.shot_page;
         if (L.page == PAGE_SETTINGS) {
@@ -416,6 +398,14 @@ extern "C" int launcher_run(void) {
     }
     L.tools = setup_available(L.exe_dir);
     if (!rt_game_present() && !L.shot_at) L.page = PAGE_FILES;
+    char state[1100];
+    snprintf(state, sizeof state, "%s/setup-state.json", L.exe_dir);
+    if (update_just_installed(L.exe_dir, L.updated, sizeof L.updated) && L.tools && plat_file_exists(state)) {
+        L.page = PAGE_FILES;   // set up again what the new version changed, from the last setup's copy
+        setup_start(L.exe_dir, nullptr, 0);
+    } else if (!L.shot_at || getenv("MKW_UPDATE_AS")) {
+        update_check_start(L.exe_dir);
+    }
     if (getenv("MKW_LAUNCHER_SHORTCUT")) make_shortcut();   // (test) as the button does
     if (const char *t = getenv("MKW_LAUNCHER_SETUP")) {   // (test) the setup started from that folder, as Set up does
         snprintf(L.source, sizeof L.source, "%s", t);
@@ -446,7 +436,7 @@ extern "C" int launcher_run(void) {
         io.DisplaySize = ImVec2((float)pw, (float)ph);   // pixels: the style and fonts follow the height
         io.DisplayFramebufferScale = ImVec2(1, 1);
         ImGui::NewFrame();
-        background(ImGui::GetBackgroundDrawList(), (float)pw, (float)ph);
+        backdrop_draw(ImGui::GetBackgroundDrawList(), (float)pw, (float)ph);
         switch (L.page) {
         case PAGE_MAIN: page_main((float)pw, (float)ph); break;
         case PAGE_SETTINGS: page_settings((float)pw, (float)ph); break;
@@ -472,10 +462,11 @@ extern "C" int launcher_run(void) {
     ImGui_ImplSDLRenderer3_Shutdown();
     ImGui_ImplSDL3_Shutdown();
     ImGui::DestroyContext();
-    if (L.splash) SDL_DestroyTexture(L.splash);
+    backdrop_free();
     SDL_DestroyRenderer(L.ren);
     SDL_DestroyWindow(L.win);
     SDL_Quit();
-    rt_log("launcher: %s", L.result == LAUNCHER_PLAY ? "play" : "quit");
+    rt_log("launcher: %s", L.result == LAUNCHER_PLAY ? "play" : L.relaunch ? "the update starts" : "quit");
+    if (L.relaunch) update_relaunch(L.exe_dir);   // Linux: does not come back
     return L.result;
 }

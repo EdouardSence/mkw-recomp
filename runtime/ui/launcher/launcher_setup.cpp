@@ -119,9 +119,11 @@ void setup_start(const char *exe_dir, const char *source, int link_romfs) {
         return;
     }
     // -I: no user site packages or PYTHON* variables, nothing from the working directory
-    const char *args[] = {python, "-I", script, "--source", source, "--game", exe_dir, "--romfs",
+    const char *args[] = {python, "-I", script, "--game", exe_dir, "--source", source, "--romfs",
                           link_romfs ? "link" : "copy", nullptr};
-    rt_log("setup: %s %s --source %s --game %s --romfs %s", python, script, source, exe_dir, link_romfs ? "link" : "copy");
+    if (!source) args[5] = nullptr;   // prepare.py takes the last setup's
+    rt_log("setup: %s %s --game %s --source %s --romfs %s", python, script, exe_dir, source ? source : "(last)",
+           link_romfs ? "link" : "copy");
     g_proc = SDL_CreateProcess(args, true);
     if (!g_proc) {
         set_finished(-1, SDL_GetError());

@@ -67,6 +67,8 @@ into the table with the date of the report.
 3. Run the AppImage (`chmod +x` first) or `mkw.exe`, open **Game files**, point it at your dump and press **Prepare**.
    The first setup takes a while (it compiles the whole game and downloads NVIDIA's `nvdisasm` and `ptxas`, 84 MB on
    Linux and 126 MB on Windows, to describe the shader encoding on your machine); after that, **Play**.
+4. When a newer release is out, the start screen offers it (**Update to vX**): it downloads it, checks it, replaces
+   the program and sets up again only what changed. **Settings → Menu → Check for updates** turns the check off.
 
 Requirements: x86-64 CPU with AVX2, a GPU with Vulkan 1.3 (`VK_EXT_mesh_shader` recommended; without it, task and
 mesh shaders run as compute), 16 GB of RAM recommended.

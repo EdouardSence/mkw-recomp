@@ -315,5 +315,12 @@ const char *const text_es[UI_TEXT_COUNT] = {
     [UI_LAUNCH_STEP_KEPT] = "ya hecho",
     [UI_LAUNCH_SHORTCUT] = "Acceso directo en el escritorio",
     [UI_LAUNCH_SHORTCUT_DONE] = "Acceso directo creado: %s",
+    [UI_LAUNCH_UPDATE] = "Actualizar a %s (%d MB)",
+    [UI_LAUNCH_UPDATE_FETCHING] = "Descargando %s",
+    [UI_LAUNCH_UPDATE_FAILED] = "No se pudo actualizar: %s",
+    [UI_LAUNCH_UPDATED] = "Actualizado a %s: preparando de nuevo lo que ha cambiado",
+    [UI_MENU_UPDATE_CHECK] = "Buscar actualizaciones",
+    [UI_MENU_UPDATE_CHECK_DESC] = "Al arrancar, pregunta a GitHub si hay una versión más nueva del port y la ofrece en "
+                                  "la pantalla de inicio (unos segundos como mucho, nada sin conexión).",
     [UI_LAUNCH_SHORTCUT_FAILED] = "No se pudo crear el acceso directo",
 };
