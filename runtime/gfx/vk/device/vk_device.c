@@ -25,14 +25,20 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debug_cb(VkDebugUtilsMessageSeverityFlagBi
     static PlatMutex vl = PLAT_MUTEX_INIT;
     static struct { char id[96]; int n; } seen[512];
     static int nseen;
-    const char *id = d->pMessageIdName ? d->pMessageIdName : "?";
+    // Per VUID and named object (set_name: the program key of a pipeline), so each program of a VUID shows up.
+    char id[96], names[160] = "";
+    size_t nl = 0;
+    for (uint32_t i = 0; i < d->objectCount && nl + 1 < sizeof names; i++)
+        if (d->pObjects[i].pObjectName)
+            nl += (size_t)snprintf(names + nl, sizeof names - nl, " [%s]", d->pObjects[i].pObjectName);
+    snprintf(id, sizeof id, "%s%s", d->pMessageIdName ? d->pMessageIdName : "?", names);
     plat_mutex_lock(&vl);
     int k = 0;
     while (k < nseen && strcmp(seen[k].id, id)) k++;
     if (k == nseen && nseen < 512) snprintf(seen[nseen++].id, sizeof seen[0].id, "%s", id);
     int show = k < 512 && ++seen[k].n <= 3;
     plat_mutex_unlock(&vl);
-    if (show) rt_log("vk validation %s: %s", err ? "error" : "warning", d->pMessage);
+    if (show) rt_log("vk validation %s:%s %s", err ? "error" : "warning", names, d->pMessage);
     return VK_FALSE;
 }
 
@@ -81,6 +87,7 @@ static int create_instance(void) {
                            VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT,
             .pfnUserCallback = debug_cb};
         if (f) f(g_vk.instance, &mi, NULL, &g_vk.messenger);
+        g_vk.set_name = (PFN_vkSetDebugUtilsObjectNameEXT)vkGetInstanceProcAddr(g_vk.instance, "vkSetDebugUtilsObjectNameEXT");
     }
     return 1;
 }

@@ -695,6 +695,13 @@ static VkPipeline compute_create(const GfxShader *cs, const Layout *l) {
     VkPipeline pipe = VK_NULL_HANDLE;
     if (vkCreateComputePipelines(P.device, P.cache, 1, &ci, NULL, &pipe) != VK_SUCCESS) pipe = VK_NULL_HANDLE;
     else if (vk_ctx()->has_exec_stats) log_stats(pipe, &(VkPipeState){.vs = cs});
+    if (pipe && vk_ctx()->set_name) {   // validation messages name the program (build/spirv/<key>.glsl)
+        const uint8_t *k = gfx_shader_key(cs);
+        char name[24];
+        snprintf(name, sizeof name, "cs %02x%02x%02x%02x%02x%02x%02x%02x", k[0], k[1], k[2], k[3], k[4], k[5], k[6], k[7]);
+        vk_ctx()->set_name(P.device, &(VkDebugUtilsObjectNameInfoEXT){.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT,
+                           .objectType = VK_OBJECT_TYPE_PIPELINE, .objectHandle = (uint64_t)pipe, .pObjectName = name});
+    }
     vkDestroyShaderModule(P.device, m, NULL);
     return pipe;
 }
