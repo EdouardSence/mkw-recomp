@@ -28,6 +28,8 @@ typedef struct {
     uint64_t frame;
     uint32_t w, h, d;   // pass: render area and layers; dispatch: groups (0 indirect); upload: w its batch number
     VkFormat color[8], depth;
+    const char *what;   // VK_CRUMB_OP
+    uint8_t key[2][32], has_fs;   // VK_CRUMB_DRAW: the program's vertex and fragment keys
 } Mark;
 
 static PFN_vkCmdWriteBufferMarkerAMD write_marker;
@@ -39,10 +41,12 @@ static volatile uint32_t *words;
 static Mark ring[RING];
 static uint32_t seq;   // marks made; several replay threads (MKW_REPLAY_PAR) take ids at once
 static int mode;       // rt_knob: 1 on, 2 "ab" (on in the B blocks, for its A/B)
+static int draws;      // MKW_GPU_CRUMBS_DRAW
 
 void vk_crumbs_init(void) {
     VkCtx *c = vk_ctx();
     mode = rt_knob("GPU_CRUMBS", "1");
+    draws = rt_knob("GPU_CRUMBS_DRAW", "0");
     if (!c || !mode) return;
     if (c->has_nv_checkpoints) {
         set_checkpoint = (PFN_vkCmdSetCheckpointNV)vkGetDeviceProcAddr(c->device, "vkCmdSetCheckpointNV");
@@ -100,6 +104,31 @@ uint32_t vk_crumb_begin(VkCommandBuffer cb, int kind, uint32_t w, uint32_t h, ui
     return id;
 }
 
+// Why: issue #43 (RX 6650 XT, RADV) hung after the last marked pass of a frame had finished, in commands no mark
+// covered (clears, copies, blits, the present's scaling): four runs, four frames, the same place.
+uint32_t vk_crumb_op(VkCommandBuffer cb, const char *what, uint32_t w, uint32_t h) {
+    uint32_t id = vk_crumb_begin(cb, VK_CRUMB_OP, w, h, 0, 0, NULL, 0);
+    if (id) ring[id % RING].what = what;
+    return id;
+}
+
+// Why: issues #22, #33, #34, #37 and #40 (NVIDIA RTX, 617-621 drivers) lost the device with "instruction pointer
+// invalid" inside the frame's main 3D pass, which holds hundreds of draws. A draw's end is marked at the next draw
+// recorded into the same command buffer (or never, if the pass ends first): the last finished mark lags one draw.
+void vk_crumb_draw(VkCommandBuffer cb, const uint8_t *vs, const uint8_t *fs) {
+    static _Thread_local uint32_t prev;
+    static _Thread_local VkCommandBuffer prev_cb;
+    if (!draws) return;
+    if (prev && prev_cb == cb) vk_crumb_end(cb, VK_CRUMB_DRAW, prev);
+    uint32_t id = vk_crumb_begin(cb, VK_CRUMB_DRAW, 0, 0, 0, 0, NULL, 0);
+    if (id) {
+        Mark *m = &ring[id % RING];
+        memcpy(m->key[0], vs, 32);
+        if ((m->has_fs = fs != NULL)) memcpy(m->key[1], fs, 32);
+    }
+    prev = id, prev_cb = cb;
+}
+
 void vk_crumb_end(VkCommandBuffer cb, int kind, uint32_t id) {
     if (active && cb && id) mark(cb, kind == VK_CRUMB_UPLOAD ? 1 : 3, id);
 }
@@ -116,6 +145,15 @@ static void describe(uint32_t id, char *o, size_t size) {
     }
     if (m->kind == VK_CRUMB_UPLOAD) {
         snprintf(o, size, "%u, upload batch %u in frame %llu", id, m->w, (unsigned long long)m->frame);
+    } else if (m->kind == VK_CRUMB_DRAW) {
+        char a[65], b[65] = "none";
+        for (int k = 0; k < 32; k++) snprintf(a + 2 * k, 3, "%02x", m->key[0][k]);
+        if (m->has_fs)
+            for (int k = 0; k < 32; k++) snprintf(b + 2 * k, 3, "%02x", m->key[1][k]);
+        snprintf(o, size, "%u, draw in frame %llu: vs %s fs %s", id, (unsigned long long)m->frame, a, b);
+    } else if (m->kind == VK_CRUMB_OP) {
+        snprintf(o, size, "%u, %s in frame %llu: %ux%u", id, m->what ? m->what : "?", (unsigned long long)m->frame, m->w,
+                 m->h);
     } else if (m->kind == VK_CRUMB_DISPATCH) {
         snprintf(o, size, "%u, dispatch in frame %llu: %ux%ux%u groups%s", id, (unsigned long long)m->frame, m->w, m->h,
                  m->d, m->w ? "" : " (indirect)");

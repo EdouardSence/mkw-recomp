@@ -592,6 +592,7 @@ static void present_image(VkImage src, VkImageLayout layout, VkFormat fmt, int w
                      VK_ACCESS_2_TRANSFER_WRITE_BIT);
     }
     // FSR (MKW_UPSCALER) when the picture's rectangle is larger than the crop; else the bilinear blit
+    uint32_t crumb = src ? vk_crumb_op(cb, "present scaling", (uint32_t)to[2], (uint32_t)to[3]) : 0;
     int fsr = src && general && vk_fsr_record(cb, slot, src, fmt, w, h, rect, dst, to[0], to[1], (uint32_t)to[2], (uint32_t)to[3]);
     g_scaler = fsr ? 2 : cw != to[2] || ch != to[3];
     if (src && !fsr) {
@@ -607,6 +608,7 @@ static void present_image(VkImage src, VkImageLayout layout, VkFormat fmt, int w
             sync_barrier(cb, src, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_GENERAL, VK_PIPELINE_STAGE_2_TRANSFER_BIT, 0,
                          VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT, 0);
     }
+    vk_crumb_end(cb, VK_CRUMB_OP, crumb);
     // last: the image's layout, and the stage and access of its last write, as each step leaves it
     VkImageLayout last = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
     VkPipelineStageFlags2 last_stage = VK_PIPELINE_STAGE_2_TRANSFER_BIT;

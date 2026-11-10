@@ -381,7 +381,7 @@ typedef struct {
 void vk_exec_recent_log(void);   // the last programs drawn or dispatched with (vk_exec_dstat.c), at a device loss
 // GPU breadcrumbs (diag/vk_crumbs.c, VK_AMD_buffer_marker): a start and an end mark around each upload batch, render
 // pass and dispatch, and at a device loss the last started and finished of each with what it was.
-enum { VK_CRUMB_PASS, VK_CRUMB_DISPATCH, VK_CRUMB_UPLOAD };
+enum { VK_CRUMB_PASS, VK_CRUMB_DISPATCH, VK_CRUMB_UPLOAD, VK_CRUMB_OP, VK_CRUMB_DRAW };
 void vk_crumbs_init(void);       // after the allocator exists
 void vk_crumbs_release(void);    // before the allocator goes
 // The start mark into cb (through the recorder thread when it owns cb); returns its id for vk_crumb_end, 0 when off.
@@ -390,6 +390,12 @@ void vk_crumbs_release(void);    // before the allocator goes
 uint32_t vk_crumb_begin(VkCommandBuffer cb, int kind, uint32_t w, uint32_t h, uint32_t d, uint32_t ncolor,
                         const VkFormat *color, VkFormat depth);
 void vk_crumb_end(VkCommandBuffer cb, int kind, uint32_t id);
+// A command outside passes and dispatches (clear, copy, blit, resolve, the present's scaling) as VK_CRUMB_OP: what, a
+// static string, and its w x h. End it with vk_crumb_end(cb, VK_CRUMB_OP, id).
+uint32_t vk_crumb_op(VkCommandBuffer cb, const char *what, uint32_t w, uint32_t h);
+// MKW_GPU_CRUMBS_DRAW=1 (off by default: two marks per draw): each draw marked with its program keys (fs NULL for
+// none), so a loss names the program, not only the pass.
+void vk_crumb_draw(VkCommandBuffer cb, const uint8_t *vs, const uint8_t *fs);
 void vk_crumbs_report(void);     // at a device loss (vk_exec_recent_log), once
 VkFormat vk_texture_view_format(const VkTexImage *img, VkFormat want);   // a target view's format the image allows
 const VkTexImage *vk_texture_get(const tex_t *t);   // created and made current; NULL for BUFFER or unmapped formats

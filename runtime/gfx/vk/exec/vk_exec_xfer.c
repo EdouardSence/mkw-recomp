@@ -558,8 +558,10 @@ static void copy_buffer_image(VkExec *ex, const p_copy_b2t *p, int to_image) {
     vk_mem_count(m.cls, to_image ? VK_MUSE_COPY_SRC : VK_MUSE_GPU_WRITE, size);
     vk_exec_pass_end(ex);
     vk_exec_barrier(ex);
+    uint32_t crumb = vk_crumb_op(ex->cb, to_image ? "buffer to image copy" : "image to buffer copy", s.w, s.h);
     if (to_image) vkCmdCopyBufferToImage(ex->cb, m.buffer, s.img->image, VK_IMAGE_LAYOUT_GENERAL, 1, &c);
     else vkCmdCopyImageToBuffer(ex->cb, s.img->image, VK_IMAGE_LAYOUT_GENERAL, m.buffer, 1, &c);
+    vk_crumb_end(ex->cb, VK_CRUMB_OP, crumb);
     ex->recorded++;
     if (to_image) vk_texture_gpu_written(p->tex), vk_sparse_written(s.img->image, s.level, s.layer0 + (uint32_t)s.z, s.nz, s.x, s.y, s.w, s.h);
     else vk_mem_gpu_wrote(&m, size), note_gpu_write(ex, p->src, size);
@@ -647,6 +649,7 @@ static void copy_t2t(VkExec *ex, const p_copy_t2t *p) {
     VkExtent3D ext = {s.w, s.h, s3d || d3d ? s.nz : 1};
     vk_exec_pass_end(ex);
     vk_exec_barrier(ex);
+    uint32_t crumb = vk_crumb_op(ex->cb, "image copy, blit or resolve", d.w, d.h);
     if (s.img->samples > 1 && d.img->samples == 1) {
         VkImageResolve rv = {sl, sub_offset(&s), dl, sub_offset(&d), ext};
         vkCmdResolveImage(ex->cb, s.img->image, VK_IMAGE_LAYOUT_GENERAL, d.img->image, VK_IMAGE_LAYOUT_GENERAL, 1, &rv);
@@ -673,6 +676,7 @@ static void copy_t2t(VkExec *ex, const p_copy_t2t *p) {
                            linear ? VK_FILTER_LINEAR : VK_FILTER_NEAREST);
         }
     }
+    vk_crumb_end(ex->cb, VK_CRUMB_OP, crumb);
     ex->recorded++;
     vk_texture_gpu_written(p->dst);
     vk_sparse_written(d.img->image, d.level, d.layer0 + (d3d ? 0 : (uint32_t)d.z), d3d ? 1 : d.nz, d.x, d.y, d.w, d.h);

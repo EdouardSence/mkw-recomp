@@ -100,7 +100,9 @@ void clear_color(VkExec *ex, const p_clear_color *c) {
     if (whole) {
         clear_barrier(ex, t->image, t->level, t->base_layer, t->layers);
         VkImageSubresourceRange r = {VK_IMAGE_ASPECT_COLOR_BIT, t->level, 1, t->base_layer, t->layers};
+        uint32_t crumb = vk_crumb_op(ex->cb, "colour clear", t->width, t->height);
         vkCmdClearColorImage(ex->cb, t->image, VK_IMAGE_LAYOUT_GENERAL, &cv, 1, &r);
+        vk_crumb_end(ex->cb, VK_CRUMB_OP, crumb);
         ex->recorded++;
         vk_texture_gpu_written(t->tex);
         return;
@@ -179,7 +181,9 @@ static int dc_layered(VkExec *ex, const VkExecTarget *t, VkImageAspectFlags asp,
     }
     vk_exec_barrier(ex);
     VkImageSubresourceRange r = {asp, 0, 1, 0, t->img->layers};
+    uint32_t crumb = vk_crumb_op(ex->cb, "depth clear", t->width, t->height);
     vkCmdClearDepthStencilImage(ex->cb, t->image, VK_IMAGE_LAYOUT_GENERAL, v, 1, &r);
+    vk_crumb_end(ex->cb, VK_CRUMB_OP, crumb);
     ex->recorded++;
     vk_texture_gpu_written(t->tex);
     DC.img = t->image, DC.depth = v->depth, DC.pending = ((t->img->layers == 32 ? 0u : 1u << t->img->layers) - 1u) & ~bit;
@@ -218,7 +222,9 @@ void clear_ds(VkExec *ex, const p_clear_ds *c) {
         if (dc_layered(ex, t, asp, &v)) return;
         clear_barrier(ex, t->image, t->level, t->base_layer, t->layers);
         VkImageSubresourceRange r = {asp, t->level, 1, t->base_layer, t->layers};
+        uint32_t crumb = vk_crumb_op(ex->cb, "depth clear", t->width, t->height);
         vkCmdClearDepthStencilImage(ex->cb, t->image, VK_IMAGE_LAYOUT_GENERAL, &v, 1, &r);
+        vk_crumb_end(ex->cb, VK_CRUMB_OP, crumb);
         ex->recorded++;
         vk_texture_gpu_written(t->tex);
         return;
