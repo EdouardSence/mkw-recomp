@@ -321,7 +321,12 @@ static VkImageView get_view(VkExec *ex, const VkTexImage *img, const view_t *v, 
                                 .subresourceRange = {aspect, l0, nl, y0, ny}};
     VkImageViewUsageCreateInfo use = {.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_USAGE_CREATE_INFO,
                                       .usage = VK_IMAGE_USAGE_SAMPLED_BIT};
-    if (img->block_views) ci.pNext = &use;   // the image's COLOR_ATTACHMENT usage is its block views' (vk_texture.c)
+    // The image's COLOR_ATTACHMENT usage is its block views' (vk_texture.c); a view in another format (the sRGB twin,
+    // R32_UINT texels) would inherit the image's STORAGE usage, which RGBA8_SRGB lacks on RADV (VUID usage-02275).
+    if (img->block_views || vf != img->format) {
+        if (storage) use.usage = VK_IMAGE_USAGE_STORAGE_BIT;
+        ci.pNext = &use;
+    }
     VkImageView view;
     if (vkCreateImageView(vk_ctx()->device, &ci, NULL, &view) != VK_SUCCESS) return VK_NULL_HANDLE;
     ViewNode *n = malloc(sizeof *n);
@@ -348,7 +353,9 @@ VkImageView vk_exec_target_view(const VkTexImage *img, VkFormat format, VkImageV
                                     .viewType = type, .format = format, .subresourceRange = {aspect, level, 1, base, layers}};
         VkImageViewUsageCreateInfo use = {.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_USAGE_CREATE_INFO,
                                           .usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT};
-        if (blocks) ci.pNext = &use;   // not the BC image's sampling and transfer usages
+        if (!blocks && format != img->format)   // the sRGB twin: not the image's STORAGE usage (VUID usage-02275)
+            use.usage = img->usage & ~(VkImageUsageFlags)VK_IMAGE_USAGE_STORAGE_BIT;
+        if (blocks || format != img->format) ci.pNext = &use;   // not the BC image's sampling and transfer usages
         if (vkCreateImageView(vk_ctx()->device, &ci, NULL, &view) != VK_SUCCESS)
             rt_fatal("vk: render target view (format %d) could not be created", (int)format);
         ViewNode *n = malloc(sizeof *n);

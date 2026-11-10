@@ -437,6 +437,8 @@ def translate(
     # computing one position (a depth pre-pass and an EQUAL colour pass) must get the same bits, as on the console;
     # fused differently, the MKW bushes failed the EQUAL test and stayed black (01/11/2026).
     decl = [f"    precise uint {regs};", f"    bool {preds};", "    uint loops = 0u;"]
+    if stage == "vs" and not (b.task or b.mesh):
+        decl.append("    gl_PointSize = support.point_size;")   # first: a program that writes its own overrides it
     head_cs = None   # task/mesh: the same body under the compute wrappers (b.reflection["cs_glsl"])
     if b.task:
         head_cs, tail_cs = task_head_cs(head), TASK_MAIN_CS

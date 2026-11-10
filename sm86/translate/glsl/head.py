@@ -83,6 +83,10 @@ def declarations(b, stage: str, shape: tuple[int, int, int, int] | None) -> list
         head += [f"layout(location = {t}) out vec4 out_attr{t};" for t in sorted(b.out_attrs)]
         if getattr(b, "clip", 0):
             head.append(f"out float gl_ClipDistance[{b.clip}];")
+        if stage == "vs" and not (b.task or b.mesh):
+            # NVN's point size (SetPointSize) for the programs that write none; Vulkan leaves gl_PointSize undefined on
+            # point lists (VUID topology-08773). Ryujinx's SupportBuffer.PointSize (MIT); the back end fills it.
+            head.append("layout(std140, binding = 0) uniform Support { vec4 pad[87]; float point_size; } support;")
     # Bindings from 1 (0 is the back end's support buffer), set 0, in this order: constant banks, storage buffers,
     # textures, images; the reflection names each the way runtime/gfx/nvn/host/gfx_shader.c add_res() reads it.
     refl: dict = {"stage": "task" if b.task else "mesh" if b.mesh else stage, "cbufs": [], "sbufs": [], "textures": [], "images": []}
