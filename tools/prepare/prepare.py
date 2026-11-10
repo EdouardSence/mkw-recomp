@@ -241,9 +241,19 @@ def shaders(exefs: Path, romfs: Path, game: Path, work: Path, glslc: str, jobs: 
     sh = work / "shaders"
     run([sys.executable, str(ROOT / "tools/shaders/extract.py"), "--romfs", str(romfs), "--exefs", str(exefs),
          "--out", str(sh)])  # fmt: skip
-    run([sys.executable, str(ROOT / "tools/shaders/translate.py"), "--shaders", str(sh), "--out", str(game / "spirv"),
-         "--glslc", glslc, "--no-validate", "--progress", "--jobs", str(jobs),
-         "--spec", str(spec)], env=tool_env(glslc), progress_prefix="progress")  # fmt: skip
+    while True:
+        try:
+            run([sys.executable, str(ROOT / "tools/shaders/translate.py"), "--shaders", str(sh),
+                 "--out", str(game / "spirv"), "--glslc", glslc, "--no-validate", "--progress", "--jobs", str(jobs),
+                 "--spec", str(spec)], env=tool_env(glslc), progress_prefix="progress")  # fmt: skip
+            break
+        except Failed as e:
+            # A worker that dies (the system ends it when memory runs out) breaks the whole pool (issue #24,
+            # BrokenProcessPool). What is translated stays (translate.py resumes); half the workers need half the memory.
+            if "BrokenProcessPool" not in str(e) or jobs == 1:
+                raise
+            jobs = max(1, jobs // 2)
+            print(f"shaders: a worker ended abruptly, again with {jobs} workers", file=sys.stderr)
     for p in (game / "spirv").glob("*.glsl"):  # the runtime reads .spv and .res.json; the GLSL only made them
         p.unlink()
 
