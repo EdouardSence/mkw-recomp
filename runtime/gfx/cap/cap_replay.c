@@ -94,6 +94,7 @@ int cap_replay_main(int argc, char **argv) {
     env_default("MKW_PIPE_SYNC", "1");
     env_default("MKW_REPLAY_PAR_WARM", "0");   // chunks from the first submission (vk_exec_par.c)
     env_default("MKW_BACKGROUND_WINDOW", "hidden");   // a replay shows no window: its images are read back
+    vk_pipeline_async_enable();   // MKW_PIPE_SYNC=0: background builds and the draws' waits, as in the game
     const char *par = getenv("MKW_REPLAY_PAR");
     if (!tag) tag = par && strcmp(par, "0") ? "par" : "serial";
     char path[1024], out_default[1024];

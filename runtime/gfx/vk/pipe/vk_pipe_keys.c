@@ -390,9 +390,22 @@ static void job_lower(Job *j) {
     A.low = j;
 }
 
+#define LIB_HELPERS 4   // lib_wait's helper threads at once; beyond them a draw waits for a worker
+
+static void lib_helper(void *arg) {
+    LibJob *j = arg;
+    plat_mutex_lock(&P.lock);
+    lib_build(j->b, j->kind, &j->s, &j->k, j->l);
+    U.helpers--;
+    plat_mutex_unlock(&P.lock);
+    free(j);
+}
+
 // A draw waits for pipeline s: its missing pre-rasterization and fragment shader libraries go to the head of the
 // worker queues (U), so they build in parallel on idle workers, and this thread sleeps until both are published or
-// end (now_ms) passes. A job no worker took within 1 ms (all busy) is built here. Caller holds P.lock.
+// end (now_ms) passes. A job no worker took within 1 ms (all busy) is built on a helper thread, never here: a driver
+// build may not return, and this thread must be free to give up at end (issue #36: AMD's Windows driver 26.10.1 held
+// the first frame in one library build; the window never opened). Caller holds P.lock.
 static void lib_wait(const VkPipeState *s, const GKey *k, Layout *l, double end) {
     ViKey vk_;
     PrKey pk;
@@ -430,14 +443,60 @@ static void lib_wait(const VkPipeState *s, const GKey *k, Layout *l, double end)
             return;
         }
         Lib *q = b[0]->job ? b[0] : b[1]->job ? b[1] : NULL;
-        if (q && (now >= steal_at || !U.idle)) {
-            U.stolen++;
-            lib_steal(q);   // releases P.lock while building
+        if (q && (now >= steal_at || !U.idle) && U.helpers < LIB_HELPERS) {
+            LibJob *j = lib_take(q);
+            if (plat_thread_spawn(lib_helper, j, "pipe lib", 0)) {
+                U.stolen++, U.helpers++;
+            } else {   // no thread: back to the head of the queue for a worker
+                j->next = U.head, U.head = j, q->job = j;
+                if (!U.tail) U.tail = j;
+                steal_at = end;
+            }
             continue;
         }
+        if (q && now >= steal_at) steal_at = end;   // helpers all busy: a worker takes it
         double until = q && steal_at < end ? steal_at : end;
         plat_cond_wait_ms(&done_cv, &P.lock, (uint32_t)(until - now) + 1);
     }
+}
+
+#define GIVE_UP_MS 5000u   // a wait this long (the one-shot draws' 30 s) that ends without the pipeline gives it up
+
+static const char *lib_state(const void *key, uint32_t size) {
+    Lib *b = lib_find(key_hash(key, size), key, size);
+    return !b ? "absent" : b->job ? "queued" : b->building ? "building" : b->pipe ? "built" : "failed";
+}
+
+static void shader_hex(const GfxShader *sh, char out[65]) {
+    const uint8_t *id = sh ? gfx_shader_key(sh) : NULL;
+    if (!id) {
+        snprintf(out, 65, "none");
+        return;
+    }
+    for (int i = 0; i < 32; i++) snprintf(out + 2 * i, 3, "%02x", id[i]);
+}
+
+// A draw waited its whole wait_ms and the pipeline is still building: the driver may never return it (issue #36: AMD's
+// Windows driver 26.10.1, the first frame waited 30 s per frame for one full-screen pipeline and the window never
+// opened). The shader keys name the prepared SPIR-V (spirv/<key>.*); the library states say which build is stuck.
+// Caller holds P.lock.
+static void gave_up_report(Pipe *p, const VkPipeState *s, const GKey *k, uint32_t wait_ms) {
+    static int n;
+    if (n++ >= 8) return;
+    char vs[65], fs[65], libs[96] = "";
+    shader_hex(s->vs, vs), shader_hex(s->fs, fs);
+    if (P.gpl && !k->meshp) {
+        ViKey v;
+        PrKey pk;
+        FsKey fk;
+        FoKey ok;
+        lib_keys(s, k, &v, &pk, &fk, &ok);
+        snprintf(libs, sizeof libs, "; libraries: pre-rasterization %s, fragment %s, fast link %s",
+                 lib_state(&pk, sizeof pk), lib_state(&fk, sizeof fk), p->fast_tried ? "tried" : "not tried");
+    }
+    rt_log("vk_pipeline: a draw gave up on its pipeline after %u ms; later draws skip it until it is built. vs %s fs %s%s; "
+           "workers %d (%d idle, %d on libraries), %u jobs in flight",
+           wait_ms, vs, fs, libs, A.threads, U.idle, U.running, (unsigned)A.inflight);
 }
 
 VkPipeline pipe_graphics(const VkPipeState *s, const VkPipeInfo **info, int async, int *pending, uint32_t wait_ms,
@@ -471,6 +530,7 @@ VkPipeline pipe_graphics(const VkPipeState *s, const VkPipeInfo **info, int asyn
                : U.on ? "has its libraries built in parallel on the workers, ahead of other jobs"
                       : "builds its libraries itself (MKW_PIPE_WAIT=draw)");
     }
+    if (p && p->gave_up && p->building && !p->info.pipeline) wait_ms = 0;   // one full wait per pipeline, not one per frame
     double end = wait_ms ? now_ms() + wait_ms : 0;
     if (p && p->building && P.gpl && !k.meshp && !p->info.pipeline && !p->fast_tried && p->lay) {
         int final = 0, build = wait_ms != 0 && draw_build;
@@ -511,6 +571,7 @@ VkPipeline pipe_graphics(const VkPipeState *s, const VkPipeInfo **info, int asyn
     }
     int wait = p && p->building && !p->info.pipeline;
     if (wait) P.stats.pending_skips++;
+    if (wait && wait_ms >= GIVE_UP_MS && !p->gave_up) p->gave_up = 1, gave_up_report(p, s, &k, wait_ms);
     VkPipeline pipe = p ? p->info.pipeline : VK_NULL_HANDLE;
     plat_mutex_unlock(&P.lock);
     if (wait) {
@@ -534,6 +595,8 @@ VkPipeline vk_pipeline_graphics_async_low(const VkPipeState *s, const VkPipeInfo
 }
 
 // ---- boot prewarm from the key file (comment at "pipeline keys")
+
+#define PREWARM_STALL_MS 20000u   // vk_pipeline_prewarm: this long without a pipeline finished and the boot goes on
 
 static int id_cmp(const void *x, const void *y) { return memcmp(x, y, 32); }
 
@@ -652,11 +715,29 @@ void vk_pipeline_prewarm(void) {
     for (int i = 0; i < cpus && i < 64 && queued; i++)
         if ((t[nt] = plat_thread_new(warm_builder, NULL, "pipe prewarm"))) nt++;
     if (!nt) warm_builder(NULL);
-    for (int i = 0; i < nt; i++)
-        while (!plat_thread_join_ns(t[i], 2000000000u))
-            rt_log("vk_pipeline: prewarm: %u of %u pipelines, %.0f ms", K.built + K.failed, queued, now_ms() - t1);
+    // The boot waits while pipelines keep finishing; PREWARM_STALL_MS without one and the game starts, the rest built
+    // on in the background (issue #36: AMD's Windows drivers 25.2.1 and 26.10.1 took 264-442 s for one pipeline of
+    // 11-19, and the window opened that much later).
+    uint32_t last = 0;
+    double last_t = now_ms();
+    int i = 0, stalled = 0;
+    for (; i < nt && !stalled; i++) {
+        while (!plat_thread_join_ns(t[i], 2000000000u)) {
+            uint32_t done = K.built + K.failed;
+            if (done != last) last = done, last_t = now_ms();
+            rt_log("vk_pipeline: prewarm: %u of %u pipelines, %.0f ms", done, queued, now_ms() - t1);
+            if ((stalled = now_ms() - last_t >= PREWARM_STALL_MS)) break;
+        }
+    }
+    if (stalled)
+        for (i--; i < nt; i++) plat_thread_detach(t[i]);
     plat_mutex_lock(&P.lock);
-    while (K.left) plat_cond_wait(&done_cv, &P.lock);   // jobs a pool worker took
+    if (stalled) {
+        rt_log("vk_pipeline: prewarm: no pipeline finished in %u ms; the game starts, %u pipelines still building in the "
+               "background", PREWARM_STALL_MS, K.left);
+    } else {
+        while (K.left) plat_cond_wait(&done_cv, &P.lock);   // jobs a pool worker took
+    }
     rt_log("vk_pipeline: prewarm: %zu records in %s: %u pipelines built, %u failed, %u already built, %u dropped "
            "(shader not loaded); shaders %.0f ms, pipelines %.0f ms on %d threads, total %.0f ms",
            n, K.path, K.built, K.failed, known, dropped, t1 - t0, now_ms() - t1, nt, now_ms() - t0);

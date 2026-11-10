@@ -97,6 +97,7 @@ static VkPipeline lib_create(int kind, const VkPipeState *s, const GKey *k, VkPi
         pi.pVertexInputState = &vi, pi.pInputAssemblyState = &ia;
     } else if (kind == LIB_PR) {
         const PrKey *pk = key;
+        pipe_test_stall(s->vs, NULL);
         uint64_t vw, sw, n2 = 0;
         const uint32_t *vcode = gfx_shader_spirv(s->vs, &vw), *scode = vcode;
         sw = vw;
@@ -108,6 +109,7 @@ static VkPipeline lib_create(int kind, const VkPipeState *s, const GKey *k, VkPi
         pi.stageCount = 1, pi.pStages = &st, pi.pViewportState = &vp, pi.pRasterizationState = &rs;
         pi.layout = lay;
     } else if (kind == LIB_FS) {
+        pipe_test_stall(NULL, s->fs);
         if (s->fs) {
             uint64_t fw, sw, n2 = 0;
             const uint32_t *fcode = gfx_shader_spirv(s->fs, &fw), *scode = fcode;
@@ -215,13 +217,19 @@ VkPipeline lib_build(Lib *b, int kind, const VkPipeState *s, const GKey *k, Layo
     return pipe;
 }
 
-// Takes b's queued job out of the queue and builds it on this thread. Caller holds P.lock.
-void lib_steal(Lib *b) {
+// Takes b's queued job out of the queue: b stays building, for whoever builds the job. Caller holds P.lock.
+LibJob *lib_take(Lib *b) {
     LibJob *j = b->job, **pp = &U.head, *prev = NULL;
     while (*pp && *pp != j) prev = *pp, pp = &(*pp)->next;
     if (*pp) *pp = j->next;
     if (U.tail == j) U.tail = prev;
     b->job = NULL;
+    return j;
+}
+
+// Takes b's queued job out of the queue and builds it on this thread. Caller holds P.lock.
+void lib_steal(Lib *b) {
+    LibJob *j = lib_take(b);
     lib_build(b, j->kind, &j->s, &j->k, j->l);
     free(j);
 }

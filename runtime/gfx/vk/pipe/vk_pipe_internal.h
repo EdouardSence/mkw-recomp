@@ -76,6 +76,7 @@ typedef struct Pipe {
     const struct Layout *lay;          // graphics: the layout it was entered with
     VkPipeline fast;                   // GPL: the fast-linked pipeline (kept until shutdown: recorded draws use it)
     uint8_t fast_tried;
+    uint8_t gave_up;                   // a draw waited its whole wait_ms for it: later draws skip it without waiting
     size_t key_size;
     uint8_t key[];
 } Pipe;
@@ -145,6 +146,7 @@ typedef struct {
     int running;                       // jobs workers are building
     int on;                            // MKW_PIPE_WAIT: 1 workers (default), 0 the drawing thread builds them (draw);
                                        // set by vk_pipeline_async_enable, before the replay runs
+    int helpers;                       // lib_wait's helper threads still building
     uint64_t waits, queued, by_worker, stolen, timeouts;
 } LibQueue;
 extern LibQueue U;
@@ -204,6 +206,7 @@ extern KeyFile K;
 
 uint64_t pipe_fnv(uint64_t h, const void *p, size_t n);
 uint64_t key_hash(const void *k, size_t n);
+void pipe_test_stall(const GfxShader *vs, const GfxShader *fs);   // MKW_PIPE_STALL (vk_pipeline.c)
 int ensure_init(void);
 void pin_subgroup32(VkPipelineShaderStageCreateInfo *st, VkPipelineShaderStageRequiredSubgroupSizeCreateInfo *rq,
                            const uint32_t *w, uint64_t words);
@@ -237,6 +240,7 @@ Lib *lib_find(uint64_t h, const void *key, uint32_t size);
 Lib *lib_new(uint64_t h, const void *key, uint32_t size);
 VkPipeline lib_build(Lib *b, int kind, const VkPipeState *s, const GKey *k, Layout *l);
 void lib_steal(Lib *b);
+LibJob *lib_take(Lib *b);
 void lib_keys(const VkPipeState *s, const GKey *k, ViKey *v, PrKey *pk, FsKey *fk, FoKey *ok);
 VkPipeline gpl_link(const VkPipeState *s, const GKey *k, const Layout *lc, int build, int *final);
 void libs_destroy(void);

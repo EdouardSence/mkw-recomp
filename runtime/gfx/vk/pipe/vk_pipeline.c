@@ -887,8 +887,39 @@ void log_stats(VkPipeline pipe, const VkPipeState *s) {
     }
 }
 
+// MKW_PIPE_STALL=<hex prefix>[:ms] (a test, never set for players): a pipeline or stage library build whose vertex or
+// fragment shader key starts with the prefix sleeps ms (60000) before it starts, as a driver build that does not
+// return (issue #36). With MKW_PIPE_SYNC=0 a capture replay shows what a waiting draw does then.
+void pipe_test_stall(const GfxShader *vs, const GfxShader *fs) {
+    static char pre[65];
+    static uint32_t ms;
+    static int ready = -1;
+    if (ready < 0) {
+        const char *e = cfg_get("MKW_PIPE_STALL");
+        const char *c = e ? strchr(e, ':') : NULL;
+        size_t n = e ? (c ? (size_t)(c - e) : strlen(e)) : 0;
+        if (n >= sizeof pre) n = sizeof pre - 1;
+        memcpy(pre, e ? e : "", n), pre[n] = 0;
+        ms = c ? (uint32_t)atoi(c + 1) : 60000;
+        ready = n > 0;
+    }
+    if (!ready) return;
+    const GfxShader *sh[2] = {vs, fs};
+    for (int i = 0; i < 2; i++) {
+        const uint8_t *id = sh[i] ? gfx_shader_key(sh[i]) : NULL;
+        char hex[65];
+        if (!id) continue;
+        for (int j = 0; j < 32; j++) snprintf(hex + 2 * j, 3, "%02x", id[j]);
+        if (strncmp(hex, pre, strlen(pre))) continue;
+        rt_log("vk_pipeline: MKW_PIPE_STALL: a build with shader %.16s sleeps %u ms", hex, ms);
+        plat_sleep_ms(ms);
+        return;
+    }
+}
+
 VkPipeline create_graphics(const VkPipeState *s, const GKey *k, const Layout *l, uint32_t fs_off) {
     if (k->meshp) return create_mesh(s, k, l);
+    pipe_test_stall(s->vs, s->fs);
     VkShaderModule vm = VK_NULL_HANDLE, fm = VK_NULL_HANDLE;
     uint64_t vw, fw;
     const uint32_t *vcode = gfx_shader_spirv(s->vs, &vw);
