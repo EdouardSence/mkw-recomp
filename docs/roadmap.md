@@ -63,3 +63,9 @@ screen by screen against the console.
 - Windows with a dedicated GPU: memory the GPU wrote is not uploaded again to its mirror.
 - "Detect" in the graphics settings: a preset picked from the GPU.
 - Audio: two known SDK bugs (splitters, voice 0) and cuts in the movies' audio.
+
+## 6. Later game versions
+
+- Updates (1.8.0 and others, issue #19): planned once 1.0.0 plays as on the console. Each version is a different
+  executable, so the recompilation (function list, patches, the runtime's addresses) is redone for it; the game cannot
+  be shared, so this needs someone who owns that version to run the tools on their own dump and contribute the result.

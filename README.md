@@ -37,6 +37,8 @@ The main open work, in order; the details are in [docs/roadmap.md](docs/roadmap.
   validation errors.
 - **Every menu checked** against the console: mode, character and vehicle select are next.
 - **No GPU hangs** and less GPU memory, then loading without stutter and a Linux package for non-rolling distributions.
+- **Later game versions** (1.8.0 and others): planned after 1.0.0. Each is a different executable to recompile, and
+  since the game cannot be shared, it needs a contributor who owns that version ([#19](https://github.com/adriadam10/mkw-recomp/issues/19)).
 
 \* Measured on 09/11/2026 on our test machine: Radeon 660M APU (Ryzen 5 7535HS), Linux, 720p internal resolution.
 
