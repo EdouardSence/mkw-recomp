@@ -4,6 +4,32 @@ Each version's section is that release's notes: `tools/build/notes.py` puts it i
 updating, known issues, reporting) for the GitHub release. A section has a summary paragraph, `### Changes` (each with
 its issue, #N), `### Tested` (what was run from the packages before publishing) and optionally `### Known issues`.
 
+## 0.1.7
+
+The game starts on AMD graphics cards under Windows, where the window did not open or the title froze.
+
+### Changes
+
+- On AMD's Windows drivers the window did not open after Play, or opened minutes later and froze on the title (#36,
+  #38, #54, #20). Some of the game's shaders hold a `switch`, and our translation gave every instruction of them an
+  entry point; AMD's compiler took minutes on those (with AMD's own offline compiler, 50 of 81 did not finish in 30 s;
+  now none, 84 s for the 81). The translation now takes the switch's own cases. After updating, the setup's shader
+  step runs again. Also: a shader the driver does not return holds the game at most 30 s, once, and the start no
+  longer waits minutes for the whole prewarm. `GPL=0` in `mkw.ini` is not needed: remove it.
+- The window opens black at once instead of after the first image (#36, #20).
+- A crash in a race, `no function at guest pc main+0x35bdf8` (#40): the recompiler took an address loaded into a
+  register that was overwritten in between, and split a game function in 67 pieces.
+- A crash after choosing the character with a 4096 shadow map at 1440p (#48): when that map does not fit, it keeps
+  the game's size.
+- 2160p in Graphics > Resolution (#55).
+- A 64-bit integer compare in 6 shaders was done on 32 bits.
+- Diagnostics for graphics-card crashes: the log names the clear, copy or blit after the frame's last pass (#43), and
+  `GPU_CRUMBS_DRAW=1` in `mkw.ini` names the shader of each draw (#37, #40, NVIDIA's "instruction pointer invalid").
+
+### Tested
+
+Pending.
+
 ## 0.1.6
 
 Graphics cards with more video memory now get more of it for the course's textures.
