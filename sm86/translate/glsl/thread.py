@@ -212,18 +212,24 @@ class ThreadOps:
     def exit(self) -> str:
         if self.stage != "ps":
             return "return;"
+        # Each target with any component takes four registers, component c in base + c, written or not (Ryujinx
+        # EmitterContext.PrepareForReturn, MIT; eden-nx2 exit_program.cpp): packing the written ones read the wrong
+        # register in 117 FS with a partial mask (4617398a, omap 0b1001: w in R3, was R1).
         out, r = [], 0
         for rt in range(8):
             mask = (self.sph.omap_targets >> (rt * 4)) & 0xF
+            if not mask:
+                continue
             for comp in range(4):
                 if mask >> comp & 1:
-                    self.regs.add(r)
-                    out.append(f"out_color{rt}[{comp}] = uintBitsToFloat(r{r});")
+                    self.regs.add(r + comp)
+                    out.append(f"out_color{rt}[{comp}] = uintBitsToFloat(r{r + comp});")
                     self.out_attrs.add(rt)
-                    r += 1
-        # Depth two registers after the last colour component (the one between is the sample mask): Ryujinx
-        # TranslatorContext.GetDepthRegister (MIT). Without it a depth-only FS had no effect and the driver dropped it:
-        # the race's half-resolution depth stayed at 1.0 and its lighting at 0 (run-race29, 31/10/2026).
+            r += 4
+        # Depth two registers after the last colour target (the one between is the sample mask), as eden-nx2
+        # exit_program.cpp; Ryujinx GetDepthRegister counts components, the same with whole targets. Without it a
+        # depth-only FS had no effect and the driver dropped it: the race's half-resolution depth stayed at 1.0 and its
+        # lighting at 0 (run-race29, 31/10/2026).
         if self.sph.omap_depth:
             self.regs.add(r + 1)
             out.append(f"gl_FragDepth = uintBitsToFloat(r{r + 1});")
