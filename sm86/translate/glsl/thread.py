@@ -10,12 +10,13 @@ from glsl.common import PT, RZ, URZ, Unsupported, multi_load, pred, reg
 
 class ThreadOps:
     def fswzadd(self, i: Insn) -> str:
-        """FSWZADD Rd, Ra, Rc, mask: per quad lane, Ra * {1,-1,1,0}[k] + Rc * {1,1,-1,1}[k] with k the lane's 2 bits
-        of the mask (Ryujinx SwizzleAdd.glsl, MIT); used for derivatives across a quad."""
+        """FSWZADD Rd, Ra, Rc, mask: per quad lane, Ra * {1,1,-1,0}[k] + Rc * {1,-1,1,1}[k] with k the lane's 2 bits
+        of the mask; used for derivatives across a quad. SM86 swaps codes 1 and 2 against Maxwell's table (Ryujinx
+        SwizzleAdd.glsl, MIT): nvdisasm names code 2 NP (c - a) and 3 ZP (c), as eden-nx2 lower_to_maxwell.h FSWZADD."""
         self.uses_subgroup = True
         k = f"(({i.v('npCtrl')}u >> ((gl_SubgroupInvocationID & 3u) * 2u)) & 3u)"
         a, c = self.src_f(i, "a"), self.src_f(i, "c")
-        return self.dst_f(i, f"({a} * vec4(1.0, -1.0, 1.0, 0.0)[{k}] + {c} * vec4(1.0, 1.0, -1.0, 1.0)[{k}])")
+        return self.dst_f(i, f"({a} * vec4(1.0, 1.0, -1.0, 0.0)[{k}] + {c} * vec4(1.0, -1.0, 1.0, 1.0)[{k}])")
 
     REDUX: ClassVar[dict[str, str]] = {"SUM": "subgroupAdd", "MIN": "subgroupMin", "MAX": "subgroupMax",
                                        "AND": "subgroupAnd", "OR": "subgroupOr", "XOR": "subgroupXor"}  # fmt: skip
