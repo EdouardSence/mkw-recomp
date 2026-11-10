@@ -11,7 +11,9 @@ Linux: intercept.c as an LD_PRELOAD library. Windows: nvdisasm.exe links its C r
 is a DLL loaded into it while it is suspended, which rewrites the exe's own memcpy (inject below). Both give the same
 spec for the decoder (09/11/2026: equal but for whitespace in the raw condition texts, which nothing reads).
 
-Usage: python sm86/spec/spec.py [--out build/sm86] [--cache scratchpad/nvidia] [--cc "zig cc"]
+Usage: python sm86/spec/spec.py [--out build/sm86] [--cache scratchpad/nvidia] [--cc "zig cc"] [--crt link.json]
+       --crt (Windows, from the setup): the package's prebuilt C runtime, linked with zig lld-link, so zig does not
+       build its libc on the player's PC (tools/prepare/machine.py lld_link; issue #2)
        (~1 min; downloads 84 MB on Linux, 126 MB on Windows, the first time)
 """
 
@@ -114,10 +116,18 @@ def no_aslr() -> None:
     ctypes.CDLL(None).personality(0x0040000)  # ADDR_NO_RANDOMIZE
 
 
-def intercept_lib(cc: list[str], work: Path) -> Path:
+def intercept_lib(cc: list[str], work: Path, crt: Path | None) -> Path:
     if WINDOWS:
         dll = work / "intercept.dll"
-        subprocess.run([*cc, "-O2", "-shared", "-o", str(dll), str(HERE / "intercept_win.c")], check=True)
+        if not crt:
+            subprocess.run([*cc, "-O2", "-shared", "-o", str(dll), str(HERE / "intercept_win.c")], check=True)
+            return dll
+        sys.path.insert(0, str(ROOT / "tools/prepare"))
+        from machine import lld_link
+
+        obj = work / "intercept_win.o"
+        subprocess.run([*cc, "-O2", "-c", "-o", str(obj), str(HERE / "intercept_win.c")], check=True)
+        subprocess.run(lld_link(cc[0], crt, dll, [str(obj)], f"-IMPLIB:{work / 'intercept.lib'}"), check=True)
         return dll
     so = work / "intercept.so"
     # -nostdlib and libc after the object: zig cc otherwise links its own memcpy and hides intercept.c's; -O2 and no
@@ -210,14 +220,14 @@ def capture(nvdisasm: Path, lib: Path, work: Path, out: Path) -> str:
     return ""
 
 
-def build(out: Path, cache: Path, cc: list[str]) -> None:
+def build(out: Path, cache: Path, cc: list[str], crt: Path | None) -> None:
     cache.mkdir(parents=True, exist_ok=True)
     nvdisasm, ptxas = tool("nvdisasm", cache), tool("ptxas", cache)
     with tempfile.TemporaryDirectory() as tmp:
         work = Path(tmp)
         (work / "k.ptx").write_text(PTX)
         subprocess.run([str(ptxas), "-arch=sm_86", str(work / "k.ptx"), "-o", str(work / "sm_86.cubin")], check=True)
-        lib = intercept_lib(cc, work)
+        lib = intercept_lib(cc, work, crt)
         # A garbled capture is still possible (see no_aslr; Windows keeps ASLR) and the parser has caught every one: a
         # few tries, ~3 s each.
         for attempt in range(1, TRIES + 1):
@@ -234,8 +244,9 @@ def main() -> None:
     ap.add_argument("--out", type=Path, default=ROOT / "build/sm86")
     ap.add_argument("--cache", type=Path, default=ROOT / "scratchpad/nvidia", help="downloads and unpacked tools")
     ap.add_argument("--cc", default="cc", help="C compiler command for the interception library")
+    ap.add_argument("--crt", type=Path, help="Windows: the package's prebuilt C runtime (setup/lib/crt/link.json)")
     args = ap.parse_args()
-    build(args.out, args.cache, args.cc.split())
+    build(args.out, args.cache, args.cc.split(), args.crt)
 
 
 if __name__ == "__main__":

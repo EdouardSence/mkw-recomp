@@ -36,18 +36,29 @@ def default_cc(game: Path, target: str) -> list[str]:
     return ["clang"]
 
 
-def crt_link(game: Path, cc: list[str], lib: Path, out: Path, obj: Path, inputs: list[str]) -> list[str] | None:
-    """The Windows link as zig lld-link with the package's prebuilt C runtime (setup/lib/crt, tools/build/dist.py
-    windows_crt): zig never builds its libc on the player's machine, the build that never ended on many Windows PCs
-    (issue #2). None without it (a source checkout, another compiler): the caller links with zig cc."""
+def crt_spec(game: Path, cc: list[str]) -> Path | None:
+    """The package's prebuilt Windows C runtime (setup/lib/crt/link.json, tools/build/dist.py windows_crt), or None
+    without it (a source checkout, another compiler): then zig cc links and builds its libc itself, the build that never
+    ended on many players' Windows PCs (issue #2)."""
     spec = package_dir(game) / "lib/crt/link.json"
-    if Path(cc[0]).stem != "zig" or not spec.is_file():
-        return None
+    return spec if Path(cc[0]).stem == "zig" and spec.is_file() else None
+
+
+def lld_link(zig: str, spec: Path, out: Path, inputs: list[str], *flags: str) -> list[str]:
+    """A DLL linked by zig lld-link with the C runtime of spec (crt_spec), as zig cc -shared would link it."""
     s = json.loads(spec.read_text())
+    return [zig, "lld-link", *s["flags"], f"-OUT:{out}", *flags, *inputs, *(str(spec.parent / f) for f in s["files"])]
+
+
+def crt_link(game: Path, cc: list[str], lib: Path, out: Path, obj: Path, inputs: list[str]) -> list[str] | None:
+    """The game library's Windows link with the package's C runtime, or None without it (crt_spec)."""
+    spec = crt_spec(game, cc)
+    if not spec:
+        return None
     pdb = lib.with_name(lib.name + ".pdb")  # the name zig cc gave it
-    return [cc[0], "lld-link", *s["flags"], f"-OUT:{out}", f"-PDB:{pdb}", f"-PDBALTPATH:{pdb.name}",
-            f"-IMPLIB:{obj / 'mkwgame.lib'}", *inputs,
-            *(str(spec.parent / f) for f in s["files"])]  # fmt: skip
+    return lld_link(
+        cc[0], spec, out, inputs, f"-PDB:{pdb}", f"-PDBALTPATH:{pdb.name}", f"-IMPLIB:{obj / 'mkwgame.lib'}"
+    )
 
 
 def default_glslc(game: Path) -> str:

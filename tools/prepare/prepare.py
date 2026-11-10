@@ -43,6 +43,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from machine import (
     Failed,
     crt_link,
+    crt_spec,
     default_cc,
     default_glslc,
     mem_gb,
@@ -231,8 +232,9 @@ def sm86_spec(game: Path, work: Path, cc: list[str]) -> Path:
     for spec in (ROOT / "build/sm86/instructions.json", game / "sm86/instructions.json"):
         if spec.is_file():
             return spec
+    crt = crt_spec(game, cc)  # spec.py links a DLL too on Windows: without it, zig builds its libc there (issue #2)
     run([sys.executable, str(ROOT / "sm86/spec/spec.py"), "--out", str(game / "sm86"), "--cache", str(work / "nvidia"),
-         "--cc", " ".join(cc)])  # fmt: skip
+         "--cc", " ".join(cc), *(["--crt", str(crt)] if crt else [])])  # fmt: skip
     return game / "sm86/instructions.json"
 
 
