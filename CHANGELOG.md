@@ -28,7 +28,10 @@ The game starts on AMD graphics cards under Windows, where the window did not op
 
 ### Tested
 
-Pending.
+From these packages, before publishing:
+
+- The whole setup on Linux (Radeon 660M, RADV) and on Windows 11 (GTX 1050 Ti), with its one-minute warm-up and no
+  shader left behind. We have no AMD card on Windows: the shader fix was checked with AMD's own offline compiler.
 
 ## 0.1.6
 
