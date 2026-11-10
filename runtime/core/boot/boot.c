@@ -343,6 +343,7 @@ void rt_boot(void) {
     held = plat_now_ms() - held;
     rt_log("boot: guest starts %llu ms after process start (%llu ms of it waiting for the prewarm)",
            (unsigned long long)(plat_process_uptime_ns() / 1000000), (unsigned long long)held);
+    gfx_window_early();
     rt_guest_start_ns = kern_now_ns();
     kern_run_on_guest_main(guest_main);
     rt_fatal("boot: the guest main thread ended");

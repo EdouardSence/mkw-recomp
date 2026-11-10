@@ -18,6 +18,7 @@ const OvNvState *ov_nv_state(void);                        // ov_gfx.c
 
 // ---- window, vsync, focus (gfx_present.c and the window back end, gfx_wsys.h; vk_device.c). Host threads only; never run guest code.
 void gfx_window_start(void);                               // window thread, Vulkan device, swapchain; idempotent
+void gfx_window_early(void);                               // the window at boot, black until the first image
 void gfx_vsync_bind(uint64_t system_event);                // nn::vi vsync event; signalled at 60 Hz
 int gfx_window_focused(void);
 int gfx_window_lines(void);   // lines of the picture the window will show (monitor in fullscreen); 0 unknown

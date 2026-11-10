@@ -567,10 +567,10 @@ static void present_image(VkImage src, VkImageLayout layout, VkFormat fmt, int w
     const char *menu_shot = NULL;
     MenuTarget mt = {c->instance, c->phys, c->device, c->gfx_family, c->gfx_queue, g_sc_fmt, g_sc_ext.width,
                      g_sc_ext.height, cw, ch, g_scaler};
-    int overlay = g_sc_view[idx] &&
+    int overlay = src && g_sc_view[idx] &&
                   menu_overlay_frame(__atomic_load_n(&gfx_counters.frames, __ATOMIC_RELAXED), &mt, &menu_shot);
-    int cap = (g_capture || menu_shot) && ensure_capture_buffer();
-    int thumb = g_th_n && ensure_thumbs();
+    int cap = src && (g_capture || menu_shot) && ensure_capture_buffer();
+    int thumb = src && g_th_n && ensure_thumbs();
 
     VkCommandBuffer cb = g_cb[slot];
     vkResetCommandBuffer(cb, 0);
@@ -583,7 +583,7 @@ static void present_image(VkImage src, VkImageLayout layout, VkFormat fmt, int w
     const int rect[4] = {cx, cy, cw, ch};
     int to[4];   // where the picture goes in the swapchain image: {x, y, w, h}
     gfx_fit_rect(cw, ch, (int)g_sc_ext.width, (int)g_sc_ext.height, to);
-    if (to[2] != (int)g_sc_ext.width || to[3] != (int)g_sc_ext.height) {   // black bars beside or above and below it
+    if (!src || to[2] != (int)g_sc_ext.width || to[3] != (int)g_sc_ext.height) {   // black bars, or all black
         VkClearColorValue black = {.float32 = {0, 0, 0, 1}};
         VkImageSubresourceRange all = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
         vkCmdClearColorImage(cb, dst, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &black, 1, &all);
@@ -592,9 +592,9 @@ static void present_image(VkImage src, VkImageLayout layout, VkFormat fmt, int w
                      VK_ACCESS_2_TRANSFER_WRITE_BIT);
     }
     // FSR (MKW_UPSCALER) when the picture's rectangle is larger than the crop; else the bilinear blit
-    int fsr = general && vk_fsr_record(cb, slot, src, fmt, w, h, rect, dst, to[0], to[1], (uint32_t)to[2], (uint32_t)to[3]);
+    int fsr = src && general && vk_fsr_record(cb, slot, src, fmt, w, h, rect, dst, to[0], to[1], (uint32_t)to[2], (uint32_t)to[3]);
     g_scaler = fsr ? 2 : cw != to[2] || ch != to[3];
-    if (!fsr) {
+    if (src && !fsr) {
         if (general)   // a GENERAL source (vk_texture.c images): earlier submissions' writes become visible to the blit here
             sync_barrier(cb, src, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_GENERAL, VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT,
                          VK_ACCESS_2_MEMORY_WRITE_BIT, VK_PIPELINE_STAGE_2_TRANSFER_BIT, VK_ACCESS_2_TRANSFER_READ_BIT);
@@ -678,6 +678,14 @@ static void present_image(VkImage src, VkImageLayout layout, VkFormat fmt, int w
     }
 out:
     plat_rmutex_unlock(&g_pl);
+}
+
+// The window at boot, black until the game's first image: a first frame that waits for its pipelines left players with
+// no window at all, only mkw.exe in the Task Manager (issue #36). Not with MKW_GPU=null.
+void gfx_window_early(void) {
+    const char *gpu = cfg_get("MKW_GPU");
+    if (gpu && !strcmp(gpu, "null")) return;
+    present_image(VK_NULL_HANDLE, VK_IMAGE_LAYOUT_UNDEFINED, VK_FORMAT_UNDEFINED, 0, 0, NULL, 0);
 }
 
 void vk_present_image(VkImage src, VkImageLayout layout, VkFormat fmt, int w, int h, const int crop[4]) {

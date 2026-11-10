@@ -1,7 +1,7 @@
-// --probe-window: presents 300 frames of a cycling clear colour through vk_present_image, reads the swapchain image back
-// and compares every pixel, measures the vsync rate, flips the focus state and drives the cursor release with synthetic
-// window events (the window back end's wsys_probe_*, gfx_wsys.h) and resizes the window. Run with MKW_VK_VALIDATION=1
-// to count validation errors.
+// --probe-window: presents the boot's black frame (gfx_window_early), then 300 frames of a cycling clear colour through
+// vk_present_image, reads the swapchain image back and compares every pixel, measures the vsync rate, flips the focus
+// state and drives the cursor release with synthetic window events (the window back end's wsys_probe_*, gfx_wsys.h) and
+// resizes the window. Run with MKW_VK_VALIDATION=1 to count validation errors.
 #include <stdio.h>
 #include <string.h>
 
@@ -131,7 +131,7 @@ static int present_and_check(Source *s, int first, int i, int *w_out, int *h_out
 }
 
 int probe_window(void) {
-    gfx_window_start();
+    gfx_window_early();   // the boot's black frame first: the presents below must still read back exact
     VkCtx *c = vk_ctx();
     if (!c) return fail("no Vulkan device");
     vk_present_capture(1);
