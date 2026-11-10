@@ -567,7 +567,7 @@ static int resolve_deferred(const uint8_t *p, int depth) {   // returns the defe
                 if (nvn_report_at_submit() && !nvn_gpu_only(r->addr)) {   // {counter 0, timestamp}
                     // =2: 1 us after the previous report, back to the real time after 8 ms without one (a new frame)
                     static uint64_t fast, last;   // game thread, the front end's submit lock
-                    uint64_t now = kern_now_ns() / RT_TICK_NS;
+                    uint64_t now = rt_ticks();   // the game's clock (GetSystemTick, turbo included)
                     fast = last && now - last < 8000000 / RT_TICK_NS ? fast + 1000 / RT_TICK_NS : now;
                     last = now;
                     uint64_t rec[2] = {0, nvn_report_at_submit() == 2 ? fast : now};

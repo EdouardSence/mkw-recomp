@@ -301,6 +301,7 @@ uint64_t frame_step_ticks(void);                           // game time since th
 int rt_ab(void);
 int rt_knob(const char *name, const char *def);
 #define RT_KNOB_ON(mode) ((mode) == 2 ? rt_ab() : (mode))
+extern volatile uint64_t nvn_timestamp_last; // nvn_ext.c: the counter timestamp the game read last (ticks)
 void frame_step_present(uint64_t display_ns, int interval); // nvnQueuePresentTexture: the frame's display time and
                                                            // present interval (60 Hz ticks)
 void frame_rate_host(uint64_t patch_page);                 // game.c MKW_FPS: register its host function (patches.c)

@@ -93,16 +93,49 @@ static void event_cb(void *arg) {
     free(e);
 }
 
-// NVNcounterData = {counter, timestamp}; timestamps are GetSystemTick ticks (RT_TICK_HZ).
+// NVNcounterData = {counter, timestamp}; timestamps are GetSystemTick ticks (RT_TICK_HZ) of the game's clock (rt_ticks:
+// with the turbo, ahead of the host's).
 static void write_counter(uint64_t addr, uint64_t counter) {
-    uint64_t rec[2] = {counter, kern_now_ns() / RT_TICK_NS};
+    uint64_t rec[2] = {counter, rt_ticks()};
     memcpy((void *)(uintptr_t)addr, rec, sizeof rec);
 }
 
+// MKW_REPORT_GPU_END (default 1; "ab"): the timestamps written at the submit move, at the fence, by the time from the
+// fence's last one to the fence's completion, so the last report of a submit reads its GPU end, as the console's GPU
+// writes it, and the gaps between reports stay. The game's frame object takes the larger of its CPU time and that end
+// (main+0x13e174) to pick the present interval; with the submit's time it saw ~17 of 34 ms, stayed at interval 1 and
+// ran the race at half speed (vel3, 10/11/2026). 0: the submit's time only.
+typedef struct { uint64_t fence, last; uint32_t refs; } ReportGroup;   // the timestamp reports of one fence
+typedef struct { uint64_t addr, ts; ReportGroup *g; } ReportCb;
+static ReportGroup *group_cur;   // under pending_lock
+static PlatMutex pending_lock;
+
+static int gpu_end_mode(void) {
+    static int mode = -1;
+    if (mode < 0) {
+        mode = rt_knob("REPORT_GPU_END", "1");
+        rt_log("vk: timestamp reports moved to their GPU end at the fence %s (MKW_REPORT_GPU_END)",
+               mode == 2 ? "in the B blocks" : mode ? "on" : "off");
+    }
+    return mode;
+}
+
 static void counter_cb(void *arg) {
-    uint64_t *addr = arg;
-    if (!nvn_report_at_submit()) write_counter(*addr, 0);   // written at the submit instead (nvn_api_cmd.c)
-    free(addr);
+    ReportCb *r = arg;
+    if (!nvn_report_at_submit()) write_counter(r->addr, 0);   // written at the submit instead (nvn_api_cmd.c)
+    else if (r->g) {
+        uint64_t now = rt_ticks(), *ts = (uint64_t *)(uintptr_t)(r->addr + 8);
+        plat_mutex_lock(&pending_lock);
+        uint64_t last = r->g->last;
+        int done = !--r->g->refs;
+        if (done && group_cur == r->g) group_cur = NULL;
+        plat_mutex_unlock(&pending_lock);
+        // Only the value this report wrote: a later submit may have reported to the same address since.
+        if (now > last && __atomic_load_n(ts, __ATOMIC_RELAXED) == r->ts && RT_KNOB_ON(gpu_end_mode()))
+            __atomic_store_n(ts, r->ts + (now - last), __ATOMIC_RELAXED);
+        if (done) free(r->g);
+    }
+    free(r);
 }
 
 // Reports queued by the replay that the GPU has not finished. The condition of RENDER_COND reads a timestamp one as 0
@@ -110,7 +143,7 @@ static void counter_cb(void *arg) {
 #define PENDING 256
 static struct { uint64_t addr, fence; int unknown; } pending[PENDING];
 static unsigned pending_head;
-static PlatMutex pending_lock = PLAT_MUTEX_INIT;
+static PlatMutex pending_lock = PLAT_MUTEX_INIT;   // also the report groups
 
 // ---- occlusion counts (samples passed)
 //
@@ -294,13 +327,24 @@ static void report_counter(VkExec *ex, const p_report_counter *p) {
         rt_fatal("vk: counter report at %#llx is in no memory pool", (unsigned long long)p->addr);
     vk_mem_count(m.cls, VK_MUSE_GPU_WRITE, sizeof(NVNcounterData));
     if (samples) oq_report(ex, p->addr);
-    else {
-        uint64_t *a = malloc(sizeof *a);
-        if (!a) rt_fatal("vk: out of memory");
-        *a = p->addr;
-        vk_completion_add(ex->fence, counter_cb, a);
-    }
     plat_mutex_lock(&pending_lock);   // chunks record timestamp reports on several threads (MKW_REPLAY_PAR)
+    if (!samples) {
+        ReportCb *r = malloc(sizeof *r);
+        if (!r) rt_fatal("vk: out of memory");
+        *r = (ReportCb){p->addr, 0, NULL};
+        if (nvn_report_at_submit() && gpu_end_mode()) {   // the value the submit wrote (nvn_api_cmd.c)
+            r->ts = __atomic_load_n((const uint64_t *)(uintptr_t)(p->addr + 8), __ATOMIC_RELAXED);
+            if (!group_cur || group_cur->fence != ex->fence) {
+                group_cur = calloc(1, sizeof *group_cur);
+                if (!group_cur) rt_fatal("vk: out of memory");
+                group_cur->fence = ex->fence;
+            }
+            r->g = group_cur;
+            r->g->refs++;
+            if (r->ts > r->g->last) r->g->last = r->ts;
+        }
+        vk_completion_add(ex->fence, counter_cb, r);
+    }
     pending[pending_head++ % PENDING] = (typeof(pending[0])){p->addr, ex->fence, samples};
     plat_mutex_unlock(&pending_lock);
 }

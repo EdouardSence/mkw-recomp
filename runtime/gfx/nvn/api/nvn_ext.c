@@ -61,7 +61,13 @@ static uint64_t ticks_to_ns(uint64_t t) { return t * RT_TICK_NS; }
 // uint64_t nvnDeviceGetCurrentTimestampInNanoseconds(const NVNdevice *d)
 NVN_API(nvnDeviceGetCurrentTimestampInNanoseconds) { ret_x(c, ticks_to_ns(rt_ticks())); }
 // uint64_t nvnDeviceGetTimestampInNanoseconds(const NVNdevice *d, const NVNcounterData *counter)
-NVN_API(nvnDeviceGetTimestampInNanoseconds) { ret_x(c, ticks_to_ns(((const NVNcounterData *)arg_p(c, 1))->timestamp)); }
+// The last value read is kept for MKW_FRAME_TRACE (game.c): the frame object reads its GPU end time with it.
+volatile uint64_t nvn_timestamp_last;
+NVN_API(nvnDeviceGetTimestampInNanoseconds) {
+    uint64_t t = ((const NVNcounterData *)arg_p(c, 1))->timestamp;
+    nvn_timestamp_last = t;
+    ret_x(c, ticks_to_ns(t));
+}
 
 // ---------- memory pools and buffers
 // size_t nvnMemoryPoolGetSize(const NVNmemoryPool *p)

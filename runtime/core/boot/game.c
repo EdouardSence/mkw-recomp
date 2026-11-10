@@ -4,9 +4,10 @@
 //
 // Frame rate (MKW_FPS, Screen tab): the game picks its present interval each frame in main+0x3a9e28 (a virtual of its
 // frame object, column main+0x329fc70 slot 28) from the time it measured for the frame, and its game clock
-// ([main+0x33e6ae8]) advances by that interval: a frame at interval 1 is 1/60 s of game time. Our pacer waits where
-// the game does not count it, so on a machine near 30 fps the interval flips between 1 and 2 and the race runs slow
-// (Adrià 09/11/2026: "como si estuviera en modo 60 yendo a 30"). [obj+0x210] = 1 or 2 is the game's own fixed
+// ([main+0x33e6ae8]) advances by that interval: a frame at interval 1 is 1/60 s of game time. Its wait for the GPU
+// counts only through the GPU timestamps (vk_exec_xfer.c MKW_REPORT_GPU_END): with the submit's time instead, a
+// machine near 30 fps stayed at interval 1 and the race ran at half speed (Adrià 09/11/2026: "como si estuviera en
+// modo 60 yendo a 30"). [obj+0x210] = 1 or 2 is the game's own fixed
 // interval, which skips that choice; 30 and 60 write it before each call, auto leaves the game's value.
 #include <stdatomic.h>
 #include <string.h>
@@ -55,6 +56,27 @@ void frame_step_present(uint64_t display_ns, int interval) {
     speed_note(interval);
 }
 
+// MKW_FRAME_TRACE=1 (diagnosis, juego/velocidad): one line per frame with what the game's interval choice reads. The
+// frame object keeps [+0xf0] the tick its last frame ended, [+0x128] the measured time (the CPU up to after its update,
+// raised by main+0x13e174 to the GPU timestamp of the frame's last counter report minus [+0xf0], read with
+// nvnDeviceGetTimestampInNanoseconds), [+0xe8] the whole CPU frame, [+0x214] the interval and [+0x218] the accumulated
+// lateness. Times in ms.
+static void frame_trace(uint64_t obj, uint64_t t0) {
+    static int on = -1;
+    static uint64_t prev;
+    if (on < 0) on = rt_knob("FRAME_TRACE", "0");
+    if (!on) return;
+    uint64_t now = kern_now_ns(), ts = nvn_timestamp_last;
+    const uint8_t *f = (const uint8_t *)(uintptr_t)obj;
+    uint64_t end = *(const uint64_t *)(f + 0xf0);
+    double tk = RT_TICK_NS / 1e6;
+    rt_log("frame: period %.2f call %.2f meas %.2f cpu %.2f ts %.2f iv %u acc %.2f", (now - prev) / 1e6,
+           (now - t0) / 1e6, (double)*(const int64_t *)(f + 0x128) * tk, (double)*(const int64_t *)(f + 0xe8) * tk,
+           ts ? ((double)ts - (double)end) * tk : 0.0,
+           *(const uint32_t *)(f + 0x214), (double)*(const int64_t *)(f + 0x218) * tk);
+    prev = now;
+}
+
 // The game thread, once per frame: MKW_FPS into the fixed interval, then the game's own function. saved: the game's
 // value before the first forced frame, put back when the setting returns to auto.
 static void host_frame_update(Cpu *c) {
@@ -73,7 +95,9 @@ static void host_frame_update(Cpu *c) {
         saved = -1;
         rt_log("game: present interval chosen by the game again (MKW_FPS auto)");
     }
-    rt_call(c, GUEST_FRAME_UPDATE, 1, c->x[0]);
+    uint64_t obj = c->x[0], t0 = kern_now_ns();
+    rt_call(c, GUEST_FRAME_UPDATE, 1, obj);
+    frame_trace(obj, t0);
 }
 
 void frame_rate_host(uint64_t patch_page) { rt_register_host(patch_page + FRAME_HOST, host_frame_update); }

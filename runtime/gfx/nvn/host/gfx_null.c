@@ -61,7 +61,7 @@ static void *null_cpu_addr(uint64_t addr, uint64_t size, const char *what) {
 static void null_report(uint64_t addr) {
     NVNcounterData *d = null_cpu_addr(addr, sizeof *d, "counter report");
     if (!d) return;
-    uint64_t rec[2] = {0, kern_now_ns() / RT_TICK_NS};
+    uint64_t rec[2] = {0, rt_ticks()};
     memcpy(d, rec, sizeof rec);
 }
 
