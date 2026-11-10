@@ -2,7 +2,7 @@
 # Sends one command to a run started with tools/run/live.sh and prints its answer from the log; shot and dump also wait
 # until the file or the dump is written (60 s at most); shot also writes PATH-s.png, 1280 wide, to look at.
 # Usage: tools/run/ctl.sh NAME COMMAND...
-#   frame | shot PATH | dump DIR [ubo|lut] | flight | pause | step [N] | resume | tex ADDR | mem ADDR SIZE PATH | press <ticks> <button> [hold] | press <ticks> LSTICK x y [hold] | stop
+#   frame | shot PATH | dump DIR [ubo|lut] | flight | pause | step [N] | resume | tex ADDR | mem ADDR SIZE PATH | press <ticks> <button> [hold] | press <ticks> LSTICK x y [hold] (a "p<N> " prefix: for player N) | stop
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 n=${1:?usage: ctl.sh NAME COMMAND...}; shift

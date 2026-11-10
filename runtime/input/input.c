@@ -96,20 +96,54 @@ static int32_t axis(int16_t v) {
     return a > -STICK_DEAD && a < STICK_DEAD ? 0 : a;
 }
 
-// Open the first gamepad when none is open or the open one went away; logs once per change.
+// Players 2-8 (input_poll_player): one gamepad each, given in connection order to the first player without one; player
+// 1's is `pad`. A player keeps the slot while the gamepad stays connected. Under lock.
+static SDL_Gamepad *extra[INPUT_MAX_PLAYERS];   // [0] unused
+static int extra_rumble[INPUT_MAX_PLAYERS], extra_east_a[INPUT_MAX_PLAYERS];
+
+static int pad_is_open(SDL_JoystickID id) {
+    if (pad && SDL_GetGamepadID(pad) == id) return 1;
+    for (int p = 1; p < INPUT_MAX_PLAYERS; p++)
+        if (extra[p] && SDL_GetGamepadID(extra[p]) == id) return 1;
+    return 0;
+}
+
+static void pad_adopt(void);
+
+// Close the gamepads that went away and open the new ones (player 1 first, then the first free player); logs each change.
 static void scan_pads(void) {
-    if (pad && SDL_GamepadConnected(pad)) return;
-    if (pad) {
+    if (pad && !SDL_GamepadConnected(pad)) {
         SDL_CloseGamepad(pad); pad = NULL; sensor_pad = 0; sensor_ok = 0;
         plat_xchg32(&pad_layout_shown, -1);
         for (int i = 0; i < 4; i++) plat_xchg32(&pad_labels[i], PAD_LABEL_NONE);
         rt_log("input: gamepad disconnected");
     }
+    for (int p = 1; p < INPUT_MAX_PLAYERS; p++)
+        if (extra[p] && !SDL_GamepadConnected(extra[p])) {
+            SDL_CloseGamepad(extra[p]); extra[p] = NULL;
+            rt_log("input: gamepad of player %d disconnected", p + 1);
+        }
     int n = 0;
     SDL_JoystickID *ids = SDL_GetGamepads(&n);
-    for (int i = 0; ids && i < n && !pad; i++) pad = SDL_OpenGamepad(ids[i]);
+    for (int i = 0; ids && i < n; i++) {
+        if (pad_is_open(ids[i])) continue;
+        int p = 0;
+        while (p < INPUT_MAX_PLAYERS && (p ? extra[p] != NULL : pad != NULL)) p++;
+        if (p == INPUT_MAX_PLAYERS) break;
+        SDL_Gamepad *g = SDL_OpenGamepad(ids[i]);
+        if (!g) continue;
+        if (!p) { pad = g; pad_adopt(); continue; }
+        extra[p] = g;
+        extra_rumble[p] = SDL_GetBooleanProperty(SDL_GetGamepadProperties(g), SDL_PROP_GAMEPAD_CAP_RUMBLE_BOOLEAN, false);
+        extra_east_a[p] = SDL_GetGamepadButtonLabel(g, SDL_GAMEPAD_BUTTON_EAST) == SDL_GAMEPAD_BUTTON_LABEL_A;
+        rt_log("input: gamepad \"%s\" for player %d (%s)", SDL_GetGamepadName(g), p + 1,
+               extra_rumble[p] ? "rumble" : "no rumble");
+    }
     SDL_free(ids);
-    if (!pad) return;
+}
+
+// Player 1's new gamepad: its rumble, button labels and layout.
+static void pad_adopt(void) {
     pad_rumble = SDL_GetBooleanProperty(SDL_GetGamepadProperties(pad), SDL_PROP_GAMEPAD_CAP_RUMBLE_BOOLEAN, false);
     pad_east_a = SDL_GetGamepadButtonLabel(pad, SDL_GAMEPAD_BUTTON_EAST) == SDL_GAMEPAD_BUTTON_LABEL_A;
     for (int i = 0; i < 4; i++) {
@@ -166,6 +200,25 @@ static void binds_refresh(void) {
     input_map_configure();
 }
 
+// MKW_VIRTUAL_PADS=N (1-8): N virtual SDL gamepads, opened like real ones after them, to try local multiplayer without
+// controllers. They have no input of their own: the script's "p<N>" lines press for their players.
+static void attach_virtual_pads(void) {
+    const char *e = cfg_get("MKW_VIRTUAL_PADS");
+    int n = e ? atoi(e) : 0;
+    if (n <= 0) return;
+    if (n > INPUT_MAX_PLAYERS) n = INPUT_MAX_PLAYERS;
+    for (int i = 0; i < n; i++) {
+        SDL_VirtualJoystickDesc d;
+        SDL_INIT_INTERFACE(&d);
+        d.type = SDL_JOYSTICK_TYPE_GAMEPAD;
+        d.naxes = SDL_GAMEPAD_AXIS_COUNT;
+        d.nbuttons = SDL_GAMEPAD_BUTTON_COUNT;
+        d.name = "MKW virtual gamepad";
+        if (!SDL_AttachVirtualJoystick(&d)) rt_fatal("input: MKW_VIRTUAL_PADS: cannot attach gamepad %d (%s)", i + 1, SDL_GetError());
+    }
+    rt_log("input: %d virtual gamepads (MKW_VIRTUAL_PADS)", n);
+}
+
 static void start(void) {
     binds_refresh();
     const char *e = cfg_get("MKW_INPUT");
@@ -173,6 +226,7 @@ static void start(void) {
     if (!SDL_Init(SDL_INIT_GAMEPAD)) { state = -1; rt_log("input: SDL gamepad init failed (%s), keyboard only", SDL_GetError()); }
     else state = 1;
     if (state == 1) {
+        attach_virtual_pads();
         scan_pads();
         if (!pad) rt_log("input: no gamepad (keyboard only until one is connected)");
     }
@@ -191,27 +245,44 @@ static void pick(int32_t *x, int32_t *y, int32_t kx, int32_t ky) {
     if (b > a) { *x = kx; *y = ky; }
 }
 
-// Under lock, state 1: the open gamepad's inputs by position (pd[PAD_*] != 0 held); 0 without a connected gamepad.
-static int pad_physical(uint8_t pd[PAD_COUNT]) {
-    if ((!pad || !SDL_GamepadConnected(pad)) && plat_now_ns() / 1000000u >= next_scan) { next_scan = plat_now_ns() / 1000000u + RESCAN_MS; scan_pads(); }
+// Under lock, state 1: look for new or lost gamepads once a second, then read every open one.
+static void pads_update(void) {
+    uint64_t now_ms = plat_now_ns() / 1000000u;
+    if (now_ms >= next_scan) { next_scan = now_ms + RESCAN_MS; scan_pads(); }
     SDL_UpdateGamepads();
+}
+
+// A gamepad's inputs by position (pd[PAD_*] != 0 held).
+static void gamepad_physical(SDL_Gamepad *g, uint8_t pd[PAD_COUNT]) {
+    for (int p = PAD_SOUTH; p < PAD_ZL; p++) pd[p] = SDL_GetGamepadButton(g, pad_sdl[p]);
+    pd[PAD_ZL] = SDL_GetGamepadAxis(g, SDL_GAMEPAD_AXIS_LEFT_TRIGGER) > TRIGGER_ON;
+    pd[PAD_ZR] = SDL_GetGamepadAxis(g, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER) > TRIGGER_ON;
+}
+
+// A gamepad's buttons (Switch bits after the layout and the MKW_BIND_* lines) and sticks.
+static void gamepad_read(SDL_Gamepad *g, int layout, uint64_t *b, int32_t sl[2], int32_t sr[2]) {
+    uint8_t pd[PAD_COUNT] = {0};
+    gamepad_physical(g, pd);
+    *b |= input_map_pad_buttons(pd, layout);
+    sl[0] = axis(SDL_GetGamepadAxis(g, SDL_GAMEPAD_AXIS_LEFTX));
+    sl[1] = -axis(SDL_GetGamepadAxis(g, SDL_GAMEPAD_AXIS_LEFTY));
+    sr[0] = axis(SDL_GetGamepadAxis(g, SDL_GAMEPAD_AXIS_RIGHTX));
+    sr[1] = -axis(SDL_GetGamepadAxis(g, SDL_GAMEPAD_AXIS_RIGHTY));
+}
+
+// Under lock, state 1: player 1's gamepad inputs by position; 0 without a connected gamepad.
+static int pad_physical(uint8_t pd[PAD_COUNT]) {
+    pads_update();
     if (!pad || !SDL_GamepadConnected(pad)) return 0;
-    for (int p = PAD_SOUTH; p < PAD_ZL; p++) pd[p] = SDL_GetGamepadButton(pad, pad_sdl[p]);
-    pd[PAD_ZL] = SDL_GetGamepadAxis(pad, SDL_GAMEPAD_AXIS_LEFT_TRIGGER) > TRIGGER_ON;
-    pd[PAD_ZR] = SDL_GetGamepadAxis(pad, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER) > TRIGGER_ON;
+    gamepad_physical(pad, pd);
     return 1;
 }
 
-// Under lock, state 1: the open gamepad's buttons (Switch bits after MKW_PAD_LAYOUT and the MKW_BIND_* lines) and
-// sticks; 0 without a connected gamepad.
+// Under lock, state 1: player 1's gamepad buttons and sticks; 0 without a connected gamepad.
 static int pad_read(uint64_t *b, int32_t sl[2], int32_t sr[2]) {
-    uint8_t pd[PAD_COUNT] = {0};
-    if (!pad_physical(pd)) return 0;
-    *b |= input_map_pad_buttons(pd, pad_layout_get());
-    sl[0] = axis(SDL_GetGamepadAxis(pad, SDL_GAMEPAD_AXIS_LEFTX));
-    sl[1] = -axis(SDL_GetGamepadAxis(pad, SDL_GAMEPAD_AXIS_LEFTY));
-    sr[0] = axis(SDL_GetGamepadAxis(pad, SDL_GAMEPAD_AXIS_RIGHTX));
-    sr[1] = -axis(SDL_GetGamepadAxis(pad, SDL_GAMEPAD_AXIS_RIGHTY));
+    pads_update();
+    if (!pad || !SDL_GamepadConnected(pad)) return 0;
+    gamepad_read(pad, pad_layout_get(), b, sl, sr);
     return 1;
 }
 
@@ -260,7 +331,7 @@ static void poll_merged(uint64_t *buttons, int32_t *lx, int32_t *ly, int32_t *rx
         if (kb && !pad_moved) plat_xchg32(&last_device, INPUT_DEVICE_KEYBOARD);
         else if (pad_moved && !kb) plat_xchg32(&last_device, INPUT_DEVICE_PAD);
     }
-    script_apply(&b, sl, sr);
+    script_apply(&b, sl, sr, 0);
     skip_input(&b);
     rec_apply(b, sl, sr);
     // Minus and Plus held together (gamepad or keys) open or close the menu and never reach the game
@@ -317,6 +388,39 @@ void input_poll(uint64_t *buttons, int32_t *lx, int32_t *ly, int32_t *rx, int32_
 
 void input_poll_ui(uint64_t *buttons, int32_t *lx, int32_t *ly, int32_t *rx, int32_t *ry) {
     poll_merged(buttons, lx, ly, rx, ry);
+}
+
+uint32_t input_player_mask(void) {
+    uint32_t m = 1;
+    plat_mutex_lock(&lock);
+    if (!state) start();
+    for (int p = 1; state == 1 && p < INPUT_MAX_PLAYERS; p++)
+        if (extra[p] && SDL_GamepadConnected(extra[p])) m |= 1u << p;
+    plat_mutex_unlock(&lock);
+    return m;
+}
+
+// Players 2-8: their gamepad and the script's lines for them. The text entry and the menu block them as they block
+// player 1, and only player 1's release ends that block.
+void input_poll_player(int player, uint64_t *buttons, int32_t *lx, int32_t *ly, int32_t *rx, int32_t *ry) {
+    if (player <= 0) { input_poll(buttons, lx, ly, rx, ry); return; }
+    uint64_t b = 0;
+    int32_t sl[2] = {0, 0}, sr[2] = {0, 0};
+    plat_mutex_lock(&lock);
+    if (!state) start();
+    if (state == 1 && player < INPUT_MAX_PLAYERS) {
+        binds_refresh();
+        pads_update();
+        SDL_Gamepad *g = extra[player];
+        if (g && SDL_GamepadConnected(g))
+            gamepad_read(g, input_pad_layout_pick(cfg_value("MKW_PAD_LAYOUT"), extra_east_a[player]), &b, sl, sr);
+    }
+    plat_mutex_unlock(&lock);
+    script_apply(&b, sl, sr, player);
+    stick_bits(&b, sl[0], sl[1], B_SL_LEFT);
+    stick_bits(&b, sr[0], sr[1], B_SR_LEFT);
+    if (g_block || g_menu) b = 0, sl[0] = sl[1] = sr[0] = sr[1] = 0;
+    *buttons = b; *lx = sl[0]; *ly = sl[1]; *rx = sr[0]; *ry = sr[1];
 }
 
 int input_pad_read(uint64_t *buttons, int32_t *lx, int32_t *ly) {
@@ -391,15 +495,17 @@ int input_rumble_triggers_enabled(void) {
     return cfg_bool("MKW_RUMBLE_TRIGGERS");
 }
 
-int input_rumble(uint16_t low, uint16_t high, uint32_t ms) {
+int input_rumble(int player, uint16_t low, uint16_t high, uint32_t ms) {
     int ok = 0;
     static int triggers = -1;
     static unsigned seen;
     if (triggers < 0 || seen != cfg_version()) seen = cfg_version(), triggers = input_rumble_triggers_enabled();
     plat_mutex_lock(&lock);
-    if (state == 1 && pad && pad_rumble) {
-        ok = SDL_RumbleGamepad(pad, low, high, ms);
-        if (triggers) SDL_RumbleGamepadTriggers(pad, high, high, ms);   // unsupported pads return false: ignored
+    SDL_Gamepad *g = player <= 0 ? pad : player < INPUT_MAX_PLAYERS ? extra[player] : NULL;
+    int rumble = player <= 0 ? pad_rumble : player < INPUT_MAX_PLAYERS && extra_rumble[player];
+    if (state == 1 && g && rumble) {
+        ok = SDL_RumbleGamepad(g, low, high, ms);
+        if (triggers) SDL_RumbleGamepadTriggers(g, high, high, ms);   // unsupported pads return false: ignored
     }
     plat_mutex_unlock(&lock);
     return ok;

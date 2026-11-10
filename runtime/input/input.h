@@ -10,6 +10,12 @@ void input_poll(uint64_t *buttons, int32_t *lx, int32_t *ly, int32_t *rx, int32_
 // reports nothing; input_block(0) when it closes: nothing until all buttons and stick directions are released.
 void input_poll_ui(uint64_t *buttons, int32_t *lx, int32_t *ly, int32_t *rx, int32_t *ry);
 void input_block(int on);
+// Local multiplayer, players 1-8 (player index 0-7). Player 1 is input_poll: the keyboard, the first gamepad and the
+// script. Each other player is one more gamepad, in connection order, plus the script's "p<N>" lines; MKW_VIRTUAL_PADS=N
+// attaches N virtual gamepads at start to try it without controllers. Any thread.
+enum { INPUT_MAX_PLAYERS = 8 };
+uint32_t input_player_mask(void);   // bit k: player k + 1 has a controller; bit 0 always (the keyboard)
+void input_poll_player(int player, uint64_t *buttons, int32_t *lx, int32_t *ly, int32_t *rx, int32_t *ry);
 // The in-game menu (ui/menu/menu.h): input_menu(1) when it opens (input_poll reports nothing, the cursor is released), (0) when
 // it closes (nothing until every button and stick direction is released). Independent of input_block.
 void input_menu(int open);
@@ -53,9 +59,9 @@ int input_hack_key(int which);
 void input_cursor_suspend(int on);
 int input_cursor_released(void);   // Esc or a non-client activation released the cursor (probe)
 
-// Rumble: SDL_RumbleGamepad on the open gamepad, low (heavy, left) and high (light, right) motor 0..65535 for ms
-// milliseconds. 1 if a gamepad with rumble took it. Callable from any thread.
-int input_rumble(uint16_t low, uint16_t high, uint32_t ms);
+// Rumble: SDL_RumbleGamepad on the player's gamepad (index 0-7), low (heavy, left) and high (light, right) motor
+// 0..65535 for ms milliseconds. 1 if a gamepad with rumble took it. Callable from any thread.
+int input_rumble(int player, uint16_t low, uint16_t high, uint32_t ms);
 // Motor value for a normalised amplitude: pow(a, curve) * strength, saturated to 0..65535. Pure.
 uint16_t rumble_motor(float a, float curve, float strength);
 // MKW_RUMBLE_TRIGGERS=1: input_rumble also drives the impulse triggers (Xbox) with the high motor's value.

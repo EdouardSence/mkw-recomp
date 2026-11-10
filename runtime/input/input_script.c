@@ -25,9 +25,10 @@
 // at, hold: ticks, or microseconds of the world clock when timed.
 // A line "<node>+<ticks> ..." waits for a phase of the game instead (MKW_SEQ_WATCH=1, seqwatch.c): it lands <ticks>
 // after the node's first start, so a press in a menu does not depend on how long the menus before it took (turbo, loads).
+// A line that starts with "p<N> " (N 1-8) presses for player N (input_poll_player); without it, for player 1.
 typedef struct {
     uint64_t at, hold;
-    int bit, stick, timed;
+    int bit, stick, timed, player;
     int32_t x, y;
     int logged;
     char text[48], node[40];   // node: the phase it waits for, "" when none or already started
@@ -45,6 +46,9 @@ static int script_mixed;             // the script has timed lines: its untimed 
 static int script_parse(char *line, int ln, ScriptEv *out) {
     char *h = strchr(line, '#');
     if (h) *h = 0;
+    int player = 0;
+    if (line[0] == 'p' && line[1] >= '1' && line[1] <= '0' + INPUT_MAX_PLAYERS && line[2] == ' ')
+        player = line[1] - '1', line += 3;
     char name[32], node[40] = "";
     double at;
     int off = 0, timed = line[0] == '@', skip = timed;
@@ -53,7 +57,9 @@ static int script_parse(char *line, int ln, ScriptEv *out) {
     if (sscanf(line + skip, "%lf %31s%n", &at, name, &off) < 2 || at < 0) return 0;
     off += skip;
     double unit = timed ? 1000.0 : 1.0;   // ms to us, or presents
-    ScriptEv e = {.at = (uint64_t)(at * unit + 0.5), .hold = timed ? 66667 : 4, .bit = -1, .timed = timed};
+    ScriptEv e = {.at = (uint64_t)(at * unit + 0.5), .hold = timed ? 66667 : 4, .bit = -1, .timed = timed, .player = player};
+    char who[4] = "";
+    if (player) snprintf(who, sizeof who, "p%d ", player + 1);
     long a, b;
     double c;
     if (!strcmp(name, "LSTICK") || !strcmp(name, "RSTICK")) {
@@ -61,13 +67,13 @@ static int script_parse(char *line, int ln, ScriptEv *out) {
         if (n < 2) { rt_log("input: script line %d: %s needs x y [hold]", ln, name); return -1; }
         e.stick = name[0] == 'L' ? 1 : 2; e.x = (int32_t)a; e.y = (int32_t)b;
         if (n >= 3 && c > 0) e.hold = (uint64_t)(c * unit + 0.5);
-        snprintf(e.text, sizeof e.text, "%s %d %d", name, e.x, e.y);
+        snprintf(e.text, sizeof e.text, "%s%s %d %d", who, name, e.x, e.y);
     } else {
         for (size_t i = 0; i < sizeof script_buttons / sizeof *script_buttons; i++)
             if (!strcmp(name, script_buttons[i].name)) e.bit = script_buttons[i].bit;
         if (e.bit < 0) { rt_log("input: script line %d: unknown button %s", ln, name); return -1; }
         if (sscanf(line + off, "%lf", &c) == 1 && c > 0) e.hold = (uint64_t)(c * unit + 0.5);
-        snprintf(e.text, sizeof e.text, "%s", name);
+        snprintf(e.text, sizeof e.text, "%s%s", who, name);
     }
     snprintf(e.node, sizeof e.node, "%s", node);
     *out = e;
@@ -141,7 +147,7 @@ static void script_load(void) {
     rt_log("input: script %s, %d events", path, script_n);
 }
 
-static void script_apply_locked(uint64_t *b, int32_t sl[2], int32_t sr[2]);
+static void script_apply_locked(uint64_t *b, int32_t sl[2], int32_t sr[2], int player);
 
 // MKW_CTL (ctl.c): a line "<ticks from now> <button> [hold]" or "... LSTICK|RSTICK x y [hold]" applied from the next
 // tick, beside the script's own events.
@@ -158,20 +164,20 @@ int input_script_inject(const char *text) {
     return 1;
 }
 
-void script_apply(uint64_t *b, int32_t sl[2], int32_t sr[2]) {
+void script_apply(uint64_t *b, int32_t sl[2], int32_t sr[2], int player) {
     plat_mutex_lock(&script_lock);
     if (!script_state) script_load();
-    script_apply_locked(b, sl, sr);
+    script_apply_locked(b, sl, sr, player);
     plat_mutex_unlock(&script_lock);
 }
 
-static void script_apply_locked(uint64_t *b, int32_t sl[2], int32_t sr[2]) {
+static void script_apply_locked(uint64_t *b, int32_t sl[2], int32_t sr[2], int player) {
     if (!script_n || seqwatch_hold()) return;   // MKW_SEQ_HOLD: e.g. no presses during the cup movie
     uint64_t fr = __atomic_load_n(&gfx_counters.frames, __ATOMIC_RELAXED), tick = frame_step_ticks();
     int64_t w = frame_step_world_us();
     for (int i = 0; i < script_n; i++) {
         ScriptEv *e = &script_ev[i];
-        if (e->node[0] || (e->timed ? w < 0 : script_mixed && w >= 0)) continue;
+        if (e->player != player || e->node[0] || (e->timed ? w < 0 : script_mixed && w >= 0)) continue;
         uint64_t now = e->timed ? (uint64_t)w : tick;
         if (now < e->at || (now >= e->at + e->hold && (e->logged || !e->timed))) continue;
         if (!e->logged) {

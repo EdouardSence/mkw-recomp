@@ -537,11 +537,39 @@ static void probe_feedback(uint32_t pid, uint32_t style) {
            vh[0], vh[1], sh[0], (double)ms[0].angle[2]);
 }
 
+// Applet answer (ControllerSupportResultInfo: s8 players, u32 selected id) for a minimum and maximum of players.
+static int controller_applet(int8_t lo, int8_t hi, uint32_t *selected) {
+    uint8_t res[8] = {0x55}, arg[0x80] = {0};
+    arg[0] = (uint8_t)lo, arg[1] = (uint8_t)hi;
+    CHECK(CALL("hid.ShowControllerSupport", U(res), U(arg)) == 0, "controller support applet %d-%d", lo, hi);
+    memcpy(selected, res + 4, 4);
+    return (int8_t)res[0];
+}
+
+// Two players on two virtual gamepads (MKW_VIRTUAL_PADS=2, set before the input starts): player 2 is id 1 docked, and
+// in handheld mode only once the applet handed out two players. Player 1 the handheld controller again after a
+// one-player applet.
+static void probe_two_players(uint32_t pid) {
+    CHECK(input_player_mask() == 3, "two virtual gamepads: player mask %#x", input_player_mask());
+    uint32_t p2 = 1, sel = 0xdead, two = ov_handheld() ? 0 : 1;
+    CHECK((uint32_t)CALL("hid.GetNpadStyleSet", U(&p2)) == two, "player 2 before the applet: style set");
+    CHECK(controller_applet(3, 4, &sel) == 0, "the applet for 3-4 players with 2 controllers answered players");
+    CHECK(controller_applet(2, 4, &sel) == 2 && sel == 0, "the applet for 2-4 players: selected %#x", sel);
+    uint8_t st[40] = {0};
+    uint32_t attr;
+    CHECK((uint32_t)CALL("hid.GetNpadStyleSet", U(&p2)) == 1 && (int32_t)CALL("hid.GetNpadStates.FullKey", U(st), 1, U(&p2)) == 1,
+          "player 2 after the applet");
+    memcpy(&attr, st + 32, 4);
+    CHECK(attr & 1, "player 2 is not connected after the applet");
+    CHECK(controller_applet(1, 1, &sel) == 1 && sel == pid, "the one-player applet: selected %#x", sel);
+}
+
 static void probe_input(void) {
-    uint32_t pid = ov_handheld() ? 0x20 : 0, other = ov_handheld() ? 0 : 0x20, ids[2] = {0, 0x20};
+    uint32_t pid = ov_handheld() ? 0x20 : 0, other = ov_handheld() ? 0 : 0x20, ids[3] = {0, 0x20, 1};
     uint32_t style = ov_handheld() ? 2 : 1;
+    set_env("MKW_VIRTUAL_PADS", "2");
     CALL("hid.InitializeNpad", 0);
-    CALL("hid.SetSupportedNpadIdType", U(ids), 2);
+    CALL("hid.SetSupportedNpadIdType", U(ids), 3);
     CALL("hid.SetSupportedNpadStyleSet", 3);
     CHECK((uint32_t)CALL("hid.GetNpadStyleSet", U(&pid)) == style && (uint32_t)CALL("hid.GetNpadStyleSet", U(&other)) == 0,
           "style sets");
@@ -564,13 +592,12 @@ static void probe_input(void) {
     CHECK(all_one && connected == 1 && no_buttons, "controller states: %d connected", connected);
     CHECK((int32_t)CALL("hid.GetNpadStates.FullKey", U(st[0]), 0, U(&pid)) == 0, "zero states requested");
     CALL("hid.SetNpadJoyHoldType", 1);
-    uint8_t res[8] = {0}, arg[0x80] = {0};
-    CHECK(CALL("hid.ShowControllerSupport", U(res), U(arg)) == 0 && res[0] == 1, "controller support applet");
+    probe_two_players(pid);
 
     probe_feedback(pid, style);
     CALL("hid.DisconnectNpad", U(&pid));
     CHECK((uint32_t)CALL("hid.GetNpadStyleSet", U(&pid)) == 0, "a disconnected controller keeps its style set");
-    printf("hid: one connected %s controller (id %#x), no buttons\n",
+    printf("hid: player 1 on a %s controller (id %#x), no buttons; player 2 on a virtual gamepad after the applet\n",
            ov_handheld() ? "handheld" : "full-key", pid);
 }
 
