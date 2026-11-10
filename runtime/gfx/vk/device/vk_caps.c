@@ -9,8 +9,11 @@
 //   - no graphics pipeline library with fast linking (MKW_GPL=0 forces it): vk_caps.gpl = 0, the extension stays
 //     disabled, and pipelines are built whole.
 //   - no 32-lane pin (no subgroupSizeControl, 32 outside min..max, or MKW_VK_SUBGROUP_PIN=0): stages run at the
-//     device's subgroupSize (SPIR-V 1.3 without a required size) and the translator is told that size.
-//     MKW_VK_SUBGROUP=<n> pins n instead of 32 where the driver allows it.
+//     device's subgroupSize (SPIR-V 1.3 without a required size) while the shaders still assume 32 lanes (the setup
+//     translates them once). At 64 on RADV the race differs in 1 846 pixels of 3.7 M (sg-0, 10/11/2026).
+//     MKW_VK_SUBGROUP=<n> pins n instead of 32 where the driver allows it. MKW_VK_SUBGROUP_PIN_STAGES=<mask> pins only
+//     on those of the driver's stages: 0xe0 leaves vertex and fragment unpinned as Intel ANV does (issue #26), so a
+//     GPU that can pin them shows what those drivers draw.
 // The defaults (Float64, no storage rounding, 32 everywhere) leave the shader cache keys as they were (gfx_shader.c).
 #include <stdio.h>
 #include <stdlib.h>
@@ -89,7 +92,7 @@ void vk_caps_init(VkCtx *c) {
     int pin = f13.subgroupSizeControl && cfg_bool("MKW_VK_SUBGROUP_PIN") && p13.minSubgroupSize <= want &&
               want <= p13.maxSubgroupSize;
     vk_caps.sg_size = want;
-    vk_caps.sg_pin_stages = pin ? p13.requiredSubgroupSizeStages : 0;
+    vk_caps.sg_pin_stages = pin ? p13.requiredSubgroupSizeStages & env_u32("MKW_VK_SUBGROUP_PIN_STAGES", ~0u) : 0;
 
     char dv[32];
     driver_version(dv, sizeof dv, c->props.vendorID, c->props.driverVersion);
