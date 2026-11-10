@@ -4,6 +4,27 @@ Each version's section is that release's notes: `tools/build/notes.py` puts it i
 updating, known issues, reporting) for the GitHub release. A section has a summary paragraph, `### Changes` (each with
 its issue, #N), `### Tested` (what was run from the packages before publishing) and optionally `### Known issues`.
 
+## 0.1.4
+
+Fixes the setup that stopped at 359/360 on many Windows PCs, and the shader step failing when a worker runs out of
+memory.
+
+### Changes
+
+- "Compile the game code" stopped at 359/360 on Windows (#2, #12): zig, the C compiler in the package, builds its own C
+  runtime the first time it links, and on those PCs that build never ended (`setup.log` had no `link probe` line). The
+  package now carries that runtime already built and the setup links with it, so zig builds nothing of its own on the
+  player's PC, neither for the game library nor for the shader step's helper DLL, where #24 stopped after 360/360.
+- The shader step failed with `BrokenProcessPool` when the system ended a worker, usually when memory ran out (#24): it
+  now goes on with half the workers, down to one, and `setup.log` says so.
+
+### Tested
+
+From these packages, before publishing:
+
+- The whole setup (generate, compile, translate the shaders, the first run of the game) on Linux (Radeon 660M, RADV)
+  with no system tools on PATH, and on Windows 11 (GTX 1050 Ti) with zig's cache emptied first.
+
 ## 0.1.3
 
 Fixes two ways the setup could fail or look stuck and a GPU crash on NVIDIA under Linux, keeps a log of the setup, and
