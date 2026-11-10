@@ -4,6 +4,25 @@ Each version's section is that release's notes: `tools/build/notes.py` puts it i
 updating, known issues, reporting) for the GitHub release. A section has a summary paragraph, `### Changes` (each with
 its issue, #N), `### Tested` (what was run from the packages before publishing) and optionally `### Known issues`.
 
+## 0.1.6
+
+Graphics cards with more video memory now get more of it for the course's textures.
+
+### Changes
+
+- On a graphics card with lots of video memory the course's ground came out flat and some textures plain (#31): the
+  memory for the large tiled textures was capped at 768 MiB on every PC, the figure of the integrated GPU we develop
+  on. It now comes from the card: a quarter of its video memory, from 768 MiB to 3 GiB (an 8 GB card gets 1792 MiB;
+  uncapped, the title screen took 1472 MiB in our tests). Integrated GPUs keep 768 MiB. `SPARSE_MIB` in `mkw.ini` still sets it by hand.
+- `GPU_MEM_LIMIT` in `mkw.ini` on a dedicated graphics card capped the video memory at a small share of it (#28: 6400
+  left an 8 GB card 1040 MiB), since it was split with the system memory: it now caps the video memory alone. Without
+  it, an integrated GPU on a PC with more than 16 GB of RAM may use a quarter of it instead of 4 GiB.
+- `GPU_MEM_LIMIT`, `SPARSE_MIB` and `VRAM_MARGIN` in `mkw.ini` no longer log "unknown key".
+
+### Tested
+
+Pending.
+
 ## 0.1.5
 
 Local multiplayer, the game no longer runs in slow motion below 60 fps, and the start screen now updates itself.

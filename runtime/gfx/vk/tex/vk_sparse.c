@@ -30,6 +30,7 @@
 #include "nvn_hmap.h"
 #include "nvn_tex.h"
 #include "vk.h"
+#include "vk_defaults.h"
 #include "platform/platform.h"
 
 #define PAGE NVN_VPOOL_PAGE
@@ -117,15 +118,28 @@ static void grow(void **arr, int *cap, size_t elem) {
     if (!(*arr = realloc(*arr, (size_t)*cap * elem))) rt_fatal("vk: out of memory (sparse)");
 }
 
-// MKW_SPARSE_MIB (default 768): most slot memory. run-sp3 (3 GB cap) bound 1 472 MiB, nearly all in three 8192x8192x68
-// arrays (BC6H 509, two ASTC as BC7 505 and 374), and 64 other textures (menu icons, the ASTC the arrays are copied
-// from) had no memory left. Past it a block stays non-resident (reads zero); a new image binds its coarse levels first.
+// MKW_SPARSE_MIB: most slot memory. run-sp3 (3 GB cap) bound 1 472 MiB, nearly all in three 8192x8192x68 arrays
+// (BC6H 509, two ASTC as BC7 505 and 374), and 64 other textures (menu icons, the ASTC the arrays are copied from) had
+// no memory left. Past it a block stays non-resident (reads zero); a new image binds its coarse levels first.
+// Unset, it comes from the GPU type and its largest device-local heap (vk_default_sparse_mib). 0 lifts it.
+static uint64_t budget_default(void) {
+    VkCtx *c = vk_ctx();
+    if (!c) return vk_default_sparse_mib(0, 0);
+    uint64_t vram = 0;
+    for (uint32_t h = 0; h < c->mem_props.memoryHeapCount; h++)
+        if (c->mem_props.memoryHeaps[h].flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT && c->mem_props.memoryHeaps[h].size > vram)
+            vram = c->mem_props.memoryHeaps[h].size;
+    return vk_default_sparse_mib(c->props.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU, vram >> 20);
+}
+
 static uint64_t budget(void) {
     static uint64_t v;
     if (!v) {
         const char *e = cfg_get("MKW_SPARSE_MIB");
-        v = (uint64_t)(e && *e ? atol(e) : 768) << 20;
-        if (!v) v = UINT64_MAX;
+        uint64_t mib = e && *e ? (uint64_t)atol(e) : budget_default();
+        rt_log("vk: sparse: tile slots up to %llu MiB (MKW_SPARSE_MIB%s; 0 lifts it)", (unsigned long long)mib,
+               e && *e ? "" : " unset, from the GPU");
+        v = mib ? mib << 20 : UINT64_MAX;
     }
     return v;
 }

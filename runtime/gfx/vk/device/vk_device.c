@@ -9,6 +9,7 @@
 #include "cfg.h"
 #include "host.h"
 #include "vk.h"
+#include "vk_defaults.h"
 #include "platform/platform.h"
 
 static VkCtx g_vk;
@@ -381,19 +382,34 @@ static int create_device(void) {
                                  .pDeviceMemoryCallbacks = vk_headroom_callbacks()};
     // MKW_GPU_MEM_LIMIT=<MiB>: a cap on what VMA allocates, split over the heaps by size. On an integrated GPU this
     // memory is system RAM outside the process's cgroup (run47: the global OOM killer took other applications), so
-    // unset there it is 4096, what every scripted run sets (3072 makes the race black); a player
-    // starting the game from its folder has no script to set it. 0 lifts it.
+    // unset there it is 4096, what every scripted run sets (3072 makes the race black), or more with more RAM
+    // (vk_default_mem_limit_mib); a player
+    // starting the game from its folder has no script to set it. 0 lifts it. On a discrete GPU it caps the VRAM heaps
+    // alone: split with the host heap too, a player's 6400 left an RTX 2070 SUPER 1 040 MiB of its 8 GB (#28).
     VkDeviceSize limits[VK_MAX_MEMORY_HEAPS];
     VkPhysicalDeviceProperties dp;
     vkGetPhysicalDeviceProperties(g_vk.phys, &dp);
     const char *lim = cfg_get("MKW_GPU_MEM_LIMIT");
-    if (!lim && dp.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU) lim = "4096";
+    char lim_ram[24];
+    if (!lim && dp.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU) {
+        float used, total = 0, proc;
+        plat_mem_info(&used, &total, &proc);
+        snprintf(lim_ram, sizeof lim_ram, "%llu",
+                 (unsigned long long)vk_default_mem_limit_mib(total > 0 ? (uint64_t)total : 0));
+        lim = lim_ram;
+    }
     if (lim && atoll(lim) > 0) {
         VkDeviceSize total = 0, cap = (VkDeviceSize)atoll(lim) << 20;
-        for (uint32_t h = 0; h < g_vk.mem_props.memoryHeapCount; h++) total += g_vk.mem_props.memoryHeaps[h].size;
+        int discrete = dp.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
+        uint32_t counted = 0;   // the heaps the cap is split over
+        for (uint32_t h = 0; h < g_vk.mem_props.memoryHeapCount; h++) {
+            const VkMemoryHeap *mh = &g_vk.mem_props.memoryHeaps[h];
+            if (!discrete || (mh->flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT && mh->size >= (1ull << 30)))
+                counted |= 1u << h, total += mh->size;
+        }
         for (uint32_t h = 0; h < g_vk.mem_props.memoryHeapCount; h++) {
             VkDeviceSize size = g_vk.mem_props.memoryHeaps[h].size;
-            limits[h] = total > cap ? (VkDeviceSize)((double)cap * (double)size / (double)total) : size;
+            limits[h] = (counted >> h & 1) && total > cap ? (VkDeviceSize)((double)cap * (double)size / (double)total) : size;
             // MKW_GPU_MEM_LIMIT_HEAP<n>=<MiB> (diagnosis): one heap's cap alone. The split keeps the heaps' ratio, so a
             // low limit fills them all at once; cap-race1 and cap-race6 died with heap0 at its cap and heap1 with room.
             char name[32];
