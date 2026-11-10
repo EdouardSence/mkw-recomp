@@ -193,9 +193,9 @@ static void row_quality(void) {
 static void tab_graphics(float scale) {
     opt_begin("##graphics", scale);
     {   // the game's internal render resolution (sdk/fs/romfs_res.c), read at start
-        static const char *const vals[] = {"original", "540", "720", "900", "1080", "1440"};
-        const char *names[6] = {menu_text(UI_MENU_RESOLUTION_ORIGINAL), "540p", "720p", "900p", "1080p", "1440p"};
-        opt_choice_list("MKW_RESOLUTION", UI_MENU_RESOLUTION, vals, names, 6, UI_MENU_RESOLUTION_DESC);
+        static const char *const vals[] = {"original", "540", "720", "900", "1080", "1440", "2160"};   // 2160: issue #55
+        const char *names[7] = {menu_text(UI_MENU_RESOLUTION_ORIGINAL), "540p", "720p", "900p", "1080p", "1440p", "2160p"};
+        opt_choice_list("MKW_RESOLUTION", UI_MENU_RESOLUTION, vals, names, 7, UI_MENU_RESOLUTION_DESC);
     }
     static const UiTextId up[] = {UI_MENU_UPSCALER_FSR, UI_MENU_UPSCALER_BILINEAR};
     opt_choice("MKW_UPSCALER", UI_MENU_UPSCALER, up, 2, UI_MENU_UPSCALER_DESC);
