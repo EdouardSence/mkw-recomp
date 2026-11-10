@@ -292,8 +292,9 @@ class AluOps:
         a = self.half2(i, "a", i.sym("iswzA"))
         c = self.half2(i, "c", i.sym("iswzB_as_C") or i.sym("iswzB"))
         e = f"({a} + {c})"
-        if i.sym("sat") == "SAT":
-            e = f"clamp({e}, 0.0, 1.0)"
+        if i.sym("sat") == "SAT":  # a NaN saturates to 0, as FADD.SAT (dst_f): GLSL's clamp leaves it undefined
+            self.uses_nminmax = True
+            e = f"nclamp({e}, vec2(0.0), vec2(1.0))"
         return self.dst(i, f"floatBitsToUint(({e}).x)" if i.sym("ofmt") == "F32" else f"packHalf2x16({e})")
 
     def hmnmx2(self, i: Insn) -> str:

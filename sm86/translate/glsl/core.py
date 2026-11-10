@@ -161,8 +161,13 @@ class Builder(AluOps, MemOps, TexOps, ThreadOps):
         op = i.op
         # BREAK only takes the thread out of a convergence barrier (BSSY/BSYNC, dropped too); the BRA after it with
         # the same predicate does the jump (agl_technique_shdw: `@!P1 BREAK B2; @!P1 BREAK B1; @!P1 BRA`)
-        if op in ("NOP", "DEPBAR", "BSSY", "BSYNC", "BREAK", "WARPSYNC", "MEMBAR", "ERRBAR"):
+        if op in ("NOP", "DEPBAR", "BSSY", "BSYNC", "BREAK", "WARPSYNC", "ERRBAR"):
             return ""
+        # MEMBAR orders this thread's memory accesses for the others: four compute of MKW share data between the
+        # lanes of a 16-thread group through STS / MEMBAR.SC.VC / LDS with no BAR, which dropped left the compiler free
+        # to move the load first. .CTA as groupMemoryBarrier, the rest as memoryBarrier (Ryujinx InstEmitBarrier, MIT)
+        if op == "MEMBAR":
+            return "groupMemoryBarrier();" if i.sym("sco") == "CTA" else "memoryBarrier();"
         if op == "FMUL":
             plain = self.fold_ipa_w(i)
             if plain:

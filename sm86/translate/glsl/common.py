@@ -67,7 +67,8 @@ HMMA_FN = """void hmma(uint a0, uint a1, uint a2, uint a3, uint b0, uint b1, uin
 # SavageWindRecomp (MIT) runtime/nvn/maxwell/translate.c, -18.5 % ACO instructions there.
 NMINMAX_FN = """spirv_instruction(set = "GLSL.std.450", id = 79) float nmin(float a, float b);
 spirv_instruction(set = "GLSL.std.450", id = 80) float nmax(float a, float b);
-spirv_instruction(set = "GLSL.std.450", id = 81) float nclamp(float x, float lo, float hi);"""
+spirv_instruction(set = "GLSL.std.450", id = 81) float nclamp(float x, float lo, float hi);
+spirv_instruction(set = "GLSL.std.450", id = 81) vec2 nclamp(vec2 x, vec2 lo, vec2 hi);"""
 
 # PRMT (IDX mode), as PTX prmt.b32 d, a, b, sel: the bytes {b, a} (a = bytes 0-3, b = 4-7); output byte k takes the
 # byte named by selector nibble k (bits 0-2); bit 3 replicates that byte's sign bit.
