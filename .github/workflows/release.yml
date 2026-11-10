@@ -1,7 +1,9 @@
 name: Release
 
-# A tag v* publishes the release: the Linux AppImage and the Windows zip of the start screen and its setup tools,
+# A tag v* drafts the release: the Linux AppImage and the Windows zip of the start screen and its setup tools,
 # nothing of the game (tools/build/release.py) nor NVIDIA's SM86 spec (the setup builds it: sm86/spec/spec.py).
+# A draft, not a release: it is published (gh release edit vX --draft=false) once the whole setup ran from these very
+# packages on Linux and Windows; v0.1.0 and v0.1.1 went out with a setup nobody had run (#1).
 # workflow_dispatch builds both and keeps them as run artifacts only.
 on:
   push:
@@ -100,4 +102,4 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release create "$GITHUB_REF_NAME" release/* --repo "$GITHUB_REPOSITORY" \
-            --title "$GITHUB_REF_NAME" --notes-file notes.md
+            --title "$GITHUB_REF_NAME" --notes-file notes.md --draft
