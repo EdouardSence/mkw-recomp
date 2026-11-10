@@ -144,6 +144,16 @@ site output main cf3578 f2c0b40a d503201f            # movk x10, #0x5a0, lsl #32
 # and [x0+0x88], as do later passes (shadow_map_reduce_depth). The host function sets them and calls it.
 set shadow MKW_SHADOW_PATCH 0
 site shadow main 22d5a0 9400176e 94c78e88   # bl main+0x233358 -> host_shadow_rb (patch page + 0xfc0)
+# The shadow map comes from the game's render-buffer allocator (main+0x37b520), set up by main+0x8e91b0 through
+# main+0x8eb6b0 (x1: its config) with one pool of 250 MiB. Sized for 3072, a larger map leaves no room for the
+# full-resolution targets of the next scene: main+0x37b520 reads a null block at [x22+0x48] when the map changes
+# (issue #9). More memory at the init fails at boot (later fixed-size heaps count on it), and the allocator adds a pool
+# when full only with a heap in its config (+0x30, 0 here) and a free slot in its pool table (it has one). Two slots;
+# the host function keeps the init's heap chain and host_shadow_rb fills the second slot with a pool for the larger
+# map's extra bytes, from the heap of that chain with the most room once the game has booted.
+site shadow main 8e93a0 940008c4 94ac9efc   # bl main+0x8eb6b0 -> host_shadow_pool (patch page + 0xf90)
+site shadow main 8eb7e8 52800101 52800201   # mov w1, #8 -> #16: the pool table's bytes
+site shadow main 8eb7fc 52800029 52800049   # mov w9, #1 -> #2: its slots
 
 # Same randomness every run (MKW_SEED): main+0xf0c80 seeds the game's random generator (sead's
 # xorshift: seed ^ seed >> 30 times 0x6c078965) from nn::os::GetSystemTick, and 20 more functions do the same inline
