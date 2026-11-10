@@ -236,7 +236,7 @@ def sm86_spec(game: Path, work: Path, cc: list[str]) -> Path:
             return spec
     crt = crt_spec(game, cc)  # spec.py links a DLL too on Windows: without it, zig builds its libc there (issue #2)
     run([sys.executable, str(ROOT / "sm86/spec/spec.py"), "--out", str(game / "sm86"), "--cache", str(work / "nvidia"),
-         "--cc", " ".join(cc), *(["--crt", str(crt)] if crt else [])])  # fmt: skip
+         "--cc", json.dumps(cc), *(["--crt", str(crt)] if crt else [])])  # fmt: skip
     return game / "sm86/instructions.json"
 
 

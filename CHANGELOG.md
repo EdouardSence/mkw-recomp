@@ -17,6 +17,8 @@ Local multiplayer, the game no longer runs in slow motion below 60 fps, and the 
   GPU reports for each frame, and ours reported the time the work was sent, so it kept choosing 60. It now reports when
   the GPU finishes, and the game stays at 30 (on a Radeon 660M: 110 switches between 30 and 60 in 20 s of race to 0).
 - The start screen offers a newer release and installs it (Settings > Menu > Check for updates turns it off).
+- "Translate the shaders" failed with `FileNotFoundError` when the game folder's path had a space (#29): the compiler's
+  path was split at the space on its way to the shader step.
 - The 4096 shadow map (Settings > Graphics) no longer crashes at the kart screen (#9).
 - On scaled displays the mouse no longer lands off its place on the start screen (#27).
 

@@ -19,6 +19,7 @@ Usage: python sm86/spec/spec.py [--out build/sm86] [--cache scratchpad/nvidia] [
 
 import argparse
 import hashlib
+import json
 import os
 import re
 import shutil
@@ -243,10 +244,12 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--out", type=Path, default=ROOT / "build/sm86")
     ap.add_argument("--cache", type=Path, default=ROOT / "scratchpad/nvidia", help="downloads and unpacked tools")
-    ap.add_argument("--cc", default="cc", help="C compiler command for the interception library")
+    ap.add_argument("--cc", default="cc", help='C compiler command, or a JSON list (["C:/a b/zig.exe", "cc"])')
     ap.add_argument("--crt", type=Path, help="Windows: the package's prebuilt C runtime (setup/lib/crt/link.json)")
     args = ap.parse_args()
-    build(args.out, args.cache, args.cc.split(), args.crt)
+    # A JSON list from prepare.py: the package's folder may have spaces ("C:\Recomp C\...", issue #29)
+    cc = json.loads(args.cc) if args.cc.startswith("[") else args.cc.split()
+    build(args.out, args.cache, cc, args.crt)
 
 
 if __name__ == "__main__":
