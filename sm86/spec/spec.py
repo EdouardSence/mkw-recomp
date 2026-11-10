@@ -247,9 +247,13 @@ def main() -> None:
     ap.add_argument("--cc", default="cc", help='C compiler command, or a JSON list (["C:/a b/zig.exe", "cc"])')
     ap.add_argument("--crt", type=Path, help="Windows: the package's prebuilt C runtime (setup/lib/crt/link.json)")
     args = ap.parse_args()
-    # A JSON list from prepare.py: the package's folder may have spaces ("C:\Recomp C\...", issue #29)
-    cc = json.loads(args.cc) if args.cc.startswith("[") else args.cc.split()
-    build(args.out, args.cache, cc, args.crt)
+    build(args.out, args.cache, cc_command(args.cc), args.crt)
+
+
+def cc_command(arg: str) -> list[str]:
+    """--cc: a JSON list from prepare.py, whose paths may have spaces ("C:\\Recomp C\\...", issue #29), or a plain
+    command typed by hand."""
+    return json.loads(arg) if arg.startswith("[") else arg.split()
 
 
 if __name__ == "__main__":

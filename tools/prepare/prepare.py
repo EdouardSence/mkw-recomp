@@ -235,9 +235,14 @@ def sm86_spec(game: Path, work: Path, cc: list[str]) -> Path:
         if spec.is_file():
             return spec
     crt = crt_spec(game, cc)  # spec.py links a DLL too on Windows: without it, zig builds its libc there (issue #2)
-    run([sys.executable, str(ROOT / "sm86/spec/spec.py"), "--out", str(game / "sm86"), "--cache", str(work / "nvidia"),
-         "--cc", json.dumps(cc), *(["--crt", str(crt)] if crt else [])])  # fmt: skip
+    run(spec_command(game, work, cc, crt))
     return game / "sm86/instructions.json"
+
+
+def spec_command(game: Path, work: Path, cc: list[str], crt: Path | None) -> list[str]:
+    """spec.py's command line; the compiler goes as JSON, whose paths may have spaces (issue #29)."""
+    return [sys.executable, str(ROOT / "sm86/spec/spec.py"), "--out", str(game / "sm86"), "--cache",
+            str(work / "nvidia"), "--cc", json.dumps(cc), *(["--crt", str(crt)] if crt else [])]  # fmt: skip
 
 
 def shaders(exefs: Path, romfs: Path, game: Path, work: Path, glslc: str, jobs: int, cc: list[str]) -> None:

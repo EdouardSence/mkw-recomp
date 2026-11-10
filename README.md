@@ -95,6 +95,7 @@ see [tools/shaders/README.md](tools/shaders/README.md). Everything generated goe
 | [runtime/](runtime/README.md) | What plays the console: kernel, memory, SDK replacements, NVN2 over Vulkan, audio, input, menus and launcher |
 | [sm86/](sm86/README.md) | The shader translator: SM86 SASS → GLSL → SPIR-V |
 | [tools/](tools/README.md) | Analysis, setup, build, game runs and diagnostics |
+| [tests/](tests/README.md) | Tests without the game or a GPU, in the CI on Linux and Windows |
 | [docs/](docs/README.md) | Research, sources and performance |
 | `.github/` | CI, issue and pull request templates |
 
