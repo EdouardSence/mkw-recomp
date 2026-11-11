@@ -10,6 +10,11 @@ all = ["instruction pointer invalid"]
 what = "the GPU faults mid-draw on NVIDIA (\"device fault: instruction pointer invalid\")"
 
 [[signature]]
+issue = 99
+all = ["nvgpucomp"]
+what = "NVIDIA's shader compiler (`nvgpucomp64.dll` / `libnvidia-gpucomp`) crashes while it compiles a pipeline"
+
+[[signature]]
 issue = 1
 all = ["gamelib.h", "file not found"]
 fixed = "v0.1.2"
