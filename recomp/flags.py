@@ -16,6 +16,7 @@ A read that can see flags a callee left reads the caller's flags from before the
 reads a callee's flags, so such a read only sits on a path that does not run: in the Switch 1 game it follows calls to noreturn
 functions (asserts) that the compiler placed before another branch's target. Plan.after_call counts them.
 """
+import functools
 import re
 
 KIND_DEF = re.compile(r'\b(subs|adds|logic)(32|64)\(c, ')
@@ -33,6 +34,7 @@ class FlagError(Exception):
     pass
 
 
+@functools.lru_cache(maxsize=1 << 16)  # pure, and asked twice per instruction (flag_plan and rewrite)
 def effect(code):
     """(reads flags, kind of the flags written or None) of one instruction's C."""
     reads = bool(COND.search(code) or CARRY_USE.search(code) or CARRY_DEF.search(code) or NZ_USE in code)

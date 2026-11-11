@@ -59,6 +59,9 @@ class Plan:
         self.local = set(regs)
         self.spill = spill   # per instruction: registers to store at its sync points
         self.kept = kept     # registers a call leaves as they were (CALLEE_SAVED, or none)
+        # the reloads depend on the function only: built once, not per instruction (a fifth of gen.py's time)
+        self.reload = ''.join(f' {name(r)} = {cpu(r)};' for r in regs)
+        self.reload_call = ''.join(f' {name(r)} = {cpu(r)};' for r in regs if r not in kept)
 
     def decl(self):
         """Locals at the top of the function, loaded from the Cpu."""
@@ -71,10 +74,10 @@ class Plan:
             return name(r) if r in self.local else m.group(0)
 
         text = REG.sub(local, text)
+        if '\x00' not in text:
+            return text
         spill = ''.join(f'{cpu(r)} = {name(r)}; ' for r in sorted(self.spill[i]))
-        reload = ''.join(f' {name(r)} = {cpu(r)};' for r in self.regs)
-        reload_call = ''.join(f' {name(r)} = {cpu(r)};' for r in self.regs if r not in self.kept)
-        return text.replace(SPILL, spill).replace(RELOAD, reload).replace(RELOAD_CALL, reload_call)
+        return text.replace(SPILL, spill).replace(RELOAD, self.reload).replace(RELOAD_CALL, self.reload_call)
 
 
 def plan(texts, succ, clean, n_locals=LOCALS, kept=CALLEE_SAVED):
