@@ -6,8 +6,8 @@ its issue, #N), `### Tested` (what was run from the packages before publishing) 
 
 ## 0.1.8
 
-Frame generation, races that render again on Intel, Adreno and (likely) AMD's Windows driver, and a first take on
-ultrawide screens.
+Frame generation, races that render again on Intel, Adreno and (likely) AMD's Windows driver, a first take on
+ultrawide screens, and a faster setup.
 
 ### Changes
 
@@ -28,6 +28,11 @@ ultrawide screens.
 - AMD on Windows: the race's mesh draws run as compute passes, where AMD's driver lost the device (#88).
 - Intel Arc drew the race black (#64): integer images and integer colour targets are read and written as integers.
 - Big AMD cards ran out of video memory on the title (#43, #68): the texture pool starts at 8 blocks.
+- **Faster setup**: the shader step compiles each shader inside its own worker instead of starting a compiler for
+  each of the ~11 600 (3.4x faster for that part, same output), and decodes the console's shader code 40 % faster:
+  the whole step takes about 43 % less processor time. Generating the game code is 13 % faster. The compiled game
+  code now stays in `setup-work/obj`, so from the next update on only the parts that changed are compiled again
+  (seconds instead of 8-12 minutes).
 - Integrated GPUs: the memory cap counts the firmware carve-out (#50).
 - The setup's downloads failed certificate checks on systems without the usual CA file (#102, NixOS).
 - Diagnostics: GPU breadcrumbs around the present (#43, #50).
