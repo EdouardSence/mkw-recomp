@@ -6,7 +6,7 @@ tcs, +0x18 tes, +0x20 gs, +0x28 ps, +0x30 cs); NVN2 changed the control section 
 and the code: graphics stages start with a 0x80-byte program header (SPH), compute stages are bare SASS SM86.
 BNSH walk adapted from totk-pc-recomp tools/shader_census.py @ c3b9a4e (MIT).
 
-Usage: uv run tools/shaders/extract.py [--romfs DIR] [--out build/shaders]
+Usage: uv run tools/shaders/extract.py [--romfs DIR] [--out build/shaders] [--everything]
 Writes <sha1>.ctl and <sha1>.code per stage and index.csv (sha1, stage, code bytes, source file, program index), and
 <sha1>.c1 with the program's own constants (bank c[1]) when it has any: a BRX's jump table lives there.
 """
@@ -182,12 +182,18 @@ def scan_one(path: str) -> list[tuple[str, bytes]]:
     return containers(path, Path(path).read_bytes())
 
 
-def everywhere(romfs: Path, exefs: Path):
-    """BNSH outside romfs/Shader (effects, layouts, the SDK), scanning every file in parallel."""
+# Where 1.0.0 keeps every distinct stage outside romfs/Shader: a scan of every file (21.7 GiB) found none elsewhere
+# (11/11/2026), and these hold ~0.4 GiB, so a player's cold disk reads 50 times less. --everything scans them all.
+SHADER_DIRS = ("Effect", "Layout", "Lib")
+
+
+def everywhere(romfs: Path, exefs: Path, everything: bool = False):
+    """BNSH outside romfs/Shader (effects, layouts, the SDK), scanning the files in parallel."""
     import os
     from concurrent.futures import ProcessPoolExecutor
 
-    files = [str(p) for p in romfs.rglob("*") if p.is_file() and "Shader" not in p.parts]
+    tops = [romfs] if everything else [romfs / d for d in SHADER_DIRS]
+    files = [str(p) for top in tops for p in top.rglob("*") if p.is_file() and "Shader" not in p.parts]
     files += [str(exefs / m) for m in ("main", "sdk", "subsdk0")]
     with ProcessPoolExecutor(os.cpu_count()) as pool:
         for found in pool.map(scan_one, files, chunksize=64):
@@ -199,13 +205,14 @@ def main() -> None:
     ap.add_argument("--romfs", type=Path, default=DEFAULT_ROMFS)
     ap.add_argument("--out", type=Path, default=ROOT / "build/shaders")
     ap.add_argument("--shader-dir", action="store_true", help="only romfs/Shader (~10 s instead of ~2 min)")
+    ap.add_argument("--everything", action="store_true", help=f"every RomFS file, not only {', '.join(SHADER_DIRS)}")
     ap.add_argument("--exefs", type=Path, default=Path(os.environ.get("MKW_GAME", "game")) / "exefs")
     args = ap.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)
     rows, seen, stages = [], set(), Counter()
     sources = archives(args.romfs)
     if not args.shader_dir:
-        sources = itertools.chain(sources, everywhere(args.romfs, args.exefs))
+        sources = itertools.chain(sources, everywhere(args.romfs, args.exefs, args.everything))
     for name, data in sources:
         if data[:4] == b"FSHA":
             try:
