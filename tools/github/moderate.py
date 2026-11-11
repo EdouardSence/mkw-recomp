@@ -24,6 +24,7 @@ import json
 import os
 import re
 import subprocess
+import urllib.request
 from datetime import UTC, datetime, timedelta
 
 import classify
@@ -55,6 +56,22 @@ TEXT = {
     "dup_closed": "Closed as a duplicate of #{issue}.",
     "release": "Fixed in [{tag}]({url}). If it still happens there, open a new issue with `logs/mkw.log` attached.",
 }
+
+
+LOG_FILE = re.compile(r"https://github\.com/user-attachments/files/\d+/[^\s)\]\"']+\.(?:log|txt)")
+
+
+def attached_logs(text: str) -> str:
+    """The text of the .log/.txt files attached in text (the first 4, up to 4 MiB each). A known error is usually only
+    in the log: #96 (11/11/2026) had "instruction pointer invalid" in mkw.1.log and nothing in its body."""
+    out = []
+    for url in list(dict.fromkeys(LOG_FILE.findall(text)))[:4]:
+        try:
+            with urllib.request.urlopen(url, timeout=30) as r:
+                out.append(r.read(4 << 20).decode("utf-8", "replace"))
+        except OSError as e:
+            print(f"  {url}: {e}")
+    return "\n".join(out)
 
 
 class GitHub:
@@ -148,7 +165,7 @@ class Moderator:
             self.gh.unlabel(n, *sorted(stale))
         if human:
             return
-        sig = classify.known_error(n, f"{title}\n{body}", ver, self.sigs)
+        sig = classify.known_error(n, f"{title}\n{body}\n{attached_logs(reported)}", ver, self.sigs)
         if sig and MARK.format("dup") not in said:
             key = "dup_old" if sig.fixed else "dup"
             text = TEXT[key].format(issue=sig.issue, what=sig.what, fixed=sig.fixed, ver=ver, repo_url=self.repo_url)
