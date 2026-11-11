@@ -21,6 +21,9 @@ Early, and moving fast. On 09/11/2026:
 - Races run at about 30 fps on a Radeon 660M at 720p and below that on a GTX 1050 Ti at 1080p; 60 fps is the goal.
   Below 60 fps, choose Settings > Screen > Frame rate > 30: the Automatic one (the console's) flips between 60 and 30
   for now and the race runs in slow motion. See [Performance](#performance).
+- Frame generation (Settings > Screen > Frame generation, off by default): frames made between the game's, so a race
+  at 30 fps is shown at 60, or at 60 on a 240 Hz monitor at 240. Smoother, not faster: the game's own frame rate stays
+  the same, the picture is up to one frame later, and fast motion and the minimap can smear.
 - Known problems: a few menus (mode, character and vehicle select) still need work, the kart's shadow misses a frame
   now and then, some audio cuts during movies, and on some AMD drivers the GPU can hang. There is no online play.
 
@@ -46,7 +49,8 @@ The main open work, in order; the details are in [docs/roadmap.md](docs/roadmap.
 
 Measured frame times, each with its date, are in [docs/performance.md](docs/performance.md). To add your machine,
 open a [performance report](https://github.com/adriadam10/mkw-recomp/issues/new?template=performance.yml): it goes
-into the table with the date of the report.
+into the table with the date of the report. The times are the game's own frames: frame generation shows more frames
+but does not shorten them.
 
 | Date | GPU | Internal resolution | Race frame time |
 |---|---|---|---|

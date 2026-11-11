@@ -83,12 +83,16 @@ const char *const text_es[UI_TEXT_COUNT] = {
                                   "con una gráfica, la carga de CPU, GPU y memoria, las temperaturas y las esperas del "
                                   "hilo de dibujo. F10 cambia de modo.",
     [UI_MENU_PERF_OFF] = "No", [UI_MENU_PERF_FPS] = "FPS", [UI_MENU_PERF_FULL] = "Completo",
-    [UI_PERF_LINE_FPS] = "%.0f fps",
+    [UI_PERF_LINE_FPS] = "%.0f fps", [UI_PERF_LINE_FPS_FG] = "%.0f/%.0f fps",
     [UI_MENU_FPS] = "Fotogramas por segundo",
     [UI_MENU_FPS_DESC] = "Los fotogramas por segundo a los que va el juego. «Automático» es lo de la consola: 60, o 30 "
                          "cuando un fotograma tarda demasiado. Si tu ordenador no llega a 60, elige 30 y la carrera irá "
                          "a su velocidad real.",
     [UI_MENU_FPS_AUTO] = "Automático",
+    [UI_MENU_FRAMEGEN] = "Generación de fotogramas",
+    [UI_MENU_FRAMEGEN_DESC] = "Muestra fotogramas hechos entre los del juego: 2x convierte 30 fps en 60. «Automático» "
+                              "hace tantos como quepan en la frecuencia de tu monitor. Añade hasta un fotograma de "
+                              "retraso y el movimiento rápido puede emborronarse. La consola no lo hace.",
     [UI_MENU_GRAPHICS] = "Imagen",
     [UI_MENU_UPSCALER] = "Escalado a la ventana",
     [UI_MENU_UPSCALER_DESC] = "Cómo se escala la imagen cuando la ventana es mayor que la resolución del juego. FSR "

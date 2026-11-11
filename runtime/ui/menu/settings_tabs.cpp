@@ -147,6 +147,11 @@ static void tab_screen(float scale) {
         const char *names[3] = {menu_text(UI_MENU_FPS_AUTO), "30", "60"};
         opt_choice_list("MKW_FPS", UI_MENU_FPS, vals, names, 3, UI_MENU_FPS_DESC);
     }
+    {   // frames made between the game's (gfx/vk/device/vk_framegen.c), live
+        static const char *const vals[] = {"off", "auto", "2", "3", "4"};
+        const char *names[5] = {menu_text(UI_MENU_PERF_OFF), menu_text(UI_MENU_FPS_AUTO), "2x", "3x", "4x"};
+        opt_choice_list("MKW_FRAMEGEN", UI_MENU_FRAMEGEN, vals, names, 5, UI_MENU_FRAMEGEN_DESC);
+    }
     opt_group(UI_MENU_GRAPHICS);
     static const UiTextId fit[] = {UI_MENU_PICTURE_FIT_KEEP, UI_MENU_PICTURE_FIT_STRETCH};
     opt_choice("MKW_PICTURE_FIT", UI_MENU_PICTURE_FIT, fit, 2, UI_MENU_PICTURE_FIT_DESC);

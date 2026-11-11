@@ -9,7 +9,8 @@
 //
 // Back-edge pacing: the present thread submits the blit at once, then holds the host present (vkQueuePresentKHR) until
 // the frame's display time from the pacer (nvn_api_obj.c), so present-to-present intervals stay even whatever the
-// replay took. The blit is already on the queue, so the wait blocks no submission.
+// replay took. The blit is already on the queue, so the wait blocks no submission. With frame generation
+// (vk_framegen.c) the frames made before the game's are blitted with it and presented one step apart, the game's last.
 //
 // Asynchronous replay (MKW_REPLAY_ASYNC, default 1; 0 turns it off): nvnQueueSubmitCommands
 // and nvnQueuePresentTexture only queue. Each item gets its timeline value at enqueue (vk_sync_reserve), in queue
@@ -58,7 +59,14 @@ static void present_main(void *arg) {
         plat_cond_broadcast(&pcv);
         plat_mutex_unlock(&pl);
         if (flight_on) vk_thumbs_frame(j.frame);
-        vk_present_blit(j.image, VK_IMAGE_LAYOUT_GENERAL, j.format, j.w, j.h, j.has_crop ? j.crop : NULL);
+        // Frame generation (vk_framegen.c): the made frames and the game's, all blitted now, each presented below at
+        // its time; the blits read only frame generation's own images, written in queue order before them
+        VkImage fo[VK_FG_MAX];
+        int fw = 0, fh = 0;
+        uint64_t step = 0;
+        int nf = vk_fg_frame(j.image, j.w, j.h, j.has_crop ? j.crop : NULL, j.at, fo, &fw, &fh, &step);
+        for (int k = 0; k < nf; k++) vk_present_blit_ahead(fo[k], VK_IMAGE_LAYOUT_GENERAL, VK_FORMAT_R8G8B8A8_UNORM, fw, fh, NULL);
+        if (!nf) vk_present_blit(j.image, VK_IMAGE_LAYOUT_GENERAL, j.format, j.w, j.h, j.has_crop ? j.crop : NULL);
         uint64_t f = vk_sync_submit(NULL, 0);   // a timeline value after the blit: deferred destruction waits for the blit too
         if (j.value && f != j.value)
             rt_fatal("vk: the present of frame %llu signalled %llu, queued as %llu", (unsigned long long)j.frame,
@@ -68,16 +76,25 @@ static void present_main(void *arg) {
         plat_cond_broadcast(&pcv);
         plat_mutex_unlock(&pl);
         uint64_t t0 = kern_now_ns();
-        wait_until(j.at);
+        // with frame generation the first frame at the display time, or now when that has passed, the next ones one
+        // step apart: the game's frame goes out last
+        uint64_t first = nf && t0 > j.at ? t0 : j.at;
+        for (int k = 1; k < nf; k++) {
+            wait_until(first + (uint64_t)(k - 1) * step);
+            vk_present_flip();
+        }
+        uint64_t target = nf ? first + (uint64_t)(nf - 1) * step : j.at;
+        wait_until(target);
         uint64_t t1 = kern_now_ns();
         vk_present_flip();
         // MKW_TRACE=present: one line per present: the host present's interval, the interval of the game's present
-        // calls (when the host present went out before back-edge pacing), the wait and how far past its target it went
+        // calls (when the host present went out before back-edge pacing), the wait and how far past its target it went;
+        // with frame generation, the game's frame and how many were shown before it
         if (rt_trace & RT_TRACE_PRESENT)
-            rt_log("present: frame %llu interval %.3f ms, game %.3f ms, waited %.3f ms, %.3f ms past target",
+            rt_log("present: frame %llu interval %.3f ms, game %.3f ms, waited %.3f ms, %.3f ms past target, %d made",
                    (unsigned long long)j.frame, last ? (t1 - last) / 1e6 : 0.0,
                    last_queued ? (j.queued - last_queued) / 1e6 : 0.0, (t1 - t0) / 1e6,
-                   j.at && t1 > j.at ? (t1 - j.at) / 1e6 : 0.0);
+                   target && t1 > target ? (t1 - target) / 1e6 : 0.0, nf ? nf - 1 : 0);
         last = t1;
         last_queued = j.queued;
         vk_pipeline_autosave();   // starts the autosave thread once
