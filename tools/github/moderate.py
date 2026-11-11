@@ -13,6 +13,7 @@ Rules (the bot never comments where a maintainer already did):
 - a bug report without a log and no replies yet: `needs-logs`, closed as not planned after 7 days without a reply from its author
 - a known error: `duplicate` and "looks like #N", closed as its duplicate after 3 days unless its author replies
 - a maintainer's reply with "Fixed in vX": closed if vX is out, else `fixed-next-release`; with "same as #N": duplicate
+- a closed issue is reopened when its author, or anyone attaching a log, says it still happens
 - a published release closes the `fixed-next-release` issues with a link to it
 
 Usage: uv run tools/github/moderate.py issue N | comment N COMMENT_ID | sweep | release TAG | backlog [--apply]
@@ -164,6 +165,13 @@ class Moderator:
         n = issue["number"]
         have = {lb["name"] for lb in issue["labels"]}
         if issue["state"] != "open":
+            # #38 (11/11/2026): closed by a "fixed in v0.1.7" reply, then "same error in v0.1.7" with a new log
+            mine = c["user"]["login"] == issue["user"]["login"]
+            if c["author_association"] not in MAINTAINERS and classify.still_happens(c["body"], mine):
+                print(f"#{n} {issue['title'][:70]}: still happens, reopened")
+                self.gh.run("issue", "reopen", str(n))
+                if "fixed-next-release" in have:
+                    self.gh.unlabel(n, "fixed-next-release")
             return False
         if c["author_association"] in MAINTAINERS:
             decision = classify.reply_decision(c["body"])
@@ -247,11 +255,15 @@ def main() -> None:
         for issue in m.open_issues():
             comments = m.comments(issue["number"])
             if a.event == "backlog":
-                # The last reply of a maintainer that settles it; then labels and first answer like a new issue
+                # The last reply of a maintainer that settles it, unless a player wrote after it (#38: "same error in
+                # v0.1.7" under "fixed in v0.1.7"); then labels and first answer like a new issue
                 settled = [
-                    c for c in comments if c["author_association"] in MAINTAINERS and classify.reply_decision(c["body"])
+                    i
+                    for i, c in enumerate(comments)
+                    if c["author_association"] in MAINTAINERS and classify.reply_decision(c["body"])
                 ]
-                if settled and m.on_comment(issue, settled[-1]):
+                after = settled and any(c["author_association"] not in MAINTAINERS for c in comments[settled[-1] + 1 :])
+                if settled and not after and m.on_comment(issue, comments[settled[-1]]):
                     continue
                 m.on_issue(issue, comments)
             m.sweep(issue, comments)

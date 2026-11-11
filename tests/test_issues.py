@@ -100,6 +100,14 @@ def test_known_errors_and_regressions():
     assert classify.known_error(94, LAUNCHER, "v0.1.7", SIGS) is None
 
 
+def test_still_happens_reopens():
+    # #38: another player, a new log, under "fixed in v0.1.7"
+    assert classify.still_happens(f"{LOG} Same error in v0.1.7 without GPL=0, freezes on title world map.", False)
+    assert classify.still_happens("still freezes on the title", True)
+    assert not classify.still_happens("still freezes for me too", False)
+    assert not classify.still_happens("Thanks, it works now!", True)
+
+
 def test_replies_that_settle():
     assert classify.reply_decision("Fixed in [v0.1.4](https://x/releases/tag/v0.1.4). On many PCs") == (
         "fixed",

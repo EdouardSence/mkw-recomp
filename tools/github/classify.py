@@ -125,6 +125,16 @@ def known_error(number: int, text: str, ver: str | None, sigs: list[Signature]) 
     return None
 
 
+STILL = re.compile(
+    r"\b(still|again|persists?|same (thing|error|issue|problem|crash|freeze)|not (fixed|working)|doesn'?t work)\b", re.I
+)
+
+
+def still_happens(body: str, by_author: bool) -> bool:
+    """A comment on a closed issue saying the fix did not work: from its author, or from anyone with a new log."""
+    return bool(STILL.search(body or "")) and (by_author or has_log(body))
+
+
 def reply_decision(body: str) -> tuple[str, str | int] | None:
     """What a maintainer's reply decides: ("fixed", "v0.1.7") or ("duplicate", 36). "Same signature as #22" is not a
     duplicate: it groups a crash with others while asking for more."""
