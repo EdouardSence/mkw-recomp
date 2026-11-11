@@ -2,7 +2,7 @@
 // per program under <exe dir>/spirv, key = nvn2_program_key(control, code). A program is loaded once and kept for the
 // life of the process in a memory cache by that key, which is also the shader's id in a pipeline key record
 // (vk_pipeline.c). Vertex shaders that read integer vertex formats get a variant with integer inputs
-// (int_input_variant).
+// (int_input_variant), fragment shaders that write integer targets one with integer outputs (int_output_variant).
 //
 // Reflection: every shader that enters the cache has its .res.json parsed into GfxShaderRes arrays and its SPIR-V
 // scanned for interface Locations and the workgroup size (gfx.h accessors at the end of the file).
@@ -186,7 +186,48 @@ static GfxShader *prepared_load(const uint8_t key[32], const uint8_t *control) {
     return mem_insert(s);
 }
 
-// ---- integer vertex attributes (gfx_spirv_io.c)
+// ---- integer vertex attributes and colour outputs (gfx_spirv_io.c)
+
+// The variant of s with the Input (out 0) or Output (out 1) Locations in um / sm as uint / int vectors, or s.
+static const GfxShader *int_io_variant(GfxShader *s, uint32_t um, uint32_t sm, int out) {
+    if (!um && !sm) return s;
+    uint8_t key[32];
+    memcpy(key, s->key, 32);
+    // variants: the program key with the masks folded into its last bytes, other marks for outputs
+    key[30] ^= out ? 0x69 : 0x5a, key[31] ^= out ? 0x96 : 0xa5;
+    for (int i = 0; i < 4; i++) key[22 + i] ^= (uint8_t)(um >> 8 * i), key[26 + i] ^= (uint8_t)(sm >> 8 * i);
+    GfxShader *v = mem_find(key);
+    if (v) return v;
+    uint64_t nw = 0;
+    uint32_t *code = spirv_int_io(s->spirv, s->words, um, sm, out ? 3 : 1, &nw);
+    if (!code) {
+        static volatile int32_t n_fail;
+        if (plat_inc32(&n_fail) <= 8)
+            rt_log("gfx_shader: integer %s %#x/%#x not patched in", out ? "colour outputs" : "vertex inputs", um, sm);
+        return s;
+    }
+    if (!(v = calloc(1, sizeof *v)) || !(v->reflection = malloc(s->reflection_size + 1))) rt_fatal("gfx_shader: out of memory");
+    memcpy(v->key, key, 32), memcpy(v->iid, s->iid, 32);
+    v->spirv = code, v->words = nw;
+    memcpy(v->reflection, s->reflection, s->reflection_size), v->reflection[s->reflection_size] = 0;
+    v->reflection_size = s->reflection_size;
+    reflect(v);
+    for (int l = 0; l < 32; l++)
+        if ((um | sm) >> l & 1) (out ? v->out : v->in)[l].type = um >> l & 1 ? GFX_TYPE_UINT : GFX_TYPE_SINT;
+    const char *dd = cfg_get("MKW_SPIRV_INT_DUMP");   // the variants for spirv-val
+    if (dd && *dd) {
+        char path[PATH_CAP + 96], hex[65];
+        key_hex(key, hex);
+        plat_file_mkdir_p(dd);
+        snprintf(path, sizeof path, "%s/%s.spv", dd, hex);
+        plat_file_write(path, code, nw * 4);
+    }
+    static volatile int32_t n_var[2];   // apart: the vertex ones would use up the fragment ones' lines
+    if (plat_inc32(&n_var[out]) <= 8)
+        rt_log("gfx_shader: %s uint %#x sint %#x", out ? "fragment shader variant with integer outputs"
+                                                       : "vertex shader variant with integer inputs", um, sm);
+    return mem_insert(v);
+}
 
 // The variant of a prepared vertex shader for the integer attribute formats in a (GfxShaderAnswers.attr_type), or s.
 static const GfxShader *int_input_variant(GfxShader *s, const GfxShaderAnswers *a) {
@@ -197,39 +238,30 @@ static const GfxShader *int_input_variant(GfxShader *s, const GfxShaderAnswers *
             if (a->attr_type[l] == GFX_TYPE_UINT) um |= 1u << l;
             else if (a->attr_type[l] == GFX_TYPE_SINT) sm |= 1u << l;
         }
-    if (!um && !sm) return s;
-    uint8_t key[32];
-    memcpy(key, s->key, 32);
-    key[30] ^= 0x5a, key[31] ^= 0xa5;   // variants: the program key with the masks folded into its last bytes
-    for (int i = 0; i < 4; i++) key[22 + i] ^= (uint8_t)(um >> 8 * i), key[26 + i] ^= (uint8_t)(sm >> 8 * i);
-    GfxShader *v = mem_find(key);
-    if (v) return v;
-    uint64_t nw = 0;
-    uint32_t *code = spirv_int_inputs(s->spirv, s->words, um, sm, &nw);
-    if (!code) {
-        static volatile int32_t n_fail;
-        if (plat_inc32(&n_fail) <= 8) rt_log("gfx_shader: integer vertex inputs %#x/%#x not patched in", um, sm);
-        return s;
-    }
-    if (!(v = calloc(1, sizeof *v)) || !(v->reflection = malloc(s->reflection_size + 1))) rt_fatal("gfx_shader: out of memory");
-    memcpy(v->key, key, 32), memcpy(v->iid, s->iid, 32);
-    v->spirv = code, v->words = nw;
-    memcpy(v->reflection, s->reflection, s->reflection_size), v->reflection[s->reflection_size] = 0;
-    v->reflection_size = s->reflection_size;
-    reflect(v);
-    for (int l = 0; l < 16; l++)
-        if ((um | sm) >> l & 1) v->in[l].type = um >> l & 1 ? GFX_TYPE_UINT : GFX_TYPE_SINT;
-    const char *dd = cfg_get("MKW_SPIRV_INT_DUMP");   // the variants for spirv-val
-    if (dd && *dd) {
-        char path[PATH_CAP + 96], hex[65];
-        key_hex(key, hex);
-        plat_file_mkdir_p(dd);
-        snprintf(path, sizeof path, "%s/%s.spv", dd, hex);
-        plat_file_write(path, code, nw * 4);
-    }
-    static volatile int32_t n_var;
-    if (plat_inc32(&n_var) <= 4) rt_log("gfx_shader: vertex shader variant with integer inputs uint %#x sint %#x", um, sm);
-    return mem_insert(v);
+    return int_io_variant(s, um, sm, 0);
+}
+
+// The variant of a prepared fragment shader for the integer colour targets in a (GfxShaderAnswers.out_type), or s:
+// only the outputs the shader writes (the others are masked off, vk_pipeline.c target_wmask).
+static const GfxShader *int_output_variant(GfxShader *s, const GfxShaderAnswers *a) {
+    if (!s || !a || s->stage != GFX_STAGE_FS) return s;
+    uint32_t um = 0, sm = 0;
+    for (int l = 0; l < 8; l++)
+        if (s->out_mask >> l & 1) {
+            if (a->out_type[l] == GFX_TYPE_UINT) um |= 1u << l;
+            else if (a->out_type[l] == GFX_TYPE_SINT) sm |= 1u << l;
+        }
+    return int_io_variant(s, um, sm, 1);
+}
+
+static const GfxShader *int_image_variant(GfxShader *s, const GfxShaderAnswers *a);
+
+// The integer variant a draw or dispatch's answers ask of s (none for the other stages).
+static const GfxShader *int_variant(GfxShader *s, const GfxShaderAnswers *a) {
+    if (!s) return s;
+    return s->stage == GFX_STAGE_CS ? int_image_variant(s, a)
+         : s->stage == GFX_STAGE_FS ? int_output_variant(s, a)
+                                    : int_input_variant(s, a);
 }
 
 // The prepared shader of a program, or NULL (logged once per program) when the offline translator could not do it.
@@ -537,7 +569,7 @@ static const GfxShader *int_image_variant(GfxShader *s, const GfxShaderAnswers *
 
 const GfxShader *gfx_shader_get(const uint8_t *control, const uint8_t *code, const GfxShaderAnswers *a) {
     GfxShader *s = (GfxShader *)prepared_get(control, code);
-    return s && s->stage == GFX_STAGE_CS ? int_image_variant(s, a) : int_input_variant(s, a);
+    return int_variant(s, a);
 }
 
 uint64_t gfx_shader_count(void) { return (uint64_t)n_keys; }
@@ -579,7 +611,7 @@ void gfx_shader_prewarm(const uint8_t (*iids)[32], size_t n, const GfxShader **o
 }
 
 const GfxShader *gfx_shader_int_variant(const GfxShader *s, const GfxShaderAnswers *a) {
-    return int_input_variant((GfxShader *)s, a);
+    return int_variant((GfxShader *)s, a);
 }
 
 const uint32_t *gfx_shader_spirv(const GfxShader *s, uint64_t *words) {

@@ -444,13 +444,23 @@ void vk_pipe_state_defaults(VkPipeState *s) {
                     NVN_STENCIL_OP_KEEP, NVN_STENCIL_OP_KEEP, NVN_STENCIL_OP_KEEP};
 }
 
-void vk_pipeline_answers(const VkPipeState *s, GfxShaderAnswers *vs) {
+// The colour targets' types: the fragment shader writes raw bits through float outputs, as SM86 does, and a float
+// output into a UINT/SINT target is undefined in Vulkan (the race's mesh draws into R8_UINT, issue #64 on Intel Arc).
+// MKW_INT_OUTPUTS=0 keeps the float outputs (to compare).
+void vk_pipeline_answers(const VkPipeState *s, int stage, GfxShaderAnswers *a) {
+    static int outs = -1;
+    if (outs < 0) outs = !cfg_get("MKW_INT_OUTPUTS") || strcmp(cfg_get("MKW_INT_OUTPUTS"), "0") != 0;
+    if (stage == GFX_STAGE_FS) {
+        for (int i = 0; outs && i < 8; i++)
+            if (s->color_fmt[i]) a->out_type[i] = (uint8_t)vk_format_numeric(target_format(s->color_fmt[i], NULL, NULL));
+        return;
+    }
     for (int i = 0; i < 16; i++) {
-        va_st a;
-        memcpy(&a, &s->vattr[i], sizeof a);
+        va_st va;
+        memcpy(&va, &s->vattr[i], sizeof va);
         int type = GFX_TYPE_FLOAT;
-        if (a.fmt) vk_vertex_format((int)a.fmt, &type);
-        vs->attr_type[i] = (uint8_t)type;
+        if (va.fmt) vk_vertex_format((int)va.fmt, &type);
+        a->attr_type[i] = (uint8_t)type;
     }
 }
 

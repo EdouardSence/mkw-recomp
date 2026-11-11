@@ -697,9 +697,11 @@ void vk_pipeline_prewarm(void) {
         // A vertex shader fed integer attributes was drawn as its integer-input variant, which the record names by
         // the base program (gfx_shader.c int_input_variant keeps the program key as its id): built from the base, the
         // pipeline paired float inputs with integer formats, the likely cause of RADV's crash in run49.
-        GfxShaderAnswers a;
-        vk_pipeline_answers(&s, &a);
-        s.vs = gfx_shader_int_variant(vs, &a), s.fs = fs;
+        GfxShaderAnswers a = {0};
+        GfxShaderAnswers af = {0};
+        vk_pipeline_answers(&s, GFX_STAGE_VS, &a);
+        vk_pipeline_answers(&s, GFX_STAGE_FS, &af);
+        s.vs = gfx_shader_int_variant(vs, &a), s.fs = fs ? gfx_shader_int_variant(fs, &af) : NULL;
         GKey k;
         gkey_fill(&s, &k);
         uint64_t h = key_hash(&k, sizeof k);

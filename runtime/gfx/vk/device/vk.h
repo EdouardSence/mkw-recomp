@@ -635,8 +635,9 @@ VkPipeline vk_mesh_cs_compact_pipeline(VkPipelineLayout *layout);   // runtime/s
 // vk_pipeline_vertex_input_dynamic(), else from VkPipeState.vstream).
 void vk_pipeline_set_dynamic(VkCommandBuffer cb, const VkPipeState *s);
 int vk_pipeline_vertex_input_dynamic(void);    // 1: vertex input is VK_EXT_vertex_input_dynamic_state
-// The vertex attribute types of the bound state (attr_type from the vertex attribute formats).
-void vk_pipeline_answers(const VkPipeState *s, GfxShaderAnswers *vs);
+// What the bound state says of the shader of stage (GFX_STAGE_VS: attr_type from the vertex attribute formats;
+// GFX_STAGE_FS: out_type from the colour target formats).
+void vk_pipeline_answers(const VkPipeState *s, int stage, GfxShaderAnswers *a);
 uint32_t vk_pipeline_target_wmask(const VkPipeState *s, int i);   // colour write mask of target i the pipeline uses
 VkPrimitiveTopology vk_pipeline_topology(int nvn_prim);   // quads -> triangle list, line loop -> strip: the replay
                                                           // rewrites those draws; polygon -> fan

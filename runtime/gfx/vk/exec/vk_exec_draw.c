@@ -127,12 +127,11 @@ int find_stage(const prog_t *p, int nvn_stage, const uint8_t **ctl, const uint8_
 // Which TEX/IMG bindings of a compute program have an integer-format view bound: the translator reads them as float
 // and takes the bits (floatBitsToUint), as SM86 does; in Vulkan a float image over an integer view is undefined
 // (format-07753): AMD and NVIDIA return the bits, Intel Arc drew the race black (issue #64). Array and buffer
-// bindings are left as they are. MKW_INT_IMAGES=0 keeps the float images (to compare).
-static void cs_answers(VkExec *ex, const uint8_t *ctl, const uint8_t *code, GfxShaderAnswers *a) {
+// bindings are left as they are. MKW_INT_IMAGES=0 keeps the float images (to compare). s: the program's base shader.
+static void cs_answers(VkExec *ex, const GfxShader *s, GfxShaderAnswers *a) {
     static int on = -1;
     if (on < 0) on = !cfg_get("MKW_INT_IMAGES") || strcmp(cfg_get("MKW_INT_IMAGES"), "0") != 0;
     if (!on) return;
-    const GfxShader *s = gfx_shader_get(ctl, code, NULL);
     for (int img = 0; s && img < 2; img++) {
         const GfxShaderRes *res;
         int n = gfx_shader_resources(s, img ? GFX_RES_IMG : GFX_RES_TEX, &res);
@@ -148,18 +147,10 @@ static void cs_answers(VkExec *ex, const uint8_t *ctl, const uint8_t *code, GfxS
     }
 }
 
-// *present: the program has this stage. Returns NULL when it has not or it has no prepared SPIR-V.
-const GfxShader *shader_for(VkExec *ex, int st, int *present) {
-    const uint8_t *ctl, *code;
-    uint32_t len;
-    *present = 0;
-    if (!ex->prog || !find_stage(ex->prog, st, &ctl, &code, &len)) return NULL;
-    *present = 1;
-    // the vertex stage's attribute types pick its integer-input variant (gfx_shader.c), the compute stage's bound
-    // image formats its integer-image variant; other stages have none
-    GfxShaderAnswers a = {0};
-    if (st == NVN_STAGE_VS) vk_pipeline_answers(&ex->pipe, &a);
-    else if (st == NVN_STAGE_CS) cs_answers(ex, ctl, code, &a);
+// The shader of stage st of the bound program for the answers a, from this thread's table: gfx_shader_get keys the
+// program by hashing its whole code, too slow for every draw and dispatch.
+static const GfxShader *cached_shader(VkExec *ex, int st, const uint8_t *ctl, const uint8_t *code, const GfxShaderAnswers *a0) {
+    GfxShaderAnswers a = *a0;
     uint64_t serial = ex->prog->serial;
     ShaderEnt *set = NULL;
     if (serial) {
@@ -184,6 +175,27 @@ const GfxShader *shader_for(VkExec *ex, int st, int *present) {
         set[0] = (ShaderEnt){.serial = serial, .stage = st, .used = 1, .a = a, .s = s};
     }
     return s;
+}
+
+// *present: the program has this stage. Returns NULL when it has not or it has no prepared SPIR-V.
+const GfxShader *shader_for(VkExec *ex, int st, int *present) {
+    const uint8_t *ctl, *code;
+    uint32_t len;
+    *present = 0;
+    if (!ex->prog || !find_stage(ex->prog, st, &ctl, &code, &len)) return NULL;
+    *present = 1;
+    // the vertex stage's attribute types pick its integer-input variant (gfx_shader.c), the fragment stage's target
+    // formats its integer-output variant, the compute stage's bound image formats its integer-image variant, read
+    // from the base shader's resources; other stages have none
+    GfxShaderAnswers a = {0};
+    if (st == NVN_STAGE_VS) vk_pipeline_answers(&ex->pipe, GFX_STAGE_VS, &a);
+    else if (st == NVN_STAGE_FS) vk_pipeline_answers(&ex->pipe, GFX_STAGE_FS, &a);
+    else if (st == NVN_STAGE_CS) {
+        const GfxShader *base = cached_shader(ex, st, ctl, code, &a);
+        cs_answers(ex, base, &a);
+        if (!(a.img_uint | a.img_sint)) return base;
+    }
+    return cached_shader(ex, st, ctl, code, &a);
 }
 
 // The values the GPU reads for s's fixed-address constant words idx[0..n) (all words when idx is NULL) in this draw
