@@ -47,17 +47,24 @@ def emit(*words: object) -> None:
     print(*words, flush=True)
 
 
+def ca_file() -> str | None:
+    """pip's bundled CA file when the system's store is empty to this Python, else None (python-build-standalone
+    ships no certifi; a minimal Linux running the AppImage may have no /etc/ssl, and NixOS keeps its bundle where this
+    OpenSSL does not look, issue #102)."""
+    if os.environ.get("SSL_CERT_FILE") or ssl.create_default_context().cert_store_stats().get("x509_ca"):
+        return None
+    for pat in (
+        "lib*/python3*/site-packages/pip/_vendor/certifi/cacert.pem",
+        "Lib/site-packages/pip/_vendor/certifi/cacert.pem",
+    ):
+        for pem in Path(sys.prefix).glob(pat):
+            return str(pem)
+    return None
+
+
 def ssl_context() -> ssl.SSLContext:
-    """The system's CA store; else pip's bundled one (python-build-standalone ships no certifi, and a minimal Linux
-    running the AppImage may have no /etc/ssl)."""
-    ctx = ssl.create_default_context()
-    if ctx.cert_store_stats().get("x509_ca"):
-        return ctx
-    for pem in Path(sys.prefix).glob("lib*/python3*/site-packages/pip/_vendor/certifi/cacert.pem"):
-        return ssl.create_default_context(cafile=str(pem))
-    for pem in Path(sys.prefix).glob("Lib/site-packages/pip/_vendor/certifi/cacert.pem"):
-        return ssl.create_default_context(cafile=str(pem))
-    return ctx
+    """The system's CA store; else pip's bundled one (ca_file)."""
+    return ssl.create_default_context(cafile=ca_file())
 
 
 def get(url: str, timeout: int) -> urllib.request.addinfourl:

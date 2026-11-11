@@ -54,6 +54,7 @@ from machine import (
     shader_jobs,
     tool_env,
 )
+import update  # (ca_file)
 
 PREP_VERSION = 1  # bump when a step's output changes meaning: every step runs again
 MAIN_BUILD_ID = "9e244438c3d8ef1c"  # MKW 1.0.0 exefs/main, the first 8 bytes of the NSO build id at 0x40
@@ -315,6 +316,8 @@ def main() -> None:
     ap.add_argument("--target", choices=("linux", "windows"), default="windows" if os.name == "nt" else "linux")
     args = ap.parse_args()
     own_children()
+    if ca := update.ca_file():  # spec.py downloads NVIDIA's redistributables with this Python (issue #102, NixOS)
+        os.environ["SSL_CERT_FILE"] = ca
     game = args.game.resolve()
     state = load_state(game)
     if not args.source:  # the last setup's; before 0.1.5 the state kept them only in its keys
