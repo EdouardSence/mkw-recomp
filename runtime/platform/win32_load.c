@@ -2,6 +2,8 @@
 #include <io.h>
 #include <stdio.h>
 #include <windows.h>
+#define COBJMACROS
+#include <dxgi.h>
 #include <bcrypt.h>
 #include <pdh.h>
 #include <pdhmsg.h>
@@ -87,6 +89,26 @@ struct PlatLoad {
     PdhQuery thermal, gpu;               // gpu: engine utilisation, adapter dedicated memory
     wchar_t luid[40];                    // "luid_0x<high>_0x<low>" of the adapter, lower case; empty for any
 };
+
+uint64_t plat_gpu_vram_mib(uint32_t vendor, uint32_t device, const uint8_t *luid) {
+    (void)vendor, (void)device;
+    typedef HRESULT(WINAPI * CreateFactory_t)(REFIID, void **);
+    static const GUID iid_factory1 = {0x770aae78, 0xf26f, 0x4dba, {0xa8, 0x29, 0x25, 0x3c, 0x83, 0xd1, 0xb3, 0x87}};
+    HMODULE l = luid ? plat_lib_open("dxgi.dll") : NULL;
+    CreateFactory_t create = l ? (CreateFactory_t)(void *)GetProcAddress(l, "CreateDXGIFactory1") : NULL;
+    IDXGIFactory1 *f;
+    if (!create || FAILED(create(&iid_factory1, (void **)&f))) return 0;
+    uint64_t mib = 0;
+    IDXGIAdapter1 *a;
+    for (UINT i = 0; IDXGIFactory1_EnumAdapters1(f, i, &a) == S_OK; i++) {
+        DXGI_ADAPTER_DESC1 desc;
+        if (SUCCEEDED(IDXGIAdapter1_GetDesc1(a, &desc)) && !memcmp(&desc.AdapterLuid, luid, 8))
+            mib = desc.DedicatedVideoMemory >> 20;
+        IDXGIAdapter1_Release(a);
+    }
+    IDXGIFactory1_Release(f);
+    return mib;
+}
 
 PlatLoad *plat_load_open(const uint8_t *gpu_luid) {
     PlatLoad *l = calloc(1, sizeof *l);

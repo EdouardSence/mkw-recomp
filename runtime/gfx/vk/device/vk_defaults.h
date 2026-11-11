@@ -6,7 +6,7 @@
 #include <stdint.h>
 
 uint64_t vk_default_sparse_mib(int discrete, uint64_t vram_mib);        // MKW_SPARSE_MIB unset
-uint64_t vk_default_mem_limit_mib(uint64_t ram_mib);                   // MKW_GPU_MEM_LIMIT unset, integrated GPU
+uint64_t vk_default_mem_limit_mib(uint64_t ram_mib, uint64_t carveout_mib);   // MKW_GPU_MEM_LIMIT unset, integrated
 uint32_t vk_default_tex_pool_blocks(int discrete, uint64_t vram_mib);  // MKW_VK_TEX_POOL_MIN unset
 
 #endif

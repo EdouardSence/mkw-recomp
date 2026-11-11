@@ -380,6 +380,32 @@ static void find_gpu(char *out, size_t cap) {
     closedir(d);
 }
 
+uint64_t plat_gpu_vram_mib(uint32_t vendor, uint32_t device, const uint8_t *luid) {
+    (void)luid;
+    uint64_t mib = 0;
+    DIR *d = opendir("/sys/class/drm");
+    if (!d) return 0;
+    for (struct dirent *e; (e = readdir(d));) {
+        if (strncmp(e->d_name, "card", 4) || strchr(e->d_name, '-')) continue;
+        char path[300];
+        unsigned v = 0, id = 0;
+        uint64_t bytes;
+        snprintf(path, sizeof path, "/sys/class/drm/%s/device/vendor", e->d_name);
+        FILE *f = fopen(path, "r");
+        if (!f) continue;
+        int ok = fscanf(f, "%x", &v) == 1;
+        fclose(f);
+        snprintf(path, sizeof path, "/sys/class/drm/%s/device/device", e->d_name);
+        if (!ok || v != vendor || !(f = fopen(path, "r"))) continue;
+        ok = fscanf(f, "%x", &id) == 1;
+        fclose(f);
+        snprintf(path, sizeof path, "/sys/class/drm/%s/device/mem_info_vram_total", e->d_name);
+        if (ok && id == device && read_u64_file(path, &bytes)) mib = bytes >> 20;
+    }
+    closedir(d);
+    return mib;
+}
+
 PlatLoad *plat_load_open(const uint8_t *gpu_luid) {
     (void)gpu_luid;
     PlatLoad *l = calloc(1, sizeof *l);
