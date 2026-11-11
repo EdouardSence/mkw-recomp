@@ -84,7 +84,8 @@ PINS = {
 }  # fmt: skip
 # The sources the setup runs, from the repository (tools/prepare/prepare.py imports and runs them).
 SOURCES = ["recomp", "sm86", "tools/build/build.py", "tools/prepare", "tools/romfs/resolution.py",
-           "tools/shaders/extract.py", "tools/shaders/translate.py", "runtime/cpu",
+           "tools/shaders/extract.py", "tools/shaders/translate.py", "tools/shaders/shaderc_lib.py",
+           "runtime/cpu",
            "runtime/core/boot/gamelib.h"]  # fmt: skip
 # Windows DLLs mkw.exe needs beside it (build/win/deps/bin, tools/build/windeps.py); vulkan-1.dll is the driver's.
 WIN_DLLS = ["SDL3.dll", "libopus-0.dll"]

@@ -30,9 +30,11 @@ sys.path.insert(0, str(ROOT / "tools/shaders"))
 import glsl
 from extract import sph_stage, trim
 from program import Decoder
+from shaderc_lib import Shaderc
 
 GLSLC_STAGE = {"ps": "frag", "vs": "vert", "cs": "comp", "task": "task", "mesh": "mesh"}
 _dec = None
+_shaderc: Shaderc | None = None  # libshaderc in this process when found; else one glslc a program
 
 
 SPEC = ROOT / "build/sm86/instructions.json"
@@ -42,9 +44,10 @@ VALIDATE = True
 
 def init(spec: Path = SPEC, glslc: str = GLSLC, validate: bool = True) -> None:
     """Each worker: the decoder, and the compiler settings of --glslc and --no-validate (workers do not see main's)."""
-    global _dec, GLSLC, VALIDATE
+    global _dec, GLSLC, VALIDATE, _shaderc
     _dec = Decoder(spec)
     GLSLC, VALIDATE = glslc, validate
+    _shaderc = Shaderc.near(glslc)
 
 
 def translator_hash(spec: Path = SPEC) -> str:
@@ -111,10 +114,16 @@ def translate_one(sha: str, stage: str, code: bytes, key: str, out: str, full: b
 
 def compile_check(gl: Path, spv: Path, stage: str) -> str:
     """'ok' or why glslc or spirv-val refused the GLSL."""
-    r = subprocess.run([GLSLC, "--target-env=vulkan1.3", f"-fshader-stage={GLSLC_STAGE[stage]}", "-O", str(gl), "-o", str(spv)],
-                       capture_output=True, text=True, check=False)  # fmt: skip
-    if r.returncode:
-        first = next((ln for ln in r.stderr.splitlines() if "error" in ln), r.stderr.strip()[:120])
+    if _shaderc:
+        code, err = _shaderc.compile(gl.read_text(), stage, str(gl))
+        if code:
+            spv.write_bytes(code)
+    else:
+        r = subprocess.run([GLSLC, "--target-env=vulkan1.3", f"-fshader-stage={GLSLC_STAGE[stage]}", "-O", str(gl),
+                            "-o", str(spv)], capture_output=True, text=True, check=False)  # fmt: skip
+        err = r.stderr if r.returncode else ""
+    if err:
+        first = next((ln for ln in err.splitlines() if "error" in ln), err.strip()[:120])
         return f"glslc: {first.split(': ', 2)[-1][:100]}"
     if not VALIDATE:
         return "ok"
@@ -186,7 +195,7 @@ def main() -> None:
             jobs.append((code.stem, stage, str(args.dumped), str(args.out), args.full, th))
     # main compiles this one itself: it needs --glslc and --no-validate too, or the player's setup, which has neither
     # glslc nor spirv-val on PATH, fails here (Windows, v0.1.2 before release, 09/11/2026)
-    GLSLC, VALIDATE = args.glslc, not args.no_validate
+    init(args.spec, args.glslc, not args.no_validate)
     write_mesh_cs_vs(args.out)
     results = Counter()
     failed: dict[str, list[str]] = {}
