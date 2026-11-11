@@ -10,7 +10,8 @@ Issue moderation, run by `.github/workflows/issues.yml` on each issue event, onc
 
 A maintainer's reply closes its issue when it says "Fixed in vX" opening a sentence (or "is the same as #N, fixed in
 vX") with vX published, or "is the same as #N" (closed as its duplicate). "Fixed in" a release not yet out labels it
-`fixed-next-release`, closed when that release is published.
+`fixed-next-release`, closed when that release is published. A reply only settles an issue if no player wrote after
+it, and a closed issue is reopened when its author, or anyone attaching a log, says it still happens.
 
 Usage: `uv run tools/github/moderate.py backlog` (all open issues, dry run), `... issue N --apply`; from GitHub,
 `gh workflow run issues.yml -f task=backlog` (or `sweep`, `issue -f issue=N`; `-f dry_run=true` only prints).
