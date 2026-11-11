@@ -62,7 +62,7 @@ static struct {
     float lambda, bias;
     // pacing (the present thread)
     uint64_t last_at, interval, frames, made_total;
-    int logged_mult;
+    int logged_mult, auto_m;   // auto_m: MKW_FRAMEGEN=auto's factor now (mult_now)
 } F;
 
 static VkPipeline make_pipeline(VkCtx *c, const uint32_t *code, size_t size, const int *spec, int nspec) {
@@ -332,9 +332,16 @@ static int mult_now(void) {
     const char *v = cfg_value("MKW_FRAMEGEN");
     if (!strcmp(v, "off") || turbo_speed() > 1) return 0;
     int m;
-    if (!strcmp(v, "auto")) {   // the refreshes of the monitor in one game frame, rounded down a little early
-        double hz = vk_present_refresh_hz(), frame = (double)F.interval / 1e9;
-        m = hz > 0 ? (int)(hz * frame + 0.25) : 2;
+    if (!strcmp(v, "auto")) {
+        // The refreshes of the monitor that fit in one game frame, rounded down: rounded up a quarter early, a game
+        // frame of 46 ms at 60 Hz (2.76 refreshes) asked for 3x, made 2 frames where 1.76 fit, so the GPU made frames
+        // never shown (fg3-auto: 1.1 made per game frame), and it switched between 2x and 3x every few seconds. Kept
+        // within a band: up only 0.1 past the next whole number, down only 0.05 under its own.
+        double hz = vk_present_refresh_hz(), r = hz * (double)F.interval / 1e9;
+        if (hz <= 0) F.auto_m = 2;
+        else if (!F.auto_m || r < F.auto_m - 0.05) F.auto_m = (int)r;
+        else if (r >= F.auto_m + 1.1) F.auto_m = (int)(r - 0.1);
+        m = F.auto_m;
     } else {
         m = atoi(v);
     }
