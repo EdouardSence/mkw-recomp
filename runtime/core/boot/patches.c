@@ -143,19 +143,14 @@ static float aspect_of(void) {
 }
 
 // A 16:9 view, or an 8:9 one doubled (half of a two-player split), within the mod's 0.008, is widened; other views
-// (four players, the menus' own) keep their aspect.
-static volatile uint64_t split_at;   // 1 + the tick of the latest half view of a two-player split
+// (the menus' own) keep their aspect. The race's full view is 1280x720 at any output (uw-32x9b), two players' halves
+// 640x720 (uw14-split); a 16:9 view narrower than the full one is a quarter of a three- or four-player split.
+static volatile uint64_t split_at;   // 1 + the tick of the latest view of a split screen
 
 static float aspect_widen(float w, float h) {
     float a = w / h, r = a < 1.2f ? 2 * a : a, d = r - 16.0f / 9;
     int on = d < 0.008f && d > -0.008f;
-    if (on && a < 1.2f) split_at = frame_step_ticks() + 1;
-    static int logs;   // probe (uw15-split): the sizes of the views widened, each new one
-    static float seen[16][2];
-    int k = 0;
-    while (k < logs && (seen[k][0] != w || seen[k][1] != h)) k++;
-    if (on && k == logs && logs < 16)
-        seen[logs][0] = w, seen[logs][1] = h, logs++, rt_log("patches: view %gx%g widened", w, h);
+    if (on && (a < 1.2f || w < 1000)) split_at = frame_step_ticks() + 1;
     return on ? aspect_scale : 1;
 }
 
@@ -191,20 +186,10 @@ static int ui_full_screen(const Cpu *c, float *tx) {
     uint64_t mtx = text ? c->x[21] + 0x70 : c->x[23], size = text ? c->x[21] + 0x50 : c->x[22], pane = mtx - 0x70;
     *tx = 0;
     if (size != mtx - 0x20 || (mtx & 3) || mtx < 0x70 || !plat_mem_readable(pane, 0xa0)) return -1;
-    uint64_t vt = *(const uint64_t *)(uintptr_t)pane;
     const float *g = (const float *)(uintptr_t)mtx, *sz = (const float *)(uintptr_t)size;
     float w = fabsf(g[0] * sz[0]), h = fabsf(g[5] * sz[1]);
-    int full = w > 1920 * 0.98f && h > 1080 * 0.98f;
     *tx = g[3];
-    static int logs;   // probe (uw13-menu): the panes found full-screen, by class
-    static uint64_t seen[8];
-    int k = 0;
-    while (k < logs && seen[k] != vt) k++;
-    if (full && k == logs && logs < 8)
-        seen[logs++] = vt, rt_log("patches: ui2d full-screen pane vt main+0x%llx %gx%g at tick %llu",
-                                  (unsigned long long)(vt - 0x7000000000ull), w, h,
-                                  (unsigned long long)frame_step_ticks());
-    return full;
+    return w > 1920 * 0.98f && h > 1080 * 0.98f;
 }
 
 static void host_ui_proj(Cpu *c) {
@@ -212,11 +197,6 @@ static void host_ui_proj(Cpu *c) {
     float *m = (float *)(uintptr_t)c->x[1];
     memcpy(m, s, 16 * sizeof *m);
     int on = is_16x9(m);
-    static int logs;   // probe (uw7-menu): which projections the 2D draws use, each new one
-    static float last[2];
-    if (logs < 16 && (m[0] != last[0] || m[5] != last[1]) && ++logs && (last[0] = m[0], last[1] = m[5], 1))
-        rt_log("patches: ui2d projection %g %g %g %g / %g %g %g %g / %g %g %g %g / %g %g %g %g%s", m[0], m[1], m[2],
-               m[3], m[4], m[5], m[6], m[7], m[8], m[9], m[10], m[11], m[12], m[13], m[14], m[15], on ? " (narrowed)" : "");
     // Narrowed in DrawInfo too, so its other readers see it: the labels drawn through a texture (the main menu's, the
     // cup select's) had their place stretched with their shape right (uw8-menu). Narrowed, it no longer passes
     // is_16x9: a second call leaves it.
@@ -226,14 +206,20 @@ static void host_ui_proj(Cpu *c) {
     float tx;
     int full = aspect_out ? ui_full_screen(c, &tx) : -1;
     if (full == 1 && !ov_movie_playing()) m[0] *= aspect_scale, m[3] *= aspect_scale;
-    // Two players side by side (uw14-split): each one's HUD is on its half of the canvas, now in the middle of the
-    // picture; moved to the middle of its half of the picture, with its shape. In NDC, x' = x + d with d = +-0.5 *
+    // A split screen (uw14-split): each player's HUD is on its half of the canvas (its quarter with three or four,
+    // left or right all the same), now in the middle of the picture; moved to the middle of its half of the picture,
+    // with its shape. In NDC, x' = x + d with d = +-0.5 *
     // (1 - 1 / aspect_scale), added as d times the w row
     uint64_t at = split_at;
-    if (full == 0 && at && frame_step_ticks() + 1 - at < 30 && (tx > 1 || tx < -1)) {
+    int moved = full == 0 && at && frame_step_ticks() + 1 - at < 30 && (tx > 1 || tx < -1);
+    if (moved) {
         float d = (tx > 0 ? 0.5f : -0.5f) * (1 - 1 / aspect_scale);
         for (int i = 0; i < 4; i++) m[i] += d * m[12 + i];
     }
+    if (seqwatch_probe())   // MKW_PROBE: every 2D projection setup in its window (the split HUD's digits, uw18-uw20)
+        rt_log("patches: probe ui2d frame %llu di %#llx x %g -> %g lr main+%#llx full %d tx %g moved %d",
+               (unsigned long long)frame_step_ticks(), (unsigned long long)c->x[0], s[0], m[0],
+               (unsigned long long)(c->x[30] - 0x7000000000ull), full, full == -1 ? 0 : tx, moved);
 }
 
 // In place of ldp q2, q3, [x20, #0x10] at main+0x168a624: a pane drawn through a view-projection product made on the
@@ -243,8 +229,6 @@ static void host_ui_rows(Cpu *c) {
     float m[16];
     memcpy(m, (const void *)(uintptr_t)(c->x[20] + 0x10), sizeof m);
     int on = is_16x9(m);
-    static int logs;   // probe (uw8-menu): that this path runs, and on which projection
-    if (logs < 4 && ++logs) rt_log("patches: ui2d rows %g %g%s", m[0], m[5], on ? " (narrowed)" : "");
     if (on) m[0] /= aspect_scale, m[3] /= aspect_scale;
     memcpy(&c->v[2], m, 16), memcpy(&c->v[3], m + 4, 16);
 }

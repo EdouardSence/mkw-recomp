@@ -224,6 +224,7 @@ int64_t seqwatch_since_us(void);                         // since MKW_SEQ_UNTIL'
 int seqwatch_hold(void);                                   // a MKW_SEQ_HOLD node is active: no input script presses
 void seqwatch_movie_end(void);                              // a video reached its end of stream (ov_codec.c)
 void seqwatch_log_active(void);                            // ctl seq: the active sequence nodes
+int seqwatch_probe(void);                                  // inside a MKW_PROBE window: a probe logs every call
 uint64_t ldr_symbol(const char *name);                     // exported definition, 0 if none
 uint64_t ldr_plt_stub(const char *module, const char *name); // PLT stub whose GOT slot holds name, 0 if none
 const char *ldr_describe(uint64_t a, char *buf, int n);    // "main+0x1234 (symbol+0x10)", "host <name>", or the address
