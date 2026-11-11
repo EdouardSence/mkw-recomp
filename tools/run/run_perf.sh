@@ -17,7 +17,7 @@ trap 'echo "run_perf.sh: $n ended (rc $?)"' EXIT
 tools/run/gpu_ok.sh || exit 1   # no run on a GPU left where the next fault can freeze the desktop
 # The pre-submit checks stop the run before a fault reaches the GPU (vk_guard.c); MKW_GPU_GUARD=0 to measure without.
 export MKW_GPU_GUARD=${MKW_GPU_GUARD:-1}
-avail=$(tools/run/avail.sh)
+avail=$(tools/run/avail.sh --wait "${MIN_AVAIL:-8500}")   # WAIT_MEM=<min>: wait for it instead of refusing
 [ "$avail" -ge "${MIN_AVAIL:-8500}" ] || { echo "only $avail MB available (with the GPU page pool): not starting"; exit 1; }
 # Our runs open their window behind whatever is in use, without the focus; the game is told it has it (it pauses
 # otherwise). MKW_BACKGROUND_WINDOW=0 brings the window to the front.

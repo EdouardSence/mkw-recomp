@@ -21,7 +21,7 @@ if pgrep -x mkw >/dev/null; then echo "live: a build/mkw is already running (one
 tools/run/gpu_ok.sh || exit 1   # no run on a GPU left where the next fault can freeze the desktop
 # The pre-submit checks stop the run before a fault reaches the GPU (vk_guard.c); MKW_GPU_GUARD=0 to measure without.
 export MKW_GPU_GUARD=${MKW_GPU_GUARD:-1}
-avail=$(tools/run/avail.sh)
+avail=$(tools/run/avail.sh --wait "${MIN_AVAIL:-8500}")   # WAIT_MEM=<min>: wait for it instead of refusing
 [ "$avail" -ge "${MIN_AVAIL:-8500}" ] || { echo "live: only $avail MB available (with the GPU page pool): not starting"; exit 1; }
 mkdir -p build/run
 rm -f "build/run/$n.ctl"
