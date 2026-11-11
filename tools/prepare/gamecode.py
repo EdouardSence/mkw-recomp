@@ -4,6 +4,7 @@ Why apart: prepare.py holds the order of the steps and their keys; this step is 
 earlier objects. Not run on its own.
 """
 
+import hashlib
 import subprocess
 import sys
 import time
@@ -40,17 +41,25 @@ def compile_game(game: Path, exefs: Path, work: Path, cc: list[str], target: str
     inc = [f"-I{d}" for d in sorted({p.parent for p in (ROOT / "runtime").rglob("*.h")})] + [f"-I{gen}"]
     jobs_c = [(src, obj / f"{src.parent.name}_{src.stem}.o", [*flags, f"-I{ROOT / 'runtime/cpu'}"]) for src in srcs]
     jobs_c.append((obj / "modules.c", obj / "modules.o", [*flags, gid, *inc]))
+    jobs_c.sort(key=lambda j: -j[0].stat().st_size)  # the largest first: no 10 MB main_table.c alone at the end
     total, done = len(jobs_c) + 1, 0  # the link is the last unit: a progress bar full before it hid it (issue #2)
     extra = [str(package_dir(game) / "lib/libmkw.dll.a")] if windows else ["-Wl,-z,noexecstack"]
+    base = common_key(cc, gen)
 
     def one(job: tuple[Path, Path, list[str]]) -> str:
         src, out, f = job
-        if out.is_file() and out.stat().st_mtime >= src.stat().st_mtime:
+        key = object_key(base, src, f, gen)
+        stamp = out.with_suffix(".key")
+        if out.is_file() and stamp.is_file() and stamp.read_text() == key:
             return ""
+        stamp.unlink(missing_ok=True)
         r = subprocess.run(
             [*cc, "-std=gnu11", *f, "-c", str(src), "-o", str(out)], capture_output=True, text=True, check=False
         )
-        return "" if not r.returncode else f"{src.name}: {r.stderr.strip()[-300:]}"
+        if r.returncode:
+            return f"{src.name}: {r.stderr.strip()[-300:]}"
+        stamp.write_text(key)
+        return ""
 
     lib = game / ("mkwgame.dll" if windows else "mkwgame.so")
     part = lib.with_name(lib.name + ".part")
@@ -67,6 +76,9 @@ def compile_game(game: Path, exefs: Path, work: Path, cc: list[str], target: str
         if probe:
             probe.result()
     objs = [str(o) for _, o, _ in jobs_c]
+    for stale in set(obj.glob("*.o")) - {o for _, o, _ in jobs_c}:  # chunks an earlier version had
+        stale.unlink()
+        stale.with_suffix(".key").unlink(missing_ok=True)
     rsp.write_text("\n".join(f'"{o}"' for o in objs).replace("\\", "/"))
     t0 = time.monotonic()
     try:
@@ -80,6 +92,26 @@ def compile_game(game: Path, exefs: Path, work: Path, cc: list[str], target: str
     part.replace(lib)
     emit("progress", total, total)
     (game / "mkwgame.id").write_text(build.game_id())  # runtime/core/boot/gamelib.c rt_game_present
+
+
+def common_key(cc: list[str], gen: Path) -> str:
+    """What every object depends on besides its own C and flags: the compiler and every header it can include (the
+    runtime's and the generated ones)."""
+    h = hashlib.sha256(subprocess.run([*cc, "--version"], capture_output=True, text=True, check=False).stdout.encode())
+    for p in sorted((ROOT / "runtime").rglob("*.h")) + sorted(gen.glob("*.h")):
+        h.update(p.relative_to(p.parents[1]).as_posix().encode() + p.read_bytes())
+    return h.hexdigest()
+
+
+def object_key(base: str, src: Path, flags: list[str], gen: Path) -> str:
+    """An object is reused while this matches: kept across setups (cleanup leaves obj/), an update that changes a few
+    functions (a patch in patches-mkw.txt) compiles their chunks only, not all ~360 (8 min Linux, 12 Windows,
+    11/11/2026). Paths leave the key: the AppImage mounts the package at a new /tmp/.mount_* each run."""
+    h = hashlib.sha256(base.encode())
+    for f in flags:
+        h.update(f.replace(str(ROOT), "<src>").replace(str(gen), "<gen>").encode() + b"\0")
+    h.update(src.read_bytes())
+    return h.hexdigest()
 
 
 def probe_link(cc: list[str], obj: Path, windows: bool) -> None:
