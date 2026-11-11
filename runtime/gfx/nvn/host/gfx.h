@@ -39,6 +39,9 @@ typedef struct GfxShader GfxShader;                        // SPIR-V words + par
 const GfxShader *gfx_shader_get(const uint8_t *control, const uint8_t *code, const GfxShaderAnswers *a);
 // The integer-input variant of a prepared vertex shader for the attribute types in a, or s (pipeline key records).
 const GfxShader *gfx_shader_int_variant(const GfxShader *s, const GfxShaderAnswers *a);
+// gfx_spirv_io.c: w with the Input variables at the Locations in umask / smask retyped to uvec4 / ivec4, each load
+// bitcast back to float (int_input_variant); NULL when it cannot. The words are malloc'd.
+uint32_t *spirv_int_inputs(const uint32_t *w, uint64_t n, uint32_t umask, uint32_t smask, uint64_t *out_n);
 // gfx_spirv_img.c: w with the image bindings in umask / smask retyped to uint / int images (int_image_variant); NULL
 // when it cannot (logged by the caller). The words are malloc'd.
 uint32_t *spirv_int_images(const uint32_t *w, uint64_t n, uint64_t umask, uint64_t smask, uint64_t *out_n);
