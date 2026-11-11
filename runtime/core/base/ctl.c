@@ -9,6 +9,7 @@
 //   tex ADDR             textures whose storage or pool-bound Vulkan image covers ADDR (0: every image larger than its storage)
 //   mem ADDR SIZE PATH   SIZE bytes of guest memory at ADDR to PATH (what a CPU-written texture holds)
 //   frame                the present count
+//   focus 0|1            the window lost (0) or took (1) the focus, as the window system reports it
 //   seq                  the game's active sequence nodes (MKW_SEQ_WATCH, seqwatch.c)
 //   capture DIR [N]      the next N presented frames (2) as a capture for mkw --replay (runtime/gfx/cap; MKW_CAPTURE=1)
 //   pause | step [N] | resume   the game stops on its next frame, goes N frames on (1) and stops, runs again (freeze.c)
@@ -20,6 +21,7 @@
 #include "cfg.h"
 #include "cap.h"
 #include "flight.h"
+#include "gfx_wsys.h"
 #include "hacks.h"
 #include "host.h"
 #include "input.h"
@@ -79,6 +81,9 @@ void ctl_run(char *line) {
         freeze_set(1, *arg ? atoll(arg) : 1);
     } else if (!strcmp(cmd, "frame")) {
         rt_log("ctl: frame %llu", (unsigned long long)frame);
+    } else if (!strcmp(cmd, "focus") && (*arg == '0' || *arg == '1')) {
+        gfx_window_focus_changed(*arg == '1');
+        rt_log("ctl: focus %c at frame %llu", *arg, (unsigned long long)frame);
     } else {
         rt_log("ctl: unknown command: %s", line);
     }

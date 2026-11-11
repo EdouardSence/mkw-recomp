@@ -142,9 +142,13 @@ static void ov_focus_mode(Cpu *c) {
 }
 
 // FocusState GetCurrentFocusState(): 1 in focus, 2 out of focus (nn::oe::FocusState). In focus until the window
-// reports otherwise through oe_set_focus; MKW_ASSUME_FOCUS=1 (unattended runs) pins it to 1. The caller of
-// oe_set_focus also pushes OE_MSG_FOCUS_STATE_CHANGED.
-static volatile int32_t focus_state = 1;
+// reports otherwise through oe_set_focus, which also pushes OE_MSG_FOCUS_STATE_CHANGED; MKW_ASSUME_FOCUS=1 (unattended
+// runs) pins it to 1.
+// The console accepts no HOME press while its startup logo shows, so a game never hears of a focus change before
+// FinishStartupLogo; MKW handles one with a manager it makes later (main+0x26380c4 reads main+0x33e54b0, null
+// then): a window that lost the focus during the boot ended the run reading 0xd8 (issues #83 #89 #92, 11/11/2026).
+// Until the logo is done the game sees 1 and no message; the change waiting is told at FinishStartupLogo.
+static volatile int32_t focus_state = 1, focus_window = 1, logo_done;
 static int assume_focus(void) {
     static volatile int32_t v = -1;
     int32_t a = v;
@@ -155,7 +159,12 @@ static int assume_focus(void) {
     }
     return (int)a;
 }
-void oe_set_focus(int in_focus) { plat_xchg32(&focus_state, in_focus || assume_focus() ? 1 : 2); }
+void oe_set_focus(int in_focus) {
+    plat_xchg32(&focus_window, in_focus || assume_focus() ? 1 : 2);
+    if (!__atomic_load_n(&logo_done, __ATOMIC_ACQUIRE)) return;
+    plat_xchg32(&focus_state, focus_window);
+    oe_push_message(OE_MSG_FOCUS_STATE_CHANGED);
+}
 static void ov_focus_state(Cpu *c) { ret_x(c, (uint64_t)focus_state); }
 
 static volatile int32_t notify_resume, notify_operation, notify_performance;
@@ -191,7 +200,12 @@ static void ov_active_time(Cpu *c) {
 static void ov_inactivity_extended(Cpu *c) { (void)c; }
 
 // void FinishStartupLogo(): no system logo is drawn on the host
-static void ov_finish_logo(Cpu *c) { (void)c; rt_log("oe: the game finished its startup logo"); }
+static void ov_finish_logo(Cpu *c) {
+    (void)c;
+    rt_log("oe: the game finished its startup logo");
+    plat_xchg32(&logo_done, 1);
+    if (focus_window != 1) oe_set_focus(0);   // the focus lost meanwhile, told now
+}
 
 
 // Message PopNotificationMessage(): blocks like a Horizon wait, so the thread gives its virtual core up meanwhile

@@ -53,11 +53,11 @@ static int g_started;
 
 void gfx_window_mark_dirty(void) { plat_xchg32(&g_dirty, 1); }
 
-// The window gained or lost the focus: the game hears it as nn::oe's focus state and a notification message.
+// The window gained or lost the focus: the game hears it as nn::oe's focus state and a notification message, from
+// its startup logo's end on (ov_system.c oe_set_focus).
 void gfx_window_focus_changed(int in) {
     plat_xchg32(&g_focused, in);
     oe_set_focus(in);                          // pinned to 1 by MKW_ASSUME_FOCUS inside
-    oe_push_message(OE_MSG_FOCUS_STATE_CHANGED);
     plat_inc32(&g_focus_msgs);
 }
 

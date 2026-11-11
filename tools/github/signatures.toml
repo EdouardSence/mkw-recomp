@@ -25,3 +25,8 @@ what = "the shader step split the compiler's path at a space in the game folder"
 issue = 18
 all = ["is not Mario Kart World 1.0.0 (build id"]
 what = "the game copy is not version 1.0.0 (usually an update merged into the dump)"
+
+[[signature]]
+issue = 83
+all = ["reading address 0xd8", "f_7002637e5c"]
+what = "the game window lost the focus during the boot, and the game read a manager it had not made yet"
