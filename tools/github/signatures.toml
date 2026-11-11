@@ -30,3 +30,8 @@ what = "the game copy is not version 1.0.0 (usually an update merged into the du
 issue = 83
 all = ["reading address 0xd8", "f_7002637e5c"]
 what = "the game window lost the focus during the boot, and the game read a manager it had not made yet"
+
+[[signature]]
+issue = 88
+all = ["AMD proprietary driver", "Device lost detected; 0 addresses"]
+what = "AMD's Windows driver loses the device in a mesh shader dispatch a few seconds into the title"
