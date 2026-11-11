@@ -80,7 +80,7 @@ const char *const text_en[UI_TEXT_COUNT] = {
                                   "memory load, temperatures and the render thread's waits. F10 cycles the modes.",
     [UI_MENU_PERF_OFF] = "Off", [UI_MENU_PERF_FPS] = "FPS", [UI_MENU_PERF_FULL] = "Full",
     // printf format of the overlay line in FPS mode: the frame rate
-    [UI_PERF_LINE_FPS] = "%.0f fps",
+    [UI_PERF_LINE_FPS] = "%.0f fps", [UI_PERF_LINE_FPS_FG] = "%.0f/%.0f fps",
     [UI_MENU_FPS] = "Frame rate",
     [UI_MENU_FPS_DESC] = "Frames per second the game aims for. Automatic is the console's: 60, or 30 when a frame takes "
                          "too long. If your computer cannot hold 60, choose 30 so the race runs at its real speed.",

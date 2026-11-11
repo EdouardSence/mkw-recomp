@@ -29,6 +29,7 @@ typedef enum {
     UI_MENU_GPU, UI_MENU_GPU_DESC, UI_MENU_GPU_AUTO,
     UI_MENU_PERF_OVERLAY, UI_MENU_PERF_OVERLAY_DESC, UI_MENU_PERF_OFF, UI_MENU_PERF_FPS, UI_MENU_PERF_FULL,
     UI_PERF_LINE_FPS,
+    UI_PERF_LINE_FPS_FG,   // the same with frame generation on: game frames / frames shown
     UI_MENU_FPS, UI_MENU_FPS_DESC, UI_MENU_FPS_AUTO,
     UI_MENU_FRAMEGEN, UI_MENU_FRAMEGEN_DESC,   // values: UI_MENU_PERF_OFF, UI_MENU_FPS_AUTO, 2x..4x
     UI_MENU_GRAPHICS,         // group heading over the picture rows

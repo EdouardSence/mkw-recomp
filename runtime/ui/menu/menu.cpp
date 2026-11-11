@@ -338,14 +338,16 @@ static void layout_menu(uint32_t w, uint32_t h, float scale) {
 static int g_save_pending;   // a changed setting still waits for its write to mkw.ini (opt_save_tick)
 
 // ---- the performance overlay (MKW_PERF_OVERLAY), in the top right corner. "fps": the frame rate over the presents of
-// the last half second. "full": a panel of perfmon.c's numbers, in the style of SavageWindRecomp's perf_overlay_draw
+// the last half second; with frame generation on (MKW_FRAMEGEN), the game's frames and the presents, "60/240 fps" as
+// Lossless Scaling shows them. "full": a panel of perfmon.c's numbers, in the style of SavageWindRecomp's perf_overlay_draw
 // (menu.mm): the machine's load and temperatures, the frame rate and frame times with a graph, the render thread's waits.
 // Off, it costs a cfg_version load per present.
 static unsigned g_perf_ver = ~0u;
 static int g_perf_mode;                  // 0 off, 1 fps, 2 full
 static std::atomic<int> g_perf_save;     // F10 changed the mode: mkw.ini is written on the present thread
 static uint64_t g_perf_last_ns, g_perf_win_ns, g_perf_max_ns;
-static int g_perf_frames;
+static int g_perf_frames, g_perf_game;   // presents and game frames in the window
+static uint64_t g_perf_last_frame;
 static char g_perf_text[96];
 
 static int perf_mode_of(const char *s) { return !strcmp(s, "full") ? 2 : !strcmp(s, "fps") ? 1 : 0; }
@@ -382,7 +384,7 @@ static void perf_gpu_once(const MenuTarget *t) {
                     (float)(vram >> 20));
 }
 
-static void perf_tick(uint64_t now, const MenuTarget *t) {
+static void perf_tick(uint64_t now, uint64_t frame, const MenuTarget *t) {
     if (cfg_version() != g_perf_ver) {
         g_perf_ver = cfg_version();
         int m = perf_mode_of(cfg_value("MKW_PERF_OVERLAY"));
@@ -395,17 +397,24 @@ static void perf_tick(uint64_t now, const MenuTarget *t) {
     }
     if (g_perf_mode != 1) return;
     uint64_t d = now - g_perf_last_ns;
+    bool game = frame != g_perf_last_frame;   // (each present of frame generation's made frames has the same number)
+    g_perf_last_frame = frame;
     if (!g_perf_last_ns || d > 2000000000ull) {   // first frame, or a stall the window should not average in
         g_perf_win_ns = g_perf_max_ns = 0;
-        g_perf_frames = 0;
+        g_perf_frames = g_perf_game = 0;
     } else {
         g_perf_win_ns += d;
         g_perf_frames++;
+        g_perf_game += game;
         if (d > g_perf_max_ns) g_perf_max_ns = d;
         if (g_perf_win_ns >= 500000000ull) {
-            snprintf(g_perf_text, sizeof g_perf_text, menu_text(UI_PERF_LINE_FPS), g_perf_frames * 1e9 / g_perf_win_ns);
+            double s = 1e9 / (double)g_perf_win_ns;
+            if (strcmp(cfg_value("MKW_FRAMEGEN"), "off"))
+                snprintf(g_perf_text, sizeof g_perf_text, menu_text(UI_PERF_LINE_FPS_FG), g_perf_game * s, g_perf_frames * s);
+            else
+                snprintf(g_perf_text, sizeof g_perf_text, menu_text(UI_PERF_LINE_FPS), g_perf_frames * s);
             g_perf_win_ns = g_perf_max_ns = 0;
-            g_perf_frames = 0;
+            g_perf_frames = g_perf_game = 0;
         }
     }
     g_perf_last_ns = now;
@@ -588,7 +597,7 @@ extern "C" int menu_overlay_frame(uint64_t frame, const MenuTarget *t, const cha
     if (!g_test.parsed) test_parse();
     if (g_test.next_set < g_test.n_sets && frame >= g_test.sets[g_test.next_set].frame) test_apply_sets(frame);
     if (g_perf_save.exchange(0)) cfg_save();
-    perf_tick(plat_now_ns(), t);
+    perf_tick(plat_now_ns(), frame, t);
     bool open = g_open.load(std::memory_order_relaxed);
     if (!open) {
         if (g_save_pending) g_save_pending = opt_save_tick(1);   // closed: the last change goes to mkw.ini now
