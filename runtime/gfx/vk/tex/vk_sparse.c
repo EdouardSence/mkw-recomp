@@ -109,7 +109,7 @@ static VkSemaphore order_tl;      // timeline: one value per graphics-queue subm
 static VkSemaphore bind_sem;      // MKW_SPARSE_ORDER=0: binary, signalled by a bind for the next replayed submission
 static uint64_t order_val, bind_val;
 static int binary_pending;        // MKW_SPARSE_ORDER=0: a bind signalled bind_sem for the submission being made   // last value handed out; value of the last bind (0: none yet)
-static int64_t n_slots, n_failed, n_binds, n_images, n_blocks, n_over, n_written, n_tail_writes;
+static int64_t n_slots, n_failed, n_binds, n_images, n_blocks, n_over, n_written, n_tail_writes, n_host_blocks;
 static VmaAllocation *dying_tails;   // tail memory of destroyed images: freed behind the next submission
 static int ndying_tails, cdying_tails, ntail_pending;
 
@@ -150,6 +150,20 @@ static int on(void) {
     return v;
 }
 
+// Sparse memory in device-local memory, or when that is full or too small in any type req allows. An APU's own is a
+// 256 MiB carve-out on Windows, and the terrain's tiles found no memory and drew black (issue #63, Ryzen 7 5700G: 57
+// failures); the rest is the same RAM.
+static VkResult alloc_local_or_any(VkCtx *c, const VkMemoryRequirements *req, VmaAllocation *a, VmaAllocationInfo *info) {
+    if (!req->memoryTypeBits) return VK_ERROR_OUT_OF_DEVICE_MEMORY;
+    VmaAllocationCreateInfo aci = {.requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT};
+    VkResult r = vmaAllocateMemory(c->vma, req, &aci, a, info);
+    if (r == VK_SUCCESS) return r;
+    aci = (VmaAllocationCreateInfo){.preferredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT};
+    if ((r = vmaAllocateMemory(c->vma, req, &aci, a, info)) == VK_SUCCESS && !n_host_blocks++)
+        rt_log("vk: sparse: memory outside the GPU's own (device-local full or too small)");
+    return r;
+}
+
 static SlotBlock *new_block(VkCtx *c, uint32_t type_bits, VkDeviceSize slot_size) {
     SlotBlock *b = calloc(1, sizeof *b);
     if (!b) rt_fatal("vk: out of memory (sparse block)");
@@ -160,10 +174,8 @@ static SlotBlock *new_block(VkCtx *c, uint32_t type_bits, VkDeviceSize slot_size
     vkGetBufferMemoryRequirements(c->device, b->buf, &rb);
     VkMemoryRequirements req = {.size = slot_size * BLOCK_SLOTS, .alignment = slot_size > rb.alignment ? slot_size : rb.alignment,
                                 .memoryTypeBits = rb.memoryTypeBits & type_bits};
-    VmaAllocationCreateInfo aci = {.requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT};
     VmaAllocationInfo info;
-    if (!req.memoryTypeBits || vmaAllocateMemory(c->vma, &req, &aci, &b->alloc, &info) != VK_SUCCESS ||
-        vmaBindBufferMemory(c->vma, b->alloc, b->buf) != VK_SUCCESS) {
+    if (alloc_local_or_any(c, &req, &b->alloc, &info) != VK_SUCCESS || vmaBindBufferMemory(c->vma, b->alloc, b->buf) != VK_SUCCESS) {
         if (b->alloc) vmaFreeMemory(c->vma, b->alloc);
         vkDestroyBuffer(c->device, b->buf, NULL);
         free(b);
@@ -324,9 +336,8 @@ static void tail_alloc(VkCtx *c, SparseImg *s, const VkSparseImageMemoryRequirem
                          tail_count(s) * round_up(s->tail_req.imageMipTailSize, s->slot_size);
     if (!bytes) return;
     VkMemoryRequirements req = {.size = bytes, .alignment = s->slot_size, .memoryTypeBits = types};
-    VmaAllocationCreateInfo aci = {.requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT};
     VmaAllocationInfo info;
-    if (vmaAllocateMemory(c->vma, &req, &aci, &s->tail_alloc, &info) != VK_SUCCESS) {
+    if (alloc_local_or_any(c, &req, &s->tail_alloc, &info) != VK_SUCCESS) {
         s->tail_alloc = NULL;
         rt_log("vk: sparse: no memory for the %llu KiB of levels outside the tiles (%ux%u layers %u)",
                (unsigned long long)(bytes >> 10), s->w, s->h, s->layers);
