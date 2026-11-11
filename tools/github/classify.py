@@ -135,7 +135,7 @@ PORT_BUILD = re.compile(r"\[host\] log: .*\(MKW Recomp ([^)\s]+)\)")
 
 def modified_build(log: str) -> str | None:
     """The port version of a log from a build with uncommitted changes (git describe's "-dirty", which the runtime
-    writes on the log's first line since 0.1.8), else None. #88 (11/11/2026): a flicker video from a build with its own
+    writes on the log's first line after 0.1.8), else None. #88 (11/11/2026): a flicker video from a build with its own
     ASTC transcoder, found only by a log line that is in no commit."""
     m = PORT_BUILD.search(log or "")
     return m.group(1) if m and m.group(1).endswith("-dirty") else None
