@@ -127,3 +127,10 @@ def test_replies_that_settle():
         "v0.1.5",
     )
     assert classify.reply_decision("Please attach `logs/mkw.log`") is None
+
+
+def test_modified_build_from_the_log_line():
+    log = "[host] cfg: read mkw.ini\n[host] log: C:/mkw/logs/mkw.log (MKW Recomp 0.1.8-3-gabc1234-dirty)\n"
+    assert classify.modified_build(log) == "0.1.8-3-gabc1234-dirty"
+    assert classify.modified_build(log.replace("-dirty", "")) is None
+    assert classify.modified_build("[host] log: C:/mkw/logs/mkw.log\n") is None   # before 0.1.8: no version

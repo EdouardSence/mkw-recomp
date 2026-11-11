@@ -54,6 +54,9 @@ TEXT = {
     "logs_closed": f"Closed: no log in {LOG_DAYS} days. If it still happens on the latest release, open a new issue "
     "with `logs/mkw.log` attached.",
     "dup_closed": "Closed as a duplicate of #{issue}.",
+    "modified": "Note: this log is from a build with local changes (`MKW Recomp {ver}`). Please check whether it "
+    "happens with a [release package]({repo_url}/releases/latest) or a clean build of `main`: a change outside the "
+    "repository can cause it, and we cannot see it.",
     "release": "Fixed in [{tag}]({url}). If it still happens there, open a new issue with `logs/mkw.log` attached.",
 }
 
@@ -165,7 +168,10 @@ class Moderator:
             self.gh.unlabel(n, *sorted(stale))
         if human:
             return
-        sig = classify.known_error(n, f"{title}\n{body}\n{attached_logs(reported)}", ver, self.sigs)
+        logs = attached_logs(reported)
+        if (mod := classify.modified_build(logs)) and MARK.format("modified") not in said:
+            self.gh.comment(n, "modified", TEXT["modified"].format(ver=mod, repo_url=self.repo_url))
+        sig = classify.known_error(n, f"{title}\n{body}\n{logs}", ver, self.sigs)
         if sig and MARK.format("dup") not in said:
             key = "dup_old" if sig.fixed else "dup"
             text = TEXT[key].format(issue=sig.issue, what=sig.what, fixed=sig.fixed, ver=ver, repo_url=self.repo_url)
