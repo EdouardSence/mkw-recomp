@@ -76,6 +76,15 @@ int image_texels(Tex *e, const Region *g, const NVNcopyRegion *r, uint8_t *mem, 
     if (g->level >= e->pub.levels) return 0;
     uint32_t w = (uint32_t)r->width, h = (uint32_t)r->height;
     int rgb = e->f.expand_rgb, astc = e->f.astc_bw != 0, agpu = astc && write && vk_astc_gpu();
+    // The staging rows hold whole blocks (g->wb bytes, g->hb rows of blocks); Vulkan wants the extent in whole blocks
+    // too, or reaching the level's edge (VUID 00207/00208): MKW writes 1019x1023 texels of BC7 into a 1024x1024 level.
+    if (!astc && (g->bw > 1 || g->bh > 1)) {
+        uint32_t lw = e->pub.width >> g->level, lh = e->pub.height >> g->level;
+        uint32_t rw = (uint32_t)(g->wb / (size_t)g->bpb) * (uint32_t)g->bw, rh = (uint32_t)g->hb * (uint32_t)g->bh;
+        lw = lw ? lw : 1, lh = lh ? lh : 1;
+        w = rw < lw - (uint32_t)r->xoffset ? rw : lw - (uint32_t)r->xoffset;
+        h = rh < lh - (uint32_t)r->yoffset ? rh : lh - (uint32_t)r->yoffset;
+    }
     size_t texels = (size_t)w * h, ib = agpu ? 0 : astc ? 4 : rgb ? (size_t)g->bpb / 3 * 4 : 0;
     size_t slice = ib ? texels * ib : g->wb * g->hb;   // agpu: the raw blocks, decoded by vk_astc_record
     // A write goes into the open upload batch, its staging freed with it, and leaves without waiting: the next
@@ -121,7 +130,8 @@ int image_texels(Tex *e, const Region *g, const NVNcopyRegion *r, uint8_t *mem, 
             VkAstcRegion *ar = calloc((size_t)g->nz, sizeof *ar);
             for (int z = 0; z < g->nz; z++)
                 ar[z] = (VkAstcRegion){.src = slice * (size_t)z, .w = w, .h = h, .slices = 1, .level = rg[z].imageSubresource.mipLevel,
-                                       .layer = rg[z].imageSubresource.baseArrayLayer, .offset = rg[z].imageOffset};
+                                       .layer = rg[z].imageSubresource.baseArrayLayer, .offset = rg[z].imageOffset,
+                                       .lw = e->pub.width >> g->level, .lh = e->pub.height >> g->level};
             uint64_t a0 = perf_begin();
             done = vk_astc_record(cb, sb, slice * (size_t)g->nz, ar, g->nz, e->f.astc_bw, e->f.astc_bh, e->f.astc_srgb,
                                   e->pub.image, aspect, e->f.astc_bc7, VK_NULL_HANDLE);

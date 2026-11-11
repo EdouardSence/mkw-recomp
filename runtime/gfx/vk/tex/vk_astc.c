@@ -609,6 +609,13 @@ int vk_astc_record(VkCommandBuffer cb, VkBuffer src, VkDeviceSize src_size, cons
                 vkCmdDispatch(cb, (ex + 7) / 8, (ey + 7) / 8, r->slices);
                 copies[i - i0].bufferOffset = cap_in + cap_out + eb;
                 copies[i - i0].bufferRowLength = ex * 4, copies[i - i0].bufferImageHeight = ey * 4;
+                // The extent in whole blocks too, or up to the level's edge (VUID 00207/00208): MKW writes 1017x107
+                // texels of its ASTC terrain arrays, kept as BC7, into 1024-wide levels (wval43).
+                if (r->lw && r->lh) {
+                    uint32_t ew = r->lw - (uint32_t)r->offset.x, eh = r->lh - (uint32_t)r->offset.y;
+                    copies[i - i0].imageExtent.width = ex * 4 < ew ? ex * 4 : ew;
+                    copies[i - i0].imageExtent.height = ey * 4 < eh ? ey * 4 : eh;
+                }
                 ob2 += region_out(r), eb += region_bc(r, blk);
             }
         }

@@ -132,10 +132,6 @@ uint32_t vk_texture_reg_serial(void);
 extern uint32_t vk_tex_reg_limit;
 void vk_sampler_register(int id, const samp_par *s);                // sampler descriptor slot (copied)
 int  vk_texture_trim(uint64_t bytes);      // out of memory: released and idle mirrored textures go (vk_staging)
-// ASTC kept as RGBA8 copied into a BC7 image: decodes the source's blocks into dst (vk_texture.c); 0 when it cannot
-int  vk_texture_astc_copy(const tex_t *src, uint32_t level, uint32_t layer, uint32_t layers, uint32_t x, uint32_t y,
-                          uint32_t w, uint32_t h, VkImage dst, VkImageAspectFlags aspect, uint32_t dlevel, uint32_t dlayer,
-                          int32_t dx, int32_t dy, int bc7);
 void vk_texture_release(const tex_t *t);   // TextureFinalize: the image stays for slots that still name its storage
 void vk_read_texels(const tex_t *t, const view_t *v, const NVNcopyRegion *r, uint8_t *dst, uint64_t row, uint64_t img);
 void vk_write_texels(const tex_t *t, const view_t *v, const NVNcopyRegion *r, const uint8_t *src, uint64_t row, uint64_t img);
@@ -320,8 +316,9 @@ int vk_astc_native(VkFormat astc_fmt);  // 1: images of this ASTC format are cre
 int vk_astc_gpu(void);                  // 1: ASTC images decoded to RGBA8 by the compute decoder (vk_astc_record)
 int vk_astc_bc7(void);                  // 1: and encoded again as BC7 (MKW_ASTC_BC7, default on): 1 byte a texel, not 4
 // One image region decoded from raw blocks: tight rows of 16-byte blocks at byte src of the source buffer (slices one
-// after the other), w x h texels and slices deep, written at offset of level / layer.
-typedef struct { VkDeviceSize src; uint32_t w, h, slices, level, layer; VkOffset3D offset; } VkAstcRegion;
+// after the other), w x h texels and slices deep, written at offset of level / layer; lw x lh, that level's size (for
+// the BC7 copy's extent in whole blocks; 0: the region's own).
+typedef struct { VkDeviceSize src; uint32_t w, h, slices, level, layer; VkOffset3D offset; uint32_t lw, lh; } VkAstcRegion;
 // Records into cb, the open upload batch (between vk_upload_begin and vk_upload_end): src (TRANSFER_SRC, src_size
 // bytes of blocks) goes to a device-local scratch buffer, a dispatch per region decodes it, and the texels are copied
 // into img (VK_IMAGE_LAYOUT_GENERAL). The caller records its usual barriers around an image copy before and after the
@@ -379,6 +376,10 @@ typedef struct {
     uint8_t fb_learned;            // a draw sampled it while it was a written attachment of the open pass: its passes
                                    // attach it in ATTACHMENT_FEEDBACK_LOOP_OPTIMAL_EXT (vk_exec.c vk_exec_pass_begin)
 } VkTexImage;
+// ASTC kept as RGBA8 copied into a BC7 image: decodes the source's blocks into dst (vk_texture.c); 0 when it cannot
+int vk_texture_astc_copy(const tex_t *src, uint32_t level, uint32_t layer, uint32_t layers, uint32_t x, uint32_t y,
+                         uint32_t w, uint32_t h, const VkTexImage *dst, VkImageAspectFlags aspect, uint32_t dlevel,
+                         uint32_t dlayer, int32_t dx, int32_t dy, int bc7);
 void vk_exec_recent_log(void);   // the last programs drawn or dispatched with (vk_exec_dstat.c), at a device loss
 // GPU breadcrumbs (diag/vk_crumbs.c, VK_AMD_buffer_marker): a start and an end mark around each upload batch, render
 // pass and dispatch, and at a device loss the last started and finished of each with what it was.

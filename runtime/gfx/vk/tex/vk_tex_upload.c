@@ -309,8 +309,8 @@ counted:;
 // terrain arrays this way, from small ASTC textures; skipped, those levels read zero and the race's bushes and cacti,
 // which take their colour from level 11, came out black (m16, 01/11/2026). 0 when it cannot (the caller skips).
 int vk_texture_astc_copy(const tex_t *src, uint32_t level, uint32_t layer, uint32_t layers, uint32_t x, uint32_t y,
-                         uint32_t w, uint32_t h, VkImage dst, VkImageAspectFlags aspect, uint32_t dlevel, uint32_t dlayer,
-                         int32_t dx, int32_t dy, int bc7) {
+                         uint32_t w, uint32_t h, const VkTexImage *dst, VkImageAspectFlags aspect, uint32_t dlevel,
+                         uint32_t dlayer, int32_t dx, int32_t dy, int bc7) {
     TexVkFormat f;
     if (!tex_vk_format(src->d.format, &f) || !f.astc_bw || !src->mem || x % f.astc_bw || y % f.astc_bh || dx % 4 || dy % 4)
         return 0;
@@ -327,7 +327,7 @@ int vk_texture_astc_copy(const tex_t *src, uint32_t level, uint32_t layer, uint3
         ok = !nvn_texels_box(&src->d, level, layer + l, x / f.astc_bw * 16, y / f.astc_bh, 0, rb, rows, src->mem,
                              stg + l * per, rb, 1);
         ar[l] = (VkAstcRegion){.src = l * per, .w = w, .h = h, .slices = 1, .level = dlevel, .layer = dlayer + l,
-                               .offset = {dx, dy, 0}};
+                               .offset = {dx, dy, 0}, .lw = dst->width >> dlevel, .lh = dst->height >> dlevel};
     }
     // MKW_ASTC_PROBE_LEVEL=<n> (diagnosis): the first copies into level n read back the decoded texels and log them with
     // the source's first block (the bushes' level 11 of the terrain arrays sampled black, 01/11/2026).
@@ -341,7 +341,7 @@ int vk_texture_astc_copy(const tex_t *src, uint32_t level, uint32_t layer, uint3
         rmap = vk_staging((VkDeviceSize)w * h * 4, &rbuf, &ralloc);
     if (ok) {
         barrier(cb, ALL_RW, VK_PIPELINE_STAGE_2_COPY_BIT, VK_ACCESS_2_TRANSFER_WRITE_BIT);
-        ok = vk_astc_record(cb, sb, per * layers, ar, (int)layers, f.astc_bw, f.astc_bh, f.astc_srgb, dst, aspect, bc7,
+        ok = vk_astc_record(cb, sb, per * layers, ar, (int)layers, f.astc_bw, f.astc_bh, f.astc_srgb, dst->image, aspect, bc7,
                             rbuf);
         barrier(cb, VK_PIPELINE_STAGE_2_COPY_BIT, VK_ACCESS_2_TRANSFER_WRITE_BIT, ALL_RW);
     }

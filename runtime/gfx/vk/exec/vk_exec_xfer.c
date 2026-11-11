@@ -521,6 +521,20 @@ static VkExtent3D sub_extent(const Sub *s) {
     return (VkExtent3D){s->w, s->h, s->img->type == VK_IMAGE_TYPE_3D ? s->nz : 1};
 }
 
+// A compressed buffer copy covers whole blocks (buffer_side counts them rounded up); Vulkan wants the extent in whole
+// blocks too, or reaching the level's edge (VUID 00207/00208): MKW copies 511x511 texels of BC7 into a 512x512 level.
+// Not for texture copies: rounding each side against its own level made equal regions differ, and the copy a blit.
+static VkExtent3D sub_extent_blocks(const Sub *s) {
+    VkExtent3D e = sub_extent(s);
+    if (s->astc_bw || (s->bw == 1 && s->bh == 1)) return e;
+    uint32_t bw = (uint32_t)s->bw, bh = (uint32_t)s->bh, rw = (s->w + bw - 1) / bw * bw, rh = (s->h + bh - 1) / bh * bh;
+    uint32_t lw = s->img->width >> s->level, lh = s->img->height >> s->level;
+    lw = lw ? lw : 1, lh = lh ? lh : 1;
+    e.width = rw < lw - (uint32_t)s->x ? rw : lw - (uint32_t)s->x;
+    e.height = rh < lh - (uint32_t)s->y ? rh : lh - (uint32_t)s->y;
+    return e;
+}
+
 // Buffer side of a texture <-> buffer copy: bytes covered, pitches, Vulkan buffer span (a VRAM mirror when the pool
 // has one).
 static int buffer_side(const VkExec *ex, const Sub *s, uint64_t addr, uint64_t *size, VkBufferImageCopy *c,
@@ -544,7 +558,7 @@ static int buffer_side(const VkExec *ex, const Sub *s, uint64_t addr, uint64_t *
     *span = m;
     *c = (VkBufferImageCopy){.bufferOffset = m.offset, .bufferRowLength = (uint32_t)(row / (uint64_t)s->bpb) * (uint32_t)s->bw,
                              .bufferImageHeight = hb * (uint32_t)s->bh, .imageSubresource = sub_layers(s),
-                             .imageOffset = sub_offset(s), .imageExtent = sub_extent(s)};
+                             .imageOffset = sub_offset(s), .imageExtent = sub_extent_blocks(s)};
     return 1;
 }
 
@@ -588,7 +602,7 @@ static int astc_into_sparse(const p_copy_t2t *p) {
     uint32_t w = p->sr.width > 0 ? (uint32_t)p->sr.width : lw - x, h = p->sr.height > 0 ? (uint32_t)p->sr.height : lh - y;
     uint32_t n = p->sr.depth > 0 ? (uint32_t)p->sr.depth : 1, dl0 = d.layer0 + (uint32_t)d.z;
     if (level >= p->src->d.levels || x + w > lw || y + h > lh || w != d.w || h != d.h) return 0;
-    if (!vk_texture_astc_copy(p->src, level, layer, n, x, y, w, h, d.img->image, d.aspect, d.level, dl0, d.x, d.y, 1))
+    if (!vk_texture_astc_copy(p->src, level, layer, n, x, y, w, h, d.img, d.aspect, d.level, dl0, d.x, d.y, 1))
         return 0;
     vk_texture_gpu_written(p->dst);
     vk_sparse_written(d.img->image, d.level, dl0, n, d.x, d.y, w, h);
@@ -618,7 +632,7 @@ static void copy_t2t(VkExec *ex, const p_copy_t2t *p) {
     if (s.astc_bw && s.astc_bw == d.astc_bw && s.astc_bh == d.astc_bh && s.img->format != d.img->format && to_bc7) {
         uint32_t dl0 = d.layer0 + (uint32_t)d.z;
         if (vk_texture_astc_copy(p->src, s.level, s.layer0 + (uint32_t)s.z, s.nz, (uint32_t)s.x, (uint32_t)s.y, s.w, s.h,
-                                 d.img->image, d.aspect, d.level, dl0, d.x, d.y, 1)) {
+                                 d.img, d.aspect, d.level, dl0, d.x, d.y, 1)) {
             vk_texture_gpu_written(p->dst);
             vk_sparse_written(d.img->image, d.level, dl0, s.nz, d.x, d.y, s.w, s.h);
             return;
