@@ -41,7 +41,9 @@ ultrawide screens, and a faster setup.
 
 From these packages, before publishing:
 
-- TESTED
+- The whole setup on Linux (Radeon 660M, RADV) and on Windows 11 (GTX 1050 Ti), with its one-minute warm-up and no
+  shader left behind: about 15.5 minutes on Linux (22 with 0.1.7) and 30 on Windows (45), where the shader step went
+  from 23 to 14 minutes.
 
 ### Known issues
 
