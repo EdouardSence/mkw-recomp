@@ -311,6 +311,13 @@ static Dec *pool_owner(uint64_t pool, int *slot) {
 
 // Result ReadDecoderOutputImageNv12(const PoolType *, unsigned index, u16 x, u16 y, u16 w, u16 h, void *luma,
 // size_t luma_pitch, size_t luma_size, void *chroma, size_t chroma_pitch, size_t chroma_size)
+static volatile uint64_t movie_at;   // 1 + the tick of the last frame read of a full-screen movie; 0 none yet
+
+int ov_movie_playing(void) {
+    uint64_t at = movie_at;
+    return at && frame_step_ticks() + 1 - at < 30;
+}
+
 static void ov_read_nv12(Cpu *c) {
     uint64_t pool = arg_x(c, 0);
     uint32_t x0 = (uint16_t)arg_x(c, 2), y0 = (uint16_t)arg_x(c, 3), w = (uint16_t)arg_x(c, 4), h = (uint16_t)arg_x(c, 5);
@@ -328,6 +335,7 @@ static void ov_read_nv12(Cpu *c) {
           (unsigned long long)cpitch, (const void *)nvn_pool_find((uintptr_t)ly, 1));
     if (ysize) memset(ly, 0x10, ysize);
     if (csize) memset(lc, 0x80, csize);
+    if (f && f->w >= 1280) movie_at = frame_step_ticks() + 1;
     if (f && f->w && f->h) {
         for (uint32_t y = 0; y < h && y0 + y < f->h && (y + 1) * ypitch <= ysize; y++) {
             uint32_t n = x0 < f->w ? f->w - x0 : 0;

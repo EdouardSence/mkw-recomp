@@ -146,6 +146,13 @@ site output main cf3578 f2c0b40a d503201f            # movk x10, #0x5a0, lsl #32
 set aspect MKW_ASPECT_PATCH 0
 site aspect main 460d40 1e211800 94bec090   # fdiv s0, s0, s1 -> bl host_aspect (patch page + 0xf80)
 site aspect main 460dfc 1e211800 94bec061   # same
+# The 2D layouts (menus, HUD): the two draw constant-buffer setups of nn::ui2d take DrawInfo's projection with its
+# getter (main+0x1682c9c); host_ui_proj copies it and narrows a full-screen 16:9 orthographic one to the middle 16:9.
+site aspect main 1689110 97ffe6e3 94761f98   # bl getter -> bl host_ui_proj (patch page + 0xf70)
+site aspect main 169aeb0 97ff9f7b 9475d830   # same
+# A view-projection product made on the CPU (main+0x168a22c) reads the projection's rows itself: host_ui_rows loads
+# them with the x row narrowed. The bl overwrites x30, which the function's prologue saved.
+site aspect main 168a624 ad408e82 94761a4f   # ldp q2, q3, [x20, #0x10] -> bl host_ui_rows (patch page + 0xf60)
 
 # Cascaded shadow map size (MKW_SHADOW_SIZE): the game fixes 3072 docked / 2048 handheld
 # in code before this call; main+0x233358 creates the gsys RenderBuffer and reads its width and height from [x0+0x68]

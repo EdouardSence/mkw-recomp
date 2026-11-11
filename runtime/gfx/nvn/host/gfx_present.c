@@ -23,6 +23,7 @@
 #include "gfx.h"
 #include "gfx_wsys.h"
 #include "hacks.h"
+#include "host.h"
 #include "nvn_api.h"
 #include "ui/menu/menu.h"
 #include "vk.h"
@@ -120,6 +121,8 @@ static int g_cap_w, g_cap_h, g_cap_valid;
 // oldest. More than one only with frame generation (vk_present_blit_ahead).
 static uint32_t g_flip_q[MAX_IMAGES];
 static int g_flip_n;
+static float g_aspect;           // gfx_aspect_set: the ultrawide output's aspect (MKW_ASPECT), 0 at 16:9
+void gfx_aspect_set(float a) { g_aspect = a; }
 static int g_frames = 2;         // slots in use (create_swapchain): 2, FRAMES with frame generation
 static int g_ahead = 1;          // presents that may wait at once: the swapchain's images past its minimum
 
@@ -589,6 +592,9 @@ static void present_image(VkImage src, VkImageLayout layout, VkFormat fmt, int w
     if (cy < 0) cy = 0;
     if (cx + cw > w) cw = w - cx;
     if (cy + ch > h) ch = h - cy;
+    // A full-screen movie (the cups') on an ultrawide output (MKW_ASPECT): its middle 16:9 between black bars, as the
+    // console shows it; the 2D keeps the movie there (patches.c host_ui_proj)
+    if (g_aspect && ov_movie_playing() && ch * 16 / 9 < cw) cx += (cw - ch * 16 / 9) / 2, cw = ch * 16 / 9;
     window_settings_live();
     // The menu overlay: laid out before recording (its first frame starts the ImGui back end and uploads the font)
     const char *menu_shot = NULL;

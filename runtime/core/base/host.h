@@ -291,6 +291,8 @@ int64_t frame_step_world_us(void);                         // game time since th
 void ctl_init(void);                                       // MKW_CTL=<fifo>: commands to the running game (ctl.c)
 void ctl_run(char *line);                                  // one ctl command now (MKW_SEQ_CTL, seqwatch.c)
 void rt_shot_request(const char *path);                    // the next presented frame to path, full size (boot.c)
+void gfx_aspect_set(float a);  // gfx_present.c, from patches.c: MKW_ASPECT's width / height when wider than 16:9, else 0
+int ov_movie_playing(void);  // ov_codec.c: a full-screen movie (1280 wide or more) gave a frame in the last half second
 uint64_t frame_step_ticks(void);                           // game time since the first present in 60 Hz ticks (input scripts)
 // In-launch A/B measurement: MKW_AB=<seconds> splits the world clock (frame_step_world_us) into blocks of that much
 // game time in the order A B B A (repeated; B A A B with MKW_AB_INVERT=1); rt_ab() is 1 in the B blocks, 0 in A
