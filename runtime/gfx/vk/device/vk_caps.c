@@ -94,6 +94,7 @@ void vk_caps_init(VkCtx *c) {
     vk_caps.sg_size = want;
     vk_caps.sg_pin_stages = pin ? p13.requiredSubgroupSizeStages & env_u32("MKW_VK_SUBGROUP_PIN_STAGES", ~0u) : 0;
 
+    vk_caps.driver_id = drv.driverID;
     char dv[32];
     driver_version(dv, sizeof dv, c->props.vendorID, c->props.driverVersion);
     uint32_t v = c->props.apiVersion;

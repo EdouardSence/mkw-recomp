@@ -62,6 +62,7 @@ typedef struct {
     uint32_t sg_size;                  // requiredSubgroupSize on sg_pin_stages (32)
     VkShaderStageFlags sg_pin_stages;  // 0: no pin, stages run at the device's subgroupSize
     int gpl;                           // VK_EXT_graphics_pipeline_library enabled with fast linking (MKW_GPL=0: off)
+    VkDriverId driver_id;              // VkPhysicalDeviceDriverProperties.driverID
 } VkCaps;
 extern VkCaps vk_caps;
 void vk_caps_features(VkPhysicalDeviceFeatures *f);   // before vkCreateDevice (MKW_VK_NO_FLOAT64 clears shaderFloat64)

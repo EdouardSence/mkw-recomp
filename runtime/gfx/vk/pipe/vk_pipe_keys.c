@@ -321,6 +321,7 @@ static Pipe *pipe_miss(const VkPipeState *s, const GKey *k, uint64_t h, int mode
         uint32_t mo, fo;
         mesh_offsets(s, &mo, &fo);
         if (!vk_ctx()->has_mesh) why = "no VK_EXT_mesh_shader";
+        else if (vk_mesh_cs_on()) why = "task/mesh drawn as compute (MKW_MESH_COMPUTE)";
         else if (!add_stage(&B, s->vs, 0) || (s->mesh && !add_stage(&B, s->mesh, mo)) || (s->fs && !add_stage(&B, s->fs, fo)))
             why = "too many bindings";
         else if (!(l = layout_get(&B))) why = "descriptor layout creation failed";
