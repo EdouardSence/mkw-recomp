@@ -578,6 +578,9 @@ static void present_image(VkImage src, VkImageLayout layout, VkFormat fmt, int w
                                    .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT};
     vkBeginCommandBuffer(cb, &bi);
     VkImage dst = g_sc_img[idx];
+    // #43 and #50 (RADV) hung on this thread's submission with every earlier mark finished: this one says whether the
+    // GPU reached it and got through the swapchain image's transition and clear
+    uint32_t prep = vk_crumb_op(cb, "present: swapchain image transition", g_sc_ext.width, g_sc_ext.height);
     sync_barrier(cb, dst, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_PIPELINE_STAGE_2_TRANSFER_BIT, 0,
                  VK_PIPELINE_STAGE_2_TRANSFER_BIT, VK_ACCESS_2_TRANSFER_WRITE_BIT);
     const int rect[4] = {cx, cy, cw, ch};
@@ -591,6 +594,7 @@ static void present_image(VkImage src, VkImageLayout layout, VkFormat fmt, int w
                      VK_PIPELINE_STAGE_2_TRANSFER_BIT, VK_ACCESS_2_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_2_TRANSFER_BIT,
                      VK_ACCESS_2_TRANSFER_WRITE_BIT);
     }
+    vk_crumb_end(cb, VK_CRUMB_OP, prep);
     // FSR (MKW_UPSCALER) when the picture's rectangle is larger than the crop; else the bilinear blit
     uint32_t crumb = src ? vk_crumb_op(cb, "present scaling", (uint32_t)to[2], (uint32_t)to[3]) : 0;
     int fsr = src && general && vk_fsr_record(cb, slot, src, fmt, w, h, rect, dst, to[0], to[1], (uint32_t)to[2], (uint32_t)to[3]);
@@ -609,6 +613,7 @@ static void present_image(VkImage src, VkImageLayout layout, VkFormat fmt, int w
                          VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT, 0);
     }
     vk_crumb_end(cb, VK_CRUMB_OP, crumb);
+    uint32_t tail = vk_crumb_op(cb, "present: overlay and hand-off to the display", g_sc_ext.width, g_sc_ext.height);
     // last: the image's layout, and the stage and access of its last write, as each step leaves it
     VkImageLayout last = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
     VkPipelineStageFlags2 last_stage = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
@@ -648,6 +653,7 @@ static void present_image(VkImage src, VkImageLayout layout, VkFormat fmt, int w
         last_write = 0;
         record_thumb(cb, dst, slot);
     }
+    vk_crumb_end(cb, VK_CRUMB_OP, tail);
     sync_barrier(cb, dst, last, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, last_stage, last_write, VK_PIPELINE_STAGE_2_NONE, 0);
     vkEndCommandBuffer(cb);
 
