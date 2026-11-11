@@ -22,6 +22,7 @@ void gfx_window_early(void);                               // the window at boot
 void gfx_vsync_bind(uint64_t system_event);                // nn::vi vsync event; signalled at 60 Hz
 int gfx_window_focused(void);
 int gfx_window_lines(void);   // lines of the picture the window will show (monitor in fullscreen); 0 unknown
+int gfx_window_shape(int *w, int *h);   // its width and lines; 0 unknown (w and h then untouched)
 
 // ---- prepared shaders (gfx_shader.c)
 enum { GFX_STAGE_VS, GFX_STAGE_TCS, GFX_STAGE_TES, GFX_STAGE_GS, GFX_STAGE_FS, GFX_STAGE_CS };

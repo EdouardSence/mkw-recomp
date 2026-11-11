@@ -139,6 +139,14 @@ set output MKW_OUTPUT_PATCH 0
 site output main cf3574 d281400a @page:x10 f947e94a   # mov x10, #0xa00 -> adrp x10, page; ldr x10, [x10, #0xfd0]
 site output main cf3578 f2c0b40a d503201f            # movk x10, #0x5a0, lsl #32 -> nop
 
+# Camera aspect (MKW_ASPECT, Screen tab): main+0x460c10 stores each camera's aspect, its viewport's width / height, at
+# [x8+0xb0] with these two divisions. host_aspect (patches.c) divides and widens a 16:9 view, or an 8:9 one (half of a
+# two-player split), to the output's aspect, as the 32:9 mod of issue #77 does. The bl overwrites x30, which the
+# function's prologue saved (main+0x460c18).
+set aspect MKW_ASPECT_PATCH 0
+site aspect main 460d40 1e211800 94bec090   # fdiv s0, s0, s1 -> bl host_aspect (patch page + 0xf80)
+site aspect main 460dfc 1e211800 94bec061   # same
+
 # Cascaded shadow map size (MKW_SHADOW_SIZE): the game fixes 3072 docked / 2048 handheld
 # in code before this call; main+0x233358 creates the gsys RenderBuffer and reads its width and height from [x0+0x68]
 # and [x0+0x88], as do later passes (shadow_map_reduce_depth). The host function sets them and calls it.

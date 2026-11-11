@@ -66,6 +66,10 @@ const char *const text_en[UI_TEXT_COUNT] = {
     [UI_MENU_RESOLUTION_DESC] = "Lines the game renders its scenes at, then scaled to the window. Lower is faster: "
                                 "720p suits integrated graphics. Original is the console's (up to 1440p).",
     [UI_MENU_RESOLUTION_ORIGINAL] = "Original",
+    [UI_MENU_ASPECT] = "Aspect ratio",
+    [UI_MENU_ASPECT_DESC] = "Wider than 16:9 shows more of the course at the sides, for ultrawide screens. 16:9 is "
+                            "the console's; Window takes the window's or monitor's shape. Menus stay stretched for now.",
+    [UI_MENU_ASPECT_WINDOW] = "Window",
     [UI_MENU_PRESENT] = "Presentation", [UI_MENU_PRESENT_DESC] = "How finished frames reach the screen.",
     [UI_MENU_PRESENT_MAILBOX] = "Mailbox", [UI_MENU_PRESENT_VSYNC] = "VSync", [UI_MENU_PRESENT_IMMEDIATE] = "Immediate",
     [UI_MENU_PRESENT_IN_USE] = "in use: %s",

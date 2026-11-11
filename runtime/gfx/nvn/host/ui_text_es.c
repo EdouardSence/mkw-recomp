@@ -69,6 +69,10 @@ const char *const text_es[UI_TEXT_COUNT] = {
     [UI_MENU_RESOLUTION_DESC] = "Líneas a las que el juego dibuja sus escenas, luego escaladas a la ventana. Menos es más "
                                 "rápido: 720p va bien con gráficos integrados. Original es la de la consola (hasta 1440p).",
     [UI_MENU_RESOLUTION_ORIGINAL] = "Original",
+    [UI_MENU_ASPECT] = "Proporción",
+    [UI_MENU_ASPECT_DESC] = "Más ancha que 16:9 muestra más circuito a los lados, para pantallas ultrapanorámicas. 16:9 "
+                            "es la de la consola; Ventana toma la forma de la ventana o del monitor. Los menús, de momento, estirados.",
+    [UI_MENU_ASPECT_WINDOW] = "Ventana",
     [UI_MENU_PRESENT] = "Presentación", [UI_MENU_PRESENT_DESC] = "Cómo llegan a la pantalla los fotogramas terminados.",
     [UI_MENU_PRESENT_MAILBOX] = "Mailbox", [UI_MENU_PRESENT_VSYNC] = "VSync", [UI_MENU_PRESENT_IMMEDIATE] = "Inmediata",
     [UI_MENU_PRESENT_IN_USE] = "en uso: %s",

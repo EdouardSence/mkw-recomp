@@ -135,15 +135,21 @@ static int video_up(void);
 
 // The lines of the picture the window will show, for the game's output size before the window exists
 // (patches.c): the monitor's in fullscreen (its desktop mode, in pixels), else MKW_WINDOW_SIZE's. 0 when unknown.
-int gfx_window_lines(void) {
-    int w, h;
+int gfx_window_shape(int *w, int *h) {
     if (!gfx_cfg_fullscreen()) {
-        gfx_cfg_window_size(&w, &h);
-        return h;
+        gfx_cfg_window_size(w, h);
+        return *h > 0;
     }
     if (!video_up()) return 0;
     const SDL_DisplayMode *m = SDL_GetDesktopDisplayMode(SDL_GetPrimaryDisplay());
-    return m ? (int)(m->h * m->pixel_density + 0.5f) : 0;
+    if (!m) return 0;
+    *w = (int)(m->w * m->pixel_density + 0.5f), *h = (int)(m->h * m->pixel_density + 0.5f);
+    return 1;
+}
+
+int gfx_window_lines(void) {
+    int w, h;
+    return gfx_window_shape(&w, &h) ? h : 0;
 }
 
 static void density_update(void) {

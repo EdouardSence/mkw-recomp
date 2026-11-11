@@ -68,6 +68,10 @@ const char *const text_ru[UI_TEXT_COUNT] = {
     [UI_MENU_RESOLUTION_DESC] = "Сколько строк рисует игра, затем изображение масштабируется под окно. Меньше — быстрее: "
                                 "720p подходит встроенной графике. «Исходное» — как на консоли (до 1440p).",
     [UI_MENU_RESOLUTION_ORIGINAL] = "Исходное",
+    [UI_MENU_ASPECT] = "Соотношение сторон",
+    [UI_MENU_ASPECT_DESC] = "Шире 16:9 — по бокам видно больше трассы, для сверхшироких экранов. 16:9 — как на консоли; "
+                            "«Окно» берёт форму окна или монитора. Меню пока растянуты.",
+    [UI_MENU_ASPECT_WINDOW] = "Окно",
     [UI_MENU_PRESENT] = "Вывод кадров", [UI_MENU_PRESENT_DESC] = "Как готовые кадры попадают на экран.",
     [UI_MENU_PRESENT_MAILBOX] = "Mailbox", [UI_MENU_PRESENT_VSYNC] = "Вертикальная синхронизация",
     [UI_MENU_PRESENT_IMMEDIATE] = "Без ожидания",

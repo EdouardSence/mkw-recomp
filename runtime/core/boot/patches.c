@@ -26,6 +26,7 @@
 #define SEED_HOST 0xfb0     // patch page offset of host_seed_tick (set seed)
                             // 0xfa0: game.c host_frame_update (MKW_FPS)
 #define SHADOW_POOL_HOST 0xf90   // patch page offset of host_shadow_pool (set shadow)
+#define ASPECT_HOST 0xf80        // patch page offset of host_aspect (set aspect)
 #define GUEST_RENDERBUFFER_CREATE 0x7000233358ull   // MKW 1.0.0 main: gsys RenderBuffer creation
 #define GUEST_RB_ALLOCATOR_INIT 0x70008eb6b0ull     // render-buffer allocator setup (main+0x37b520 allocates from it)
 #define GUEST_RB_POOL_NEW 0x700067aa40ull           // operator new(size, heap, alignment), as the allocator calls it
@@ -123,10 +124,46 @@ static void shadow_set(const RtGame *g) {
         if (!strcmp(g->patch_sets[i].name, "shadow")) g->patch_on[i] = shadow_size != 0;
 }
 
+// The aspect set: MKW_ASPECT (Screen tab) wider than 16:9 shows more at the sides (Hor+): 21:9, 32:9 or the window's
+// own. Each camera's aspect is widened by the output's over 16:9 (host_aspect), and the output gets that width
+// (output_size). The race's HUD follows (uw-32x9b); the 2D menus and the cup select's map are still stretched.
+static float aspect_out;     // the output's width / height; 0: 16:9, the set off
+static float aspect_scale;   // aspect_out / (16 / 9)
+
+static float aspect_of(void) {
+    const char *a = cfg_value("MKW_ASPECT");
+    int w = 16, h = 9;
+    if (!strcmp(a, "window")) gfx_window_shape(&w, &h);
+    else sscanf(a, "%d:%d", &w, &h);
+    float r = w > 0 && h > 0 ? (float)w / (float)h : 0;
+    return r > 16.0f / 9 + 0.01f ? r : 0;   // narrower than 16:9 is not offered: the console's
+}
+
+// In place of fdiv s0, s0, s1 (recomp/patches-mkw.txt): a 16:9 view, or an 8:9 one doubled (half of a two-player split),
+// within the mod's 0.008, is widened; other views (four players, the menus' own) keep their aspect.
+static void host_aspect(Cpu *c) {
+    float w, h;
+    memcpy(&w, &c->v[0], sizeof w), memcpy(&h, &c->v[1], sizeof h);
+    float a = w / h, r = a < 1.2f ? 2 * a : a, d = r - 16.0f / 9;
+    if (d < 0.008f && d > -0.008f) a *= aspect_scale;
+    c->v[0] = 0;
+    memcpy(&c->v[0], &a, sizeof a);
+}
+
+static void aspect_set(const RtGame *g) {
+    aspect_out = aspect_of();
+    aspect_scale = aspect_out / (16.0f / 9);
+    for (int i = 0; i < g->npatch_sets; i++)
+        if (!strcmp(g->patch_sets[i].name, "aspect")) g->patch_on[i] = aspect_out != 0;
+    if (aspect_out) rt_log("patches: camera aspect %.3f, x%.3f over 16:9 (MKW_ASPECT %s)", aspect_out, aspect_scale,
+                           cfg_value("MKW_ASPECT"));
+}
+
 // The output set: with MKW_RESOLUTION not original, that resolution's lines at 16:9 (720: 1280x720) in place of the
 // 2560x1440 the game fixes in code; with original, the window's lines when fewer than 1440 (Adrià 08/11/2026: the
 // present shrank 2560x1440 to a 1080-line window with its 2x2 bilinear blit, jagged edges, nit-off; a smaller output
-// goes through FSR instead). MKW_OUTPUT_PATCH=0 keeps 2560x1440 at any resolution.
+// goes through FSR instead). MKW_OUTPUT_PATCH=0 keeps 2560x1440 at any resolution. With MKW_ASPECT wider than 16:9,
+// the width is the lines times that aspect (1440 lines when nothing else sets them).
 static void output_size(const RtGame *g) {
     const char *res = cfg_value("MKW_RESOLUTION"), *off = cfg_get("MKW_OUTPUT_PATCH");
     int lines = strcmp(res, "original") ? atoi(res) : 0;
@@ -134,17 +171,19 @@ static void output_size(const RtGame *g) {
         int win = gfx_window_lines();
         if (win >= 360 && win < 1440) lines = win;
     }
+    if (!lines && aspect_out) lines = 1440;
     for (int i = 0; i < g->npatch_sets; i++) {
         if (strcmp(g->patch_sets[i].name, "output")) continue;
         if (lines <= 0 || (off && !strcmp(off, "0"))) {
             g->patch_on[i] = 0;   // the page holds no size: the site would read 0x0
             return;
         }
-        uint32_t wh[2] = {(uint32_t)(lines * 16 / 9), (uint32_t)lines};
+        uint32_t wide = aspect_out ? ((uint32_t)(lines * aspect_out + 0.5f) + 1) & ~1u : 0;
+        uint32_t wh[2] = {wide ? wide : (uint32_t)(lines * 16 / 9), (uint32_t)lines};
         memcpy((void *)(uintptr_t)(g->patch_page + OUTPUT_SIZE), wh, sizeof wh);
         g->patch_on[i] = 1;
-        rt_log("patches: game output %ux%u instead of 2560x1440 (MKW_RESOLUTION %s, window lines %d)", wh[0], wh[1],
-               res, gfx_window_lines());
+        rt_log("patches: game output %ux%u instead of 2560x1440 (MKW_RESOLUTION %s, MKW_ASPECT %s, window lines %d)",
+               wh[0], wh[1], res, cfg_value("MKW_ASPECT"), gfx_window_lines());
         return;
     }
 }
@@ -166,6 +205,7 @@ void rt_patches_init(void) {
         if (n >= sizeof list) n = sizeof list - 1;
     }
     rt_log("patches: %s (page %#llx)", list, (unsigned long long)g->patch_page);
+    aspect_set(g);
     output_size(g);
     shadow_set(g);
     seed_set(g);
@@ -180,6 +220,7 @@ void rt_patch_hosts(void) {
     if (g->npatch_sets) rt_register_host(g->patch_page + SHADOW_HOST, host_shadow_rb);
     if (g->npatch_sets) rt_register_host(g->patch_page + SHADOW_POOL_HOST, host_shadow_pool);
     if (g->npatch_sets) rt_register_host(g->patch_page + SEED_HOST, host_seed_tick);
+    if (g->npatch_sets) rt_register_host(g->patch_page + ASPECT_HOST, host_aspect);
     if (g->npatch_sets) frame_rate_host(g->patch_page);
 }
 
