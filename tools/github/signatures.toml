@@ -40,3 +40,8 @@ what = "the game window lost the focus during the boot, and the game read a mana
 issue = 88
 all = ["AMD proprietary driver", "Device lost detected; 0 addresses"]
 what = "AMD's Windows driver loses the device in a mesh shader dispatch a few seconds into the title"
+
+[[signature]]
+issue = 67
+all = ["upload submit failed (-2)"]
+what = "the driver refuses a submission for lack of GPU memory (`upload submit failed (-2)`) at the title, on an integrated GPU"
