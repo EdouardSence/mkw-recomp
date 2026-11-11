@@ -34,6 +34,7 @@ import shutil
 import subprocess
 import sys
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]  # the repository, or the package's setup/src
@@ -98,18 +99,30 @@ def check(src: Path) -> tuple[Path, Path]:
 
 
 # ---- copies
+COPY_JOBS = 6  # files copied at once: NTFS creates ~170 small files a second from one stream, ~460 from six (Windows test PC, 08/11/2026)
+
+
+def copy_one(s: Path, t: Path) -> None:
+    """One file, unless already there with the same size (resume); through .part, so a cut copy is never taken."""
+    if t.is_file() and t.stat().st_size == s.stat().st_size:
+        return
+    part = t.with_name(t.name + ".part")
+    shutil.copyfile(s, part)
+    part.replace(t)
+
+
 def copy_tree(src: Path, dst: Path, total: int) -> None:
-    """src into dst, file by file, with progress; files already there with the same size are kept (resume)."""
+    """src into dst with progress, COPY_JOBS files at a time: the RomFS's 205 660 files one by one were most of a
+    copy's time on Windows, where creating a file costs more than its bytes."""
     done = 0
-    for d, _, files in os.walk(src):
-        out = dst / Path(d).relative_to(src)
-        out.mkdir(parents=True, exist_ok=True)
-        for f in files:
-            s, t = Path(d, f), out / f
-            if not (t.is_file() and t.stat().st_size == s.stat().st_size):
-                part = t.with_name(t.name + ".part")
-                shutil.copyfile(s, part)
-                part.replace(t)
+    with ThreadPoolExecutor(COPY_JOBS) as pool:
+        pending = []
+        for d, _, files in os.walk(src):
+            out = dst / Path(d).relative_to(src)
+            out.mkdir(parents=True, exist_ok=True)
+            pending += [pool.submit(copy_one, Path(d, f), out / f) for f in files]
+        for fut in as_completed(pending):
+            fut.result()
             done += 1
             if done % 500 == 0 or done == total:
                 emit("progress", done, total)
