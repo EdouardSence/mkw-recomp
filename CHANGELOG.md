@@ -4,6 +4,46 @@ Each version's section is that release's notes: `tools/build/notes.py` puts it i
 updating, known issues, reporting) for the GitHub release. A section has a summary paragraph, `### Changes` (each with
 its issue, #N), `### Tested` (what was run from the packages before publishing) and optionally `### Known issues`.
 
+## 0.1.8
+
+Frame generation, races that render again on Intel, Adreno and (likely) AMD's Windows driver, and a first take on
+ultrawide screens.
+
+### Changes
+
+- **Ultrawide** (#77, #40): Settings > Screen > Aspect ratio: 16:9 (the console's, default), the window's, 21:9 or
+  32:9. Races and the title's 3D show more at the sides instead of stretching; the menus and the HUD keep their shape
+  in the middle 16:9, and full-screen backdrops and fades reach the edges. What is still missing is under Known issues.
+- **Frame generation** (#101, by @guillo1990): Settings > Screen > Frame generation: Off (default), Automatic, 2x, 3x,
+  4x. Frames made between the game's own from the pictures (optical flow), so a race at 30 fps is shown at 60; the
+  FPS overlay shows game / shown frames. It makes the picture smoother, not the game faster.
+- Races black, and menus cut along a diagonal, on Intel (ANV) and Adreno (Turnip) (#26, found and fixed by
+  @titooo7): full-screen passes left the position's w undefined. The black 3D with the HUD visible on AMD's Windows
+  driver 26.10 (#105) looks like the same cause. After updating, the setup's shader step runs again
+  (it now does whenever the translator changes).
+- Black terrain on cards whose own memory filled up (#63): sparse tiles fall back to system memory.
+- The game stopped when it started its network (#63, after a while in free roam): its sockets now answer as a
+  console with no network, so it stays offline.
+- A crash pressing HOME or switching windows during the startup logo (#83, #89, #92).
+- AMD on Windows: the race's mesh draws run as compute passes, where AMD's driver lost the device (#88).
+- Intel Arc drew the race black (#64): integer images and integer colour targets are read and written as integers.
+- Big AMD cards ran out of video memory on the title (#43, #68): the texture pool starts at 8 blocks.
+- Integrated GPUs: the memory cap counts the firmware carve-out (#50).
+- The setup's downloads failed certificate checks on systems without the usual CA file (#102, NixOS).
+- Diagnostics: GPU breadcrumbs around the present (#43, #50).
+
+### Tested
+
+From these packages, before publishing:
+
+- TESTED
+
+### Known issues
+
+- Ultrawide (#77, #40): during the cup movie the "Skip" prompt is not shown (pressing the button still skips it); in
+  two-player split screen the coin and lap numbers sit beside their frames; three and four players are not checked
+  yet. 16:9, the default, is not affected.
+
 ## 0.1.7
 
 The game starts on AMD graphics cards under Windows, where the window did not open or the title froze.
