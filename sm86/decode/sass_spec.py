@@ -23,7 +23,7 @@ class Slot:
     `docs/decoding_rule.md`).
     """
 
-    __slots__ = ("name", "positions", "width", "mask")
+    __slots__ = ("name", "positions", "width", "mask", "runs")
 
     def __init__(self, name, positions):
         self.name = name
@@ -33,11 +33,20 @@ class Slot:
         for p in positions:
             mask |= 1 << p
         self.mask = mask
+        # (word bit, run mask, field bit) per run of consecutive positions: extract() reads a run in one shift instead
+        # of a bit at a time, the decoder's hottest loop (mkw-recomp, 11/11/2026)
+        self.runs = []
+        for i, p in enumerate(positions):
+            if self.runs and p == self.runs[-1][0] + self.runs[-1][1].bit_length():
+                start, m, at = self.runs[-1]
+                self.runs[-1] = (start, (m << 1) | 1, at)
+            else:
+                self.runs.append((p, 1, i))
 
     def extract(self, word):
         v = 0
-        for i, p in enumerate(self.positions):
-            v |= ((word >> p) & 1) << i
+        for p, m, i in self.runs:
+            v |= ((word >> p) & m) << i
         return v
 
     def deposit(self, word, value):

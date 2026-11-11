@@ -86,12 +86,22 @@ def constraint_failures(cls, word, use_starred=True, use_tables=True):
     return bad
 
 
+_ENUM_NAMES = {}  # (spec, type) -> {value: sorted names}: one pass over each table, not one per read (mkw-recomp)
+
+
 def _enum_symbols(spec, type_name, value):
-    table = spec.enum_tables.get(type_name)
-    if not table:
-        return None
-    names = [n for n, v in table["values"].items() if v == value]
-    return sorted(names) or None
+    by_value = _ENUM_NAMES.get((id(spec), type_name))
+    if by_value is None:
+        table = spec.enum_tables.get(type_name)
+        if not table:
+            return None
+        by_value = {}
+        for n, v in table["values"].items():
+            by_value.setdefault(v, []).append(n)
+        by_value = {v: sorted(ns) for v, ns in by_value.items()}
+        _ENUM_NAMES[(id(spec), type_name)] = by_value
+    names = by_value.get(value)
+    return list(names) if names else None
 
 
 def read_values(spec, cls, word):
