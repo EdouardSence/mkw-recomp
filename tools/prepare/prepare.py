@@ -230,6 +230,18 @@ def tail_of(out: str | bytes | None) -> str:
 
 
 # ---- shaders and the overlay
+def translator_key() -> str:
+    """The shader step's key: every file the translation's output depends on (the translator, the decoder, extract.py
+    and translate.py), as translate.py's translator_hash minus the spec, which this step builds. With translate.py
+    alone, an update that changed only sm86/translate kept the old SPIR-V (#26: 0.1.7's translator fixes and the
+    position default never reached a set-up game)."""
+    h = hashlib.sha256()
+    files = sorted((ROOT / "sm86/translate").rglob("*.py")) + sorted((ROOT / "sm86/decode").rglob("*.py"))
+    for f in [*files, ROOT / "tools/shaders/extract.py", ROOT / "tools/shaders/translate.py"]:
+        h.update(f.read_bytes())
+    return h.hexdigest()[:16]
+
+
 def sm86_spec(game: Path, work: Path, cc: list[str]) -> Path:
     """The spec translate.py decodes with: a source checkout's own build/sm86, else built once into <game>/sm86."""
     for spec in (ROOT / "build/sm86/instructions.json", game / "sm86/instructions.json"):
@@ -348,7 +360,7 @@ def main() -> None:
             "romfs": f"{args.romfs} {romfs_src}",
             "generate": f"{build.game_id()} {exefs_src}",
             "compile": f"{build.game_id()} {exefs_src} {args.target}",
-            "shaders": f"{exefs_src} {romfs_src} {hashlib.sha256((ROOT / 'tools/shaders/translate.py').read_bytes()).hexdigest()[:16]}",
+            "shaders": f"{exefs_src} {romfs_src} {translator_key()}",
             "warm": f"{build.game_id()} {romfs_src}",
         }
         for step in STEPS[1:]:
