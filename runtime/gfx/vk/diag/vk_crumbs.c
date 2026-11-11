@@ -75,8 +75,8 @@ void vk_crumbs_init(void) {
     words = info.pMappedData;
     words[0] = words[1] = words[2] = words[3] = 0;
     active = 1;
-    rt_log("vk: GPU breadcrumbs on%s: upload batches, render passes and dispatches (MKW_GPU_CRUMBS=0 turns them off)",
-           mode == 2 ? " in the B blocks (MKW_AB)" : "");
+    rt_log("vk: GPU breadcrumbs on%s: upload batches, render passes, dispatches%s (MKW_GPU_CRUMBS=0 turns them off)",
+           mode == 2 ? " in the B blocks (MKW_AB)" : "", draws ? " and draws (MKW_GPU_CRUMBS_DRAW)" : "");
 }
 
 void vk_crumbs_release(void) {
