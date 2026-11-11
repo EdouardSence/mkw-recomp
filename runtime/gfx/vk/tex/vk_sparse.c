@@ -648,7 +648,9 @@ VkSparseOrder vk_sparse_order(uint64_t fence, int binds) {
                                .pSignalSemaphores = on_ ? &order_tl : &bind_sem};
         if (on_) bind_val = sig;
         else binary_pending = 1;
+        uint64_t t0 = plat_now_ns();
         VkResult r = vkQueueBindSparse(c->gfx_queue, 1, &bi, VK_NULL_HANDLE);
+        uint64_t dt = plat_now_ns() - t0;
         if (r != VK_SUCCESS) {
             if (r == VK_ERROR_DEVICE_LOST) vk_exec_recent_log();
             rt_fatal("vk: vkQueueBindSparse of %d binds failed (%d)", nb, (int)r);
@@ -656,11 +658,13 @@ VkSparseOrder vk_sparse_order(uint64_t fence, int binds) {
         n_binds += nb;
         int64_t calls = 0;
         static int64_t ncalls;
-        calls = ++ncalls;
+        static uint64_t bind_ns;   // time in vkQueueBindSparse: the driver may update the page tables in the call
+        calls = ++ncalls, bind_ns += dt;
         if (calls <= 4 || !(calls & (calls - 1)))
             rt_log("vk: sparse bind %lld: %d blocks in %d images (%lld blocks so far, %lld slots live, %lld MiB, "
-                   "%lld written)", (long long)calls, nb, ni, (long long)n_binds, (long long)n_slots,
-                   (long long)(n_slots * 65536 >> 20), (long long)n_written);
+                   "%lld written), %.1f ms in the call (%.1f so far)", (long long)calls, nb, ni, (long long)n_binds,
+                   (long long)n_slots, (long long)(n_slots * 65536 >> 20), (long long)n_written, dt / 1e6,
+                   bind_ns / 1e6);
         free(ib);
         free(bb);
         free(ob);
