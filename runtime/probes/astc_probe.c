@@ -154,9 +154,9 @@ static int first_diff(const uint8_t *a, const uint8_t *b, size_t texels, size_t 
     return 0;
 }
 
-static int test_case(VkCtx *c, uint32_t bw, uint32_t bh, int srgb) {
-    // level 0: 37 x 23 blocks, cropped by 1-3 texels; level 1 half of that, other blocks
-    uint32_t w0 = 37 * bw - 1 - (bw > 5), h0 = 23 * bh - 2, w1 = w0 > 1 ? w0 >> 1 : 1, h1 = h0 > 1 ? h0 >> 1 : 1;
+static int test_case(VkCtx *c, uint32_t bw, uint32_t bh, int srgb, uint32_t nx, uint32_t ny) {
+    // level 0: nx x ny blocks, cropped by 1-3 texels; level 1 half of that, other blocks
+    uint32_t w0 = nx * bw - 1 - (bw > 5), h0 = ny * bh - 2, w1 = w0 > 1 ? w0 >> 1 : 1, h1 = h0 > 1 ? h0 >> 1 : 1;
     size_t n0 = (size_t)((w0 + bw - 1) / bw) * ((h0 + bh - 1) / bh), n1 = (size_t)((w1 + bw - 1) / bw) * ((h1 + bh - 1) / bh);
     uint8_t *blk = malloc((n0 + n1) * 16);
     make_blocks(blk, n0, bw, bh);
@@ -304,7 +304,9 @@ int probe_astc(void) {
         bad = 1;
     }
     for (int i = 0; i < 14 && !bad; i++)
-        for (int s = 0; s < 2 && !bad; s++) bad = test_case(c, dims[i][0], dims[i][1], s);
+        for (int s = 0; s < 2 && !bad; s++) bad = test_case(c, dims[i][0], dims[i][1], s, 37, 23);
+    // over vk_astc.c's 32 MiB scratch chunk at level 0 (45 MiB): cut into bands of whole rows of 12 and 20 texels
+    if (!bad) bad = test_case(c, 6, 6, 0, 560, 560) || test_case(c, 10, 10, 1, 340, 340);
     if (!bad && vk_astc_bc7()) {   // MKW_ASTC_BC7=1
         // the 4-aligned footprints; the last one is 4800x2400, over vk_astc.c's 32 MiB scratch chunk at level 0
         bad = bc7_case(c, 4, 4, 37, 23, 1) || bc7_case(c, 8, 8, 37, 23, 1) || bc7_case(c, 12, 12, 37, 23, 1) ||

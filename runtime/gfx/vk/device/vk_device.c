@@ -5,6 +5,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifndef _WIN32
+#include <pthread.h>
+#endif
 
 #include "cfg.h"
 #include "host.h"
@@ -15,6 +18,30 @@
 static VkCtx g_vk;
 static int g_ready;
 static PlatMutex g_lock = PLAT_MUTEX_INIT;
+
+// VMA's vkAllocateMemory, timed: a new VkDeviceMemory costs the calling thread 8-19 ms or more (the kernel clears its
+// pages; vk_headroom.c), and the title's sparse arrays ask for ~1 GB in one frame. A slow one (5 ms or more) is logged
+// with its thread, the first 8 and then every power of two.
+static VKAPI_ATTR VkResult VKAPI_CALL timed_alloc(VkDevice d, const VkMemoryAllocateInfo *info,
+                                                  const VkAllocationCallbacks *cb, VkDeviceMemory *mem) {
+    static int64_t n_slow, ns_all, bytes_all;
+    uint64_t t0 = plat_now_ns();
+    VkResult r = vkAllocateMemory(d, info, cb, mem);
+    int64_t dt = (int64_t)(plat_now_ns() - t0);
+    int64_t all = plat_add64(&ns_all, dt), bytes = plat_add64(&bytes_all, (int64_t)info->allocationSize);
+    if (dt >= 5000000) {
+        int64_t k = plat_inc64(&n_slow);
+        char name[32] = "";
+#ifndef _WIN32
+        pthread_getname_np(pthread_self(), name, sizeof name);
+#endif
+        if (k <= 8 || !(k & (k - 1)))
+            rt_log("vk: vkAllocateMemory of %.1f MiB (type %u) took %.1f ms on thread %u %s (%lld slow; %.0f ms for "
+                   "%.0f MiB in all so far)", info->allocationSize / 1048576.0, info->memoryTypeIndex, dt / 1e6,
+                   plat_thread_id(), name, (long long)k, all / 1e6, bytes / 1048576.0);
+    }
+    return r;
+}
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL debug_cb(VkDebugUtilsMessageSeverityFlagBitsEXT sev, VkDebugUtilsMessageTypeFlagsEXT type,
                                                const VkDebugUtilsMessengerCallbackDataEXT *d, void *user) {
@@ -380,6 +407,8 @@ static int create_device(void) {
                                  .flags = (g_vk.has_buffer_device_address ? VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT : 0) |
                                           (g_vk.has_memory_budget ? VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT : 0),
                                  .pDeviceMemoryCallbacks = vk_headroom_callbacks()};
+    static const VmaVulkanFunctions vf = {.vkAllocateMemory = timed_alloc};   // the rest from VMA's static imports
+    ai.pVulkanFunctions = &vf;
     // MKW_GPU_MEM_LIMIT=<MiB>: a cap on what VMA allocates, split over the heaps by size. On an integrated GPU this
     // memory is system RAM outside the process's cgroup (run47: the global OOM killer took other applications), so
     // unset there it is 4096, what every scripted run sets (3072 makes the race black), or more with more RAM, plus the

@@ -421,7 +421,8 @@ static VmaAllocator svma(void) {
 // Radeon 660M (vale1, 06/11/2026: 351 allocations), and a buffer per upload batch was worse (wastc4: still new memory,
 // held until the batch ends). Every caller records into the upload batch under its lock (vk_upload_begin) and the
 // batches run in order on the graphics queue, so a barrier at the start of each use is enough, as between the chunks
-// of one call. Larger calls (one region over a chunk) keep their own buffer, freed with the batch.
+// of one call. A region over a chunk is cut to fit (split_regions); a call with a readback (MKW_ASTC=check) keeps its
+// own buffer, freed with the batch.
 #define FIXED_SCRATCH (64ull << 20)
 static VkBuffer fx_buf;
 static VmaAllocation fx_alloc;
@@ -439,10 +440,60 @@ static VkDeviceSize region_in(const VkAstcRegion *r, uint32_t bw, uint32_t bh) {
     return (VkDeviceSize)((r->w + bw - 1) / bw) * ((r->h + bh - 1) / bh) * r->slices * 16;
 }
 
+// A region over CHUNK_OUT cut into regions that fit one chunk: its slices apart, then bands of whole rows of ASTC and
+// BC blocks. The bands' texels follow each other as the region's did (readback unchanged). Without the cut, each
+// 8192x8192 layer of the title's terrain arrays took a 336 MiB scratch buffer of its own, made and freed per batch:
+// 10 of them, 1 353 ms on the replay thread of the Radeon 660M, in the 4.8 s frame of the startup logo (boot-bo2).
+// NULL when no region needs it.
+static VkAstcRegion *split_regions(const VkAstcRegion *rg, int n, uint32_t bw, uint32_t bh, int *out_n) {
+    int need = 0;
+    for (int i = 0; i < n; i++) need |= region_out(&rg[i]) > CHUNK_OUT;
+    if (!need) return NULL;
+    uint32_t step = bh % 4 == 0 ? bh : bh % 2 == 0 ? bh * 2 : bh * 4;   // a band height: a multiple of bh and of 4
+    size_t cap = 0;
+    for (int i = 0; i < n; i++) {
+        uint64_t row = (uint64_t)rg[i].w * 4, band = CHUNK_OUT / row / step * step;
+        if (!band) band = step;
+        cap += region_out(&rg[i]) > CHUNK_OUT ? (size_t)rg[i].slices * ((rg[i].h + band - 1) / band) : 1;
+    }
+    VkAstcRegion *rs = malloc(cap * sizeof *rs);
+    if (!rs) rt_fatal("vk: out of memory (ASTC regions)");
+    int m = 0;
+    for (int i = 0; i < n; i++) {
+        const VkAstcRegion *r = &rg[i];
+        if (region_out(r) <= CHUNK_OUT) { rs[m++] = *r; continue; }
+        uint64_t row = (uint64_t)r->w * 4, band = CHUNK_OUT / row / step * step;
+        if (!band) band = step;
+        VkDeviceSize bx = (r->w + bw - 1) / bw, slice = region_in(&(VkAstcRegion){.w = r->w, .h = r->h, .slices = 1}, bw, bh);
+        for (uint32_t s = 0; s < r->slices; s++)
+            for (uint32_t y = 0; y < r->h; y += (uint32_t)band) {
+                VkAstcRegion b = *r;
+                b.slices = 1, b.h = r->h - y < band ? r->h - y : (uint32_t)band;
+                b.src = r->src + s * slice + (VkDeviceSize)(y / bh) * bx * 16;
+                b.offset.y += (int32_t)y, b.offset.z += (int32_t)s;
+                rs[m++] = b;
+            }
+    }
+    *out_n = m;
+    return rs;
+}
+
+static int astc_record(VkCommandBuffer cb, VkBuffer src, const VkAstcRegion *rg, int n, uint32_t bw, uint32_t bh,
+                       int srgb, VkImage img, VkImageAspectFlags aspect, int bc7, VkBuffer readback);
+
 int vk_astc_record(VkCommandBuffer cb, VkBuffer src, VkDeviceSize src_size, const VkAstcRegion *rg, int n, uint32_t bw,
                    uint32_t bh, int srgb, VkImage img, VkImageAspectFlags aspect, int bc7, VkBuffer readback) {
-    static volatile int32_t n_fail;
     (void)src_size;
+    int m = n;
+    VkAstcRegion *split = split_regions(rg, n, bw, bh, &m);
+    int ok = astc_record(cb, src, split ? split : rg, m, bw, bh, srgb, img, aspect, bc7, readback);
+    free(split);
+    return ok;
+}
+
+static int astc_record(VkCommandBuffer cb, VkBuffer src, const VkAstcRegion *rg, int n, uint32_t bw, uint32_t bh,
+                       int srgb, VkImage img, VkImageAspectFlags aspect, int bc7, VkBuffer readback) {
+    static volatile int32_t n_fail;
     VkCtx *c = vk_ctx();
     if (!c || !vk_astc_gpu() || bw < 4 || bh < 4 || bw > 12 || bh > 12) return 0;
     plat_mutex_lock_shared(&g_lock);
