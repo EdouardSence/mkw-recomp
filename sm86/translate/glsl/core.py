@@ -473,6 +473,11 @@ def translate(
     decl = [f"    precise uint {regs};", f"    bool {preds};", "    uint loops = 0u;"]
     if stage == "vs" and not (b.task or b.mesh):
         decl.append("    gl_PointSize = support.point_size;")   # first: a program that writes its own overrides it
+        # The position components a program does not write are (0, 0, 0, 1) on the console; Vulkan leaves them
+        # undefined. MKW's full-screen passes write only x and y (or x, y, z): with w undefined, Intel (ANV) and Adreno
+        # (Turnip) interpolated the texture coordinates with a garbage 1/w, so the race's tonemap read a magnified,
+        # stale corner of the scene and the frame came out black, and menus split along the triangle's diagonal (#26).
+        decl.append("    gl_Position = vec4(0.0, 0.0, 0.0, 1.0);")
     head_cs = None   # task/mesh: the same body under the compute wrappers (b.reflection["cs_glsl"])
     if b.task:
         head_cs, tail_cs = task_head_cs(head), TASK_MAIN_CS
