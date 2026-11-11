@@ -13,6 +13,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "tools/build"))
 import build  # (mem_total_gb)
 
 
+def emit(*words: object) -> None:
+    """One event for the start screen (stdout) and the same line for logs/setup.log (stderr)."""
+    print(*words, flush=True)
+    print(*words, file=sys.stderr)
+
+
 class Failed(Exception):
     """A step that cannot go on: its message is for the player."""
 
