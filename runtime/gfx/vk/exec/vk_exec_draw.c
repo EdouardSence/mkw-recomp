@@ -124,6 +124,30 @@ int find_stage(const prog_t *p, int nvn_stage, const uint8_t **ctl, const uint8_
     return 1;
 }
 
+// Which TEX/IMG bindings of a compute program have an integer-format view bound: the translator reads them as float
+// and takes the bits (floatBitsToUint), as SM86 does; in Vulkan a float image over an integer view is undefined
+// (format-07753): AMD and NVIDIA return the bits, Intel Arc drew the race black (issue #64). Array and buffer
+// bindings are left as they are. MKW_INT_IMAGES=0 keeps the float images (to compare).
+static void cs_answers(VkExec *ex, const uint8_t *ctl, const uint8_t *code, GfxShaderAnswers *a) {
+    static int on = -1;
+    if (on < 0) on = !cfg_get("MKW_INT_IMAGES") || strcmp(cfg_get("MKW_INT_IMAGES"), "0") != 0;
+    if (!on) return;
+    const GfxShader *s = gfx_shader_get(ctl, code, NULL);
+    for (int img = 0; s && img < 2; img++) {
+        const GfxShaderRes *res;
+        int n = gfx_shader_resources(s, img ? GFX_RES_IMG : GFX_RES_TEX, &res);
+        for (int i = 0; i < n; i++) {
+            const GfxShaderRes *r = &res[i];
+            if (r->count > 1 || r->binding >= 64 || r->slot < 0 || (r->type & 0xff) == 2) continue;
+            uint64_t h = img ? (r->slot < 32 ? ex->img[NVN_STAGE_CS][r->slot] : 0)
+                             : (r->slot < 128 ? ex->tex[NVN_STAGE_CS][r->slot] : 0);
+            int t = vk_exec_res_numeric(h, r, img);
+            if (t == GFX_TYPE_UINT) a->img_uint |= 1ull << r->binding;
+            else if (t == GFX_TYPE_SINT) a->img_sint |= 1ull << r->binding;
+        }
+    }
+}
+
 // *present: the program has this stage. Returns NULL when it has not or it has no prepared SPIR-V.
 const GfxShader *shader_for(VkExec *ex, int st, int *present) {
     const uint8_t *ctl, *code;
@@ -131,9 +155,11 @@ const GfxShader *shader_for(VkExec *ex, int st, int *present) {
     *present = 0;
     if (!ex->prog || !find_stage(ex->prog, st, &ctl, &code, &len)) return NULL;
     *present = 1;
-    // the vertex stage's attribute types pick its integer-input variant (gfx_shader.c); other stages have none
+    // the vertex stage's attribute types pick its integer-input variant (gfx_shader.c), the compute stage's bound
+    // image formats its integer-image variant; other stages have none
     GfxShaderAnswers a = {0};
     if (st == NVN_STAGE_VS) vk_pipeline_answers(&ex->pipe, &a);
+    else if (st == NVN_STAGE_CS) cs_answers(ex, ctl, code, &a);
     uint64_t serial = ex->prog->serial;
     ShaderEnt *set = NULL;
     if (serial) {

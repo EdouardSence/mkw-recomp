@@ -27,9 +27,11 @@ int gfx_window_lines(void);   // lines of the picture the window will show (moni
 enum { GFX_STAGE_VS, GFX_STAGE_TCS, GFX_STAGE_TES, GFX_STAGE_GS, GFX_STAGE_FS, GFX_STAGE_CS };
 enum { GFX_MESH_NONE, GFX_MESH_TASK, GFX_MESH_MESH };      // gfx_shader_mesh_kind
 enum { GFX_TYPE_FLOAT, GFX_TYPE_SINT, GFX_TYPE_UINT };
-typedef struct {                                           // what a draw's state says of its vertex program
+typedef struct {                                           // what a draw's state says of its program
     uint8_t attr_type[16];                                 // GFX_TYPE_* of each vertex attribute's format: integer
                                                            // ones get an integer-input variant (int_input_variant)
+    uint64_t img_uint, img_sint;                           // compute: bindings (bit = binding) of the TEX/IMG whose
+                                                           // bound view has a uint / sint format (int_image_variant)
 } GfxShaderAnswers;
 typedef struct GfxShader GfxShader;                        // SPIR-V words + parsed reflection; owned by the cache
 // The prepared SPIR-V of a program (tools/shaders/translate.py), as its integer-input variant for the attribute types
@@ -37,6 +39,9 @@ typedef struct GfxShader GfxShader;                        // SPIR-V words + par
 const GfxShader *gfx_shader_get(const uint8_t *control, const uint8_t *code, const GfxShaderAnswers *a);
 // The integer-input variant of a prepared vertex shader for the attribute types in a, or s (pipeline key records).
 const GfxShader *gfx_shader_int_variant(const GfxShader *s, const GfxShaderAnswers *a);
+// gfx_spirv_img.c: w with the image bindings in umask / smask retyped to uint / int images (int_image_variant); NULL
+// when it cannot (logged by the caller). The words are malloc'd.
+uint32_t *spirv_int_images(const uint32_t *w, uint64_t n, uint64_t umask, uint64_t smask, uint64_t *out_n);
 uint64_t gfx_shader_count(void);                           // shaders in memory (MKW_TRACE=perf, flight recorder)
 const uint8_t *gfx_shader_key(const GfxShader *s);          // the 32-byte cache key (program key; variants their own)
 const uint8_t *gfx_shader_input_id(const GfxShader *s);     // the 32-byte id in pipeline key records: the program key

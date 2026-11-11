@@ -208,6 +208,8 @@ void vk_exec_cb_shutdown(void);
 void dummies_init(void);
 void tex_info_full(VkExec *ex, const GfxShaderRes *r, uint64_t h, int storage, int separate, VkDescriptorImageInfo *out,
                    VkImage *image);
+// GFX_TYPE_* of the view TEX/IMG resource r gets for handle h (FLOAT when nothing is bound): shader_for's answers
+int vk_exec_res_numeric(uint64_t h, const GfxShaderRes *r, int storage);
 // vk_exec_draw.c
 int find_stage(const prog_t *p, int nvn_stage, const uint8_t **ctl, const uint8_t **code, uint32_t *len);
 const GfxShader *shader_for(VkExec *ex, int st, int *present);

@@ -236,6 +236,29 @@ static int texel32(VkFormat f) {
            f == VK_FORMAT_B10G11R11_UFLOAT_PACK32 || f == VK_FORMAT_E5B9G9R9_UFLOAT_PACK32;
 }
 
+// The format a view of img gets: a storage view declared R32 (res_format 11) reads a 32-bit texel image as R32_UINT
+// unless the image lists its view formats; a sampled view in the sRGB / UNORM twin of the image's format samples
+// through it: the cup movies are rendered into RGBA8 and composited through an RGBA8_SRGB descriptor that decodes them
+// to linear; through the image's format the movie got the sRGB curve twice (grey, live31 01/11/2026). Colour images
+// with a twin are MUTABLE_FORMAT.
+static VkFormat view_format(const VkTexImage *img, const view_t *v, int hv, int storage, uint8_t res_format,
+                            uint32_t aspect) {
+    VkFormat vf = storage && res_format == 11 && img->format != VK_FORMAT_R32_UINT && texel32(img->format) &&
+                  !img->listed && (aspect & VK_IMAGE_ASPECT_COLOR_BIT) ? VK_FORMAT_R32_UINT : img->format;
+    TexVkFormat tf;
+    if (!storage && hv && v->set_format && tex_vk_format(v->format, &tf) && tf.vk != vf && tf.vk == vk_srgb_twin(vf))
+        vf = tf.vk;
+    return vf;
+}
+
+int vk_exec_res_numeric(uint64_t h, const GfxShaderRes *r, int storage) {
+    view_t v;
+    int hv = 0;
+    const VkTexImage *img = h ? vk_texture_by_id((int)(h & 0xfffff), &v, &hv) : NULL;
+    if (!img) return GFX_TYPE_FLOAT;
+    return vk_format_numeric(view_format(img, &v, hv, storage, r->format, vk_exec_view_aspect(img, &v, hv)));
+}
+
 static VkImageView get_view(VkExec *ex, const VkTexImage *img, const view_t *v, int hv, uint16_t rtype, int storage,
                             uint8_t res_format) {
     VkImageViewType vt = res_view_type(rtype);
@@ -300,17 +323,10 @@ static VkImageView get_view(VkExec *ex, const VkTexImage *img, const view_t *v, 
             }
     }
     uint32_t swz = (uint32_t)sw[0] | (uint32_t)sw[1] << 8 | (uint32_t)sw[2] << 16 | (uint32_t)sw[3] << 24;
-    VkFormat vf = storage && res_format == 11 && img->format != VK_FORMAT_R32_UINT && texel32(img->format) &&
-                  !img->listed && (aspect & VK_IMAGE_ASPECT_COLOR_BIT) ? VK_FORMAT_R32_UINT : img->format;
+    VkFormat vf = view_format(img, v, hv, storage, res_format, aspect);
     if (storage && res_format == 11 && img->format != VK_FORMAT_R32_UINT && texel32(img->format) && img->listed)
         warn_once(W_LISTED_R32, "a storage view of a listed image (format %d) wants R32_UINT texels: its own format is used",
                   (int)img->format);
-    // A view in the sRGB / UNORM twin of the image's format samples through it: the cup movies are rendered into RGBA8
-    // and composited through an RGBA8_SRGB descriptor that decodes them to linear; through the image's format the
-    // movie got the sRGB curve twice (grey, live31 01/11/2026). Colour images with a twin are MUTABLE_FORMAT.
-    TexVkFormat tf;
-    if (!storage && hv && v->set_format && tex_vk_format(v->format, &tf) && tf.vk != vf && tf.vk == vk_srgb_twin(vf))
-        vf = tf.vk;
     ViewKey k = {img->image, vf, vt, aspect, l0, nl, y0, ny, swz};
     if (!view_of.klen) nvn_hm_init(&view_of, sizeof(ViewKey)), nvn_hm_init(&views_by_image, sizeof(VkImage));
     VkImageView found = (VkImageView)nvn_hm_get(&view_of, &k);

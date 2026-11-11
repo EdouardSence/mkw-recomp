@@ -610,8 +610,50 @@ static void reflect(GfxShader *s) {
 
 // The prepared shader of a program, as its integer-input variant when a vertex shader's attributes in a have integer
 // formats; NULL when the program has no prepared SPIR-V (logged).
+// The variant of a prepared compute shader for the integer-format views in a (GfxShaderAnswers.img_uint/img_sint), or
+// s (gfx_spirv_img.c).
+static const GfxShader *int_image_variant(GfxShader *s, const GfxShaderAnswers *a) {
+    if (!s || !a || s->stage != GFX_STAGE_CS || !(a->img_uint | a->img_sint)) return s;
+    uint8_t key[32];
+    memcpy(key, s->key, 32);
+    key[30] ^= 0x3c, key[31] ^= 0xc3;   // as int_input_variant's, with other marks
+    for (int i = 0; i < 8; i++) key[i + 14] ^= (uint8_t)(a->img_uint >> 8 * i), key[i + 6] ^= (uint8_t)(a->img_sint >> 8 * i);
+    GfxShader *v = mem_find(key);
+    if (v) return v;
+    uint64_t nw = 0;
+    uint32_t *code = spirv_int_images(s->spirv, s->words, a->img_uint, a->img_sint, &nw);
+    if (!code) {
+        static volatile int32_t n_fail;
+        if (plat_inc32(&n_fail) <= 8)
+            rt_log("gfx_shader: integer images %#llx/%#llx not patched in", (unsigned long long)a->img_uint,
+                   (unsigned long long)a->img_sint);
+        return s;
+    }
+    if (!(v = calloc(1, sizeof *v)) || !(v->reflection = malloc(s->reflection_size + 1))) rt_fatal("gfx_shader: out of memory");
+    memcpy(v->key, key, 32), memcpy(v->iid, s->iid, 32);
+    v->spirv = code, v->words = nw;
+    memcpy(v->reflection, s->reflection, s->reflection_size), v->reflection[s->reflection_size] = 0;
+    v->reflection_size = s->reflection_size;
+    memcpy(v->cs_table, s->cs_table, sizeof v->cs_table), v->cs_known = s->cs_known;   // reflect places the resources by it
+    reflect(v);
+    const char *dd = cfg_get("MKW_SPIRV_INT_DUMP");   // the variants for spirv-val
+    if (dd && *dd) {
+        char path[PATH_CAP + 96], hex[65];
+        key_hex(key, hex);
+        plat_file_mkdir_p(dd);
+        snprintf(path, sizeof path, "%s/%s.spv", dd, hex);
+        plat_file_write(path, code, nw * 4);
+    }
+    static volatile int32_t n_var;
+    if (plat_inc32(&n_var) <= 8)
+        rt_log("gfx_shader: compute shader variant with integer images uint %#llx sint %#llx", (unsigned long long)a->img_uint,
+               (unsigned long long)a->img_sint);
+    return mem_insert(v);
+}
+
 const GfxShader *gfx_shader_get(const uint8_t *control, const uint8_t *code, const GfxShaderAnswers *a) {
-    return int_input_variant((GfxShader *)prepared_get(control, code), a);
+    GfxShader *s = (GfxShader *)prepared_get(control, code);
+    return s && s->stage == GFX_STAGE_CS ? int_image_variant(s, a) : int_input_variant(s, a);
 }
 
 uint64_t gfx_shader_count(void) { return (uint64_t)n_keys; }

@@ -749,19 +749,6 @@ static void clear_buf(VkExec *ex, const p_clear_buf *p) {
 
 // ---- texture clears
 
-static int int_format(VkFormat f) {
-    switch (f) {
-    case VK_FORMAT_R8_UINT: case VK_FORMAT_R8G8_UINT: case VK_FORMAT_R8G8B8A8_UINT: case VK_FORMAT_R8_SINT:
-    case VK_FORMAT_R8G8_SINT: case VK_FORMAT_R8G8B8A8_SINT: case VK_FORMAT_R16_UINT: case VK_FORMAT_R16G16_UINT:
-    case VK_FORMAT_R16G16B16A16_UINT: case VK_FORMAT_R16_SINT: case VK_FORMAT_R16G16_SINT:
-    case VK_FORMAT_R16G16B16A16_SINT: case VK_FORMAT_R32_UINT: case VK_FORMAT_R32G32_UINT:
-    case VK_FORMAT_R32G32B32A32_UINT: case VK_FORMAT_R32_SINT: case VK_FORMAT_R32G32_SINT:
-    case VK_FORMAT_R32G32B32A32_SINT: case VK_FORMAT_A2B10G10R10_UINT_PACK32:
-        return 1;
-    default: return 0;
-    }
-}
-
 // Whole levels only (vkCmdClear*Image has no rectangle); partial regions, channel masks and a view that reinterprets
 // the format are skipped (MacNativeGames does not replay them either, nvn_mtl.m).
 static void clear_tex(VkExec *ex, const p_clear_tex *p) {
@@ -783,7 +770,7 @@ static void clear_tex(VkExec *ex, const p_clear_tex *p) {
     if (img->aspect & VK_IMAGE_ASPECT_COLOR_BIT) {
         rng.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         VkClearColorValue cv;
-        if (int_format(img->format) != (p->is_uint != 0)) {
+        if ((vk_format_numeric(img->format) != GFX_TYPE_FLOAT) != (p->is_uint != 0)) {
             warn_once(W_CLEAR, "texture clear value kind (uint %d) does not match format %d: skipped", p->is_uint, (int)img->format);
             return;
         }
