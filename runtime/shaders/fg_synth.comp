@@ -1,0 +1,54 @@
+// Frame generation (runtime/gfx/vk/device/vk_framegen.c): one made frame at time t between the last frame (a) and the
+// new one (b). A pixel takes a back along t of its motion and b forward along 1 - t and blends them by t, as
+// SkyboundTotk's kSynthWgsl (a64-kit/gpu/render/rx_framegen.cpp, https://github.com/NotRexed/SkyboundTotk @
+// a4495f95b5e5ab6562d603058dcaa3457d0c8027, MIT, Copyright (c) 2026 NotRexed), which reads the vectors (one per 16x16
+// pixels) bilinearly. Ours picks the motion per pixel among candidates: that blend, the vectors of the 3x3 blocks
+// around, and zero. It keeps the one whose two samples agree best, so a pixel near a block edge takes its neighbour's
+// motion rather than a blend of two (white text over a still sky came out doubled), and a still pixel (the HUD) takes
+// zero. Where even the best candidate's samples disagree (an occlusion, a cut, motion past the search) the pixel is the
+// nearer frame's sample alone, not a double image.
+#version 450
+
+layout(local_size_x = 8, local_size_y = 8) in;
+
+layout(set = 0, binding = 0) uniform sampler2D fa;
+layout(set = 0, binding = 1) uniform sampler2D fb;
+layout(set = 0, binding = 2) uniform sampler2D flow;   // pixels, one vector per 16x16 pixels
+layout(set = 0, binding = 3, rgba8) uniform writeonly image2D dst;
+
+layout(push_constant) uniform Params {
+    vec4 a;   // x: t; y, z: 1 / (16 x the vector grid's width, height)
+} pc;
+
+float diff(vec3 x, vec3 y) {
+    vec3 d = abs(x - y);
+    return max(d.r, max(d.g, d.b));
+}
+
+void main() {
+    ivec2 g = ivec2(gl_GlobalInvocationID.xy);
+    ivec2 size = imageSize(dst);
+    if (any(greaterThanEqual(g, size))) return;
+    float t = pc.a.x;
+    vec2 p = vec2(g) + 0.5, inv = 1.0 / vec2(size);
+    ivec2 blk = g / 16, gm = textureSize(flow, 0) - 1;
+    vec3 best_a = vec3(0), best_b = vec3(0);
+    float best = 1e9;
+    // candidate 0: the vectors read bilinearly; 1..9 the 3x3 blocks; 10 zero. A small cost for leaving the first
+    // keeps the motion smooth where the samples agree anyway (flat areas)
+    for (int k = 0; k < 11; k++) {
+        vec2 v = k == 0  ? textureLod(flow, p * pc.a.yz, 0.0).xy
+               : k < 10 ? texelFetch(flow, clamp(blk + ivec2((k - 1) % 3 - 1, (k - 1) / 3 - 1), ivec2(0), gm), 0).xy
+                        : vec2(0.0);
+        vec3 a = textureLod(fa, (p - t * v) * inv, 0.0).rgb, b = textureLod(fb, (p + (1.0 - t) * v) * inv, 0.0).rgb;
+        float e = diff(a, b) + (k == 0 ? 0.0 : 0.01);
+        if (e < best) {
+            best = e;
+            best_a = a;
+            best_b = b;
+        }
+    }
+    float agree = 1.0 - smoothstep(0.08, 0.25, best);
+    vec3 c = mix(t < 0.5 ? best_a : best_b, mix(best_a, best_b, t), agree);
+    imageStore(dst, g, vec4(c, 1.0));
+}

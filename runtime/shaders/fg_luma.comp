@@ -1,0 +1,28 @@
+// Frame generation (runtime/gfx/vk/device/vk_framegen.c): one level of the luma pyramid the motion search runs on.
+// Each texel is the mean of a square of the level below: the game's picture's luma at full size (1x1), or a level (its
+// r) to a quarter of its size (4x4). After SkyboundTotk's kLumaWgsl (a64-kit/gpu/render/rx_framegen.cpp,
+// https://github.com/NotRexed/SkyboundTotk @ a4495f95b5e5ab6562d603058dcaa3457d0c8027, MIT, Copyright (c) 2026 NotRexed).
+#version 450
+
+layout(local_size_x = 8, local_size_y = 8) in;
+
+layout(set = 0, binding = 0) uniform sampler2D src;
+layout(set = 0, binding = 3, r16f) uniform writeonly image2D dst;
+
+layout(push_constant) uniform Params {
+    ivec4 a;   // x: 1 the source is a colour picture (Rec. 601 luma), 0 a luma level (r); y: the square's side
+} pc;
+
+void main() {
+    ivec2 g = ivec2(gl_GlobalInvocationID.xy);
+    if (any(greaterThanEqual(g, imageSize(dst)))) return;
+    ivec2 m = textureSize(src, 0) - 1;
+    float s = 0.0;
+    int n = pc.a.y;
+    for (int y = 0; y < n; y++)
+        for (int x = 0; x < n; x++) {
+            vec3 c = texelFetch(src, min(g * n + ivec2(x, y), m), 0).rgb;
+            s += pc.a.x != 0 ? dot(c, vec3(0.299, 0.587, 0.114)) : c.r;
+        }
+    imageStore(dst, g, vec4(s / float(n * n)));
+}

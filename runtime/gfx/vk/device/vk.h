@@ -94,7 +94,31 @@ void vk_present_blit(VkImage src, VkImageLayout layout, VkFormat fmt, int w, int
 int vk_fsr_record(VkCommandBuffer cb, unsigned slot, VkImage src, VkFormat fmt, int sw, int sh, const int crop[4],
                   VkImage dst, int dx, int dy, uint32_t dw, uint32_t dh);
 void vk_fsr_release(void);   // before the device goes away
+// Queues the oldest present vk_present_blit or vk_present_blit_ahead left waiting.
 void vk_present_flip(void);
+// vk_present_blit for frame generation: presents already waiting stay waiting, so the frames of one game frame are
+// all blitted at once and each vk_present_flip then queues the next at its time.
+void vk_present_blit_ahead(VkImage src, VkImageLayout layout, VkFormat fmt, int w, int h, const int crop[4]);
+int vk_present_ahead_max(void);       // presents that may wait at once (the swapchain's spare images), at least 1
+double vk_present_refresh_hz(void);   // the window's monitor, 0 unknown
+// ---- frame generation (vk_framegen.c), the present thread
+#define VK_FG_MAX 4   // frames shown per game frame at most
+int vk_fg_wanted(void);   // MKW_FRAMEGEN is not off: the swapchain keeps spare images for it
+// One game frame: copies the crop rectangle {x, y, w, h} of src (GENERAL, all its writes submitted) into a picture of
+// its own and submits the frames made between the last game frame and it. out: what to show, in order (the made
+// frames, then the game's), each a GENERAL R8G8B8A8_UNORM image of *w x *h; *step: the time between two of them.
+// Returns how many; 0 = off or not possible now: the caller presents src as without it. at: the pacer's display time.
+int vk_fg_frame(VkImage src, int sw, int sh, const int crop[4], uint64_t at, VkImage out[VK_FG_MAX], int *w, int *h,
+                uint64_t *step);
+// What vk_fg_frame records, into cb, with `made` frames between the last call's picture and this one (none on the
+// first call): for --probe-framegen. Returns the frames in out, 0 on failure.
+int vk_fg_record(VkCommandBuffer cb, VkImage src, int sw, int sh, const int crop[4], int made, VkImage out[VK_FG_MAX],
+                 int *ow, int *oh);
+// --probe-framegen: the vectors of the last frame made (R16G16_SFLOAT, pixels, one per 16x16 pixels; 32x32 for the
+// coarse ones), its grid's size in *gw x *gh: level 0 coarse,
+// 1 its median, 2 fine, 3 its median, 4 full size, 5 its median (what the made frames used)
+VkImage vk_fg_flow(int level, int *gw, int *gh);
+void vk_fg_release(void);   // before the device goes away
 // Every submission to ctx->gfx_queue (and xfer_queue when shared) takes this lock; vk_present_image and the swapchain
 // rebuild do. Recursive.
 void vk_queue_lock(void);
