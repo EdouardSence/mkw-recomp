@@ -89,6 +89,10 @@ const char *const text_es[UI_TEXT_COUNT] = {
                          "cuando un fotograma tarda demasiado. Si tu ordenador no llega a 60, elige 30 y la carrera irá "
                          "a su velocidad real.",
     [UI_MENU_FPS_AUTO] = "Automático",
+    [UI_MENU_FRAMEGEN] = "Generación de fotogramas",
+    [UI_MENU_FRAMEGEN_DESC] = "Muestra fotogramas hechos entre los del juego: 2x convierte 30 fps en 60. «Automático» "
+                              "hace tantos como quepan en la frecuencia de tu monitor. Añade hasta un fotograma de "
+                              "retraso y el movimiento rápido puede emborronarse. La consola no lo hace.",
     [UI_MENU_GRAPHICS] = "Imagen",
     [UI_MENU_UPSCALER] = "Escalado a la ventana",
     [UI_MENU_UPSCALER_DESC] = "Cómo se escala la imagen cuando la ventana es mayor que la resolución del juego. FSR "

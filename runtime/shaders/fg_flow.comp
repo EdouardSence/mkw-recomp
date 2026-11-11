@@ -1,0 +1,78 @@
+// Frame generation (runtime/gfx/vk/device/vk_framegen.c): the motion between the last frame and the new one by block
+// matching on one level of a luma pyramid, one vector per 16x16 pixels of the picture (32x32 at the coarsest), in
+// pixels. For each vector,
+// the offset where the last frame's patch around it matches the new frame best (mean absolute difference), searched
+// within RADIUS level texels around a start: zero at the coarsest level, the coarser level's vector at the others. Three
+// levels (a sixteenth, a quarter, full size) reach far (+-128 pixels) and still end precise; at full size a parabola
+// through the costs either side of the best gives the vector's fraction of a pixel (a quarter-size vector alone is 4
+// pixels coarse: halfway, sharp edges came out doubled). A small cost per pixel away from the start keeps the motion
+// smooth where the patch is flat (any offset matches); the zero vector is always tried, at a small fixed cost, so a
+// still patch (the HUD), which matches it exactly, keeps still.
+// After SkyboundTotk's kFlowWgsl (a64-kit/gpu/render/rx_framegen.cpp, https://github.com/NotRexed/SkyboundTotk @
+// a4495f95b5e5ab6562d603058dcaa3457d0c8027, MIT, Copyright (c) 2026 NotRexed), which searches one level only.
+#version 450
+
+layout(local_size_x = 8, local_size_y = 8) in;
+
+layout(constant_id = 0) const int CELL = 4;     // level texels between two vectors
+layout(constant_id = 1) const int HALF = 4;     // half the patch side, in samples
+layout(constant_id = 2) const int RADIUS = 3;   // the search, each way, in level texels
+layout(constant_id = 3) const int START = 1;    // 1: start from the coarser level's vector (cand)
+layout(constant_id = 4) const int STEP = 1;     // level texels between two samples of the patch
+layout(constant_id = 5) const int SUBPIX = 0;   // 1: the vector's fraction of a level texel (at full size)
+layout(constant_id = 6) const int SPARSE = 0;   // 1: cand has one vector per 2x2 of these
+
+layout(set = 0, binding = 0) uniform sampler2D la;     // the last frame at this level
+layout(set = 0, binding = 1) uniform sampler2D lb;     // the new frame's
+layout(set = 0, binding = 2) uniform sampler2D cand;   // the coarser level's vectors, in pixels (START)
+layout(set = 0, binding = 3, rg16f) uniform writeonly image2D flow;
+
+layout(push_constant) uniform Params {
+    vec4 a;   // x: pixels per level texel; y: cost per pixel away from the start (|x| + |y|); z: cost of zero
+} pc;
+
+const int SIDE = 2 * HALF, WIN = 2 * RADIUS + 1;
+
+float lum(sampler2D s, ivec2 p, ivec2 m) { return texelFetch(s, clamp(p, ivec2(0), m), 0).r; }
+
+void main() {
+    ivec2 g = ivec2(gl_GlobalInvocationID.xy);
+    if (any(greaterThanEqual(g, imageSize(flow)))) return;
+    ivec2 lm = textureSize(la, 0) - 1;
+    ivec2 c = g * CELL + CELL / 2 - HALF * STEP;   // the patch's first texel
+    float pa[SIDE * SIDE];
+    for (int i = 0; i < SIDE * SIDE; i++) pa[i] = lum(la, c + ivec2(i % SIDE, i / SIDE) * STEP, lm);
+    ivec2 start = START != 0 ? ivec2(round(texelFetch(cand, g >> SPARSE, 0).xy / pc.a.x)) : ivec2(0);
+    float cost[WIN * WIN];
+    float best = 1e9;
+    ivec2 bv = ivec2(0);
+    int bk = -1;   // the best's place in the window, -1 the zero vector from outside it
+    bool zero_in = all(lessThanEqual(abs(start), ivec2(RADIUS)));
+    for (int k = zero_in ? 0 : -1; k < WIN * WIN; k++) {
+        ivec2 d = k < 0 ? ivec2(0) : start + ivec2(k % WIN, k / WIN) - RADIUS;
+        float sad = 0.0;
+        for (int i = 0; i < SIDE * SIDE; i++) sad += abs(pa[i] - lum(lb, c + d + ivec2(i % SIDE, i / SIDE) * STEP, lm));
+        float e = sad / float(SIDE * SIDE);
+        ivec2 off = d - start;
+        e += d == ivec2(0) && start != ivec2(0) ? pc.a.z : pc.a.y * pc.a.x * float(abs(off.x) + abs(off.y));
+        if (k >= 0) cost[k] = e;
+        if (e < best) {
+            best = e;
+            bv = d;
+            bk = k;
+        }
+    }
+    vec2 v = vec2(bv);
+    if (SUBPIX != 0 && bk >= 0) {   // the minimum of a parabola through the best and its two neighbours, each axis
+        int x = bk % WIN, y = bk / WIN;
+        if (x > 0 && x < WIN - 1) {
+            float l = cost[bk - 1], r = cost[bk + 1], den = l - 2.0 * best + r;
+            if (den > 1e-6) v.x += clamp(0.5 * (l - r) / den, -0.5, 0.5);
+        }
+        if (y > 0 && y < WIN - 1) {
+            float u = cost[bk - WIN], dn = cost[bk + WIN], den = u - 2.0 * best + dn;
+            if (den > 1e-6) v.y += clamp(0.5 * (u - dn) / den, -0.5, 0.5);
+        }
+    }
+    imageStore(flow, g, vec4(v * pc.a.x, 0.0, 0.0));
+}

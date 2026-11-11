@@ -8,6 +8,7 @@
 //     --probe-gfx-abi   NVN object layouts against nvn.h's reserved sizes; needs no game files
 //     --probe-nvn, --probe-nvn-tex, --probe-window, --probe-vkmem, --probe-vkexec    graphics probes
 //     --probe-astc      the compute ASTC decoder against astc_decode_ldr; needs no game files
+//     --probe-framegen  frame generation's passes on two pictures (MKW_FG_PROBE=DIR); needs no game files
 
 //     --boot            run the game to the first NVN call
 //     --seconds S       run the game (implies --boot's start-up) until the world clock (game time since the loaded
@@ -439,7 +440,7 @@ static int usage(const char *argv0) {
     fprintf(stderr, "usage: %s [--exefs DIR] [--romfs DIR] [--profile DIR] [--launcher | --play | --selftest | --probe-loader | "
                     "--probe-cfg | --probe-kernel | --probe-audio | --probe-services | --probe-fs | --probe-gfx-abi | "
                     "--probe-nvn | --probe-nvn-tex | --probe-window | --probe-vkmem | "
-                    "--probe-vkexec | --probe-astc | --probe-texpre | --texpre | --boot |--seconds S [--shot PNG]]\n", argv0);
+                    "--probe-vkexec | --probe-astc | --probe-framegen | --probe-texpre | --texpre | --boot |--seconds S [--shot PNG]]\n", argv0);
     return 2;
 }
 
@@ -577,6 +578,7 @@ int main(int argc, char **argv) {
     if (!strcmp(mode, "--probe-vkmem")) return probe_vkmem();
     if (!strcmp(mode, "--probe-vkexec")) return probe_vkexec();
     if (!strcmp(mode, "--probe-astc")) return probe_astc();
+    if (!strcmp(mode, "--probe-framegen")) return probe_framegen();
     if (!strcmp(mode, "--probe-vkdevice")) return probe_vkdevice();
 
     if (!strcmp(mode, "--probe-texpre")) return probe_texpre();

@@ -85,6 +85,10 @@ const char *const text_en[UI_TEXT_COUNT] = {
     [UI_MENU_FPS_DESC] = "Frames per second the game aims for. Automatic is the console's: 60, or 30 when a frame takes "
                          "too long. If your computer cannot hold 60, choose 30 so the race runs at its real speed.",
     [UI_MENU_FPS_AUTO] = "Automatic",
+    [UI_MENU_FRAMEGEN] = "Frame generation",
+    [UI_MENU_FRAMEGEN_DESC] = "Shows frames made between the game's own: 2x turns 30 fps into 60. Automatic makes as many "
+                              "as your monitor's refresh rate has room for. Adds up to one frame of delay, and fast "
+                              "motion can smear. Not on the console.",
     [UI_MENU_GRAPHICS] = "Picture",
     [UI_MENU_UPSCALER] = "Scaling to the window",
     [UI_MENU_UPSCALER_DESC] = "How the picture is scaled when the window is larger than the game resolution. FSR keeps "
