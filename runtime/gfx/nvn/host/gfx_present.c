@@ -28,8 +28,8 @@
 #include "vk.h"
 #include "platform/platform.h"
 
-#define FRAMES (2 * VK_FG_MAX)   // presents recorded and not yet done: frame generation blits VK_FG_MAX at once, and
-                                 // reusing a slot waits for its fence (the present thread holding the replay's drain)
+#define FRAMES (2 * VK_FG_MAX)   // slots made: frame generation blits VK_FG_MAX at once, and reusing a slot waits for
+                                 // its fence (the present thread holding the replay's drain)
 #define MAX_IMAGES 16
 #define VSYNC_NS 1000000000ull
 #define VSYNC_HZ 60
@@ -120,6 +120,7 @@ static int g_cap_w, g_cap_h, g_cap_valid;
 // oldest. More than one only with frame generation (vk_present_blit_ahead).
 static uint32_t g_flip_q[MAX_IMAGES];
 static int g_flip_n;
+static int g_frames = 2;         // slots in use (create_swapchain): 2, FRAMES with frame generation
 static int g_ahead = 1;          // presents that may wait at once: the swapchain's images past its minimum
 
 // ---- MKW_FLIGHT thumbnails (flight.c; g_pl): each present also blits the swapchain image down into slot frame % g_th_n
@@ -316,6 +317,13 @@ static int create_swapchain(void) {
     if (caps.maxImageCount && count > caps.maxImageCount) count = caps.maxImageCount;
     if (count > 8) count = 8;
     g_ahead = count > caps.minImageCount ? (int)(count - caps.minImageCount) : 1;
+    // Slots in use: 2 without frame generation, as before it existed, so the pacing of the present thread (its fence
+    // waits) is unchanged where RADV hangs on it (#43, #50); the device is idle below, so no slot is in flight.
+    g_frames = vk_fg_wanted() ? FRAMES : 2;
+    static int warned;
+    if (vk_fg_wanted() && g_ahead < 2 && !warned++)
+        rt_log("gfx: frame generation is on but the swapchain allows no spare image (max %u): no frames are made",
+               caps.maxImageCount);
 
     vk_queue_lock();
     vkDeviceWaitIdle(c->device);
@@ -555,7 +563,7 @@ static void present_image(VkImage src, VkImageLayout layout, VkFormat fmt, int w
     if (wsys_minimized() || !g_sc) goto out;
     if (!g_capture && turbo_drop_present(kern_now_ns())) goto out;   // turbo: the window shows at most 60 a second
 
-    unsigned slot = g_frame % FRAMES;
+    unsigned slot = g_frame % g_frames;
     if (vkWaitForFences(c->device, 1, &g_fence[slot], VK_TRUE, 5000000000ull) != VK_SUCCESS) {
         rt_log("gfx: present fence wait timed out");
         goto out;

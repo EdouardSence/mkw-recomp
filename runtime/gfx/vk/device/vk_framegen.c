@@ -58,6 +58,7 @@ static struct {
     // a sixteenth (le), the vectors of each level and their medians (coarse, fine, full size) and the made frames
     Img pic[2], lf[2], lq[2], le[2], fl[6], made[VK_FG_MAX - 1];
     int w, h, fresh, cur, have_prev;
+    int nomem_w, nomem_h;   // the size whose images did not fit: not tried again until the size changes
     float lambda, bias;
     // pacing (the present thread)
     uint64_t last_at, interval, frames, made_total;
@@ -191,6 +192,8 @@ static uint32_t grid(int n) { return ((uint32_t)n + 15) / 16; }
 
 static int ensure_images(VkCtx *c, int w, int h) {
     if (F.pic[0].img && F.w == w && F.h == h) return 1;
+    // A failed size is not tried every present: each try waits for the whole device (below) and frees what it made
+    if (F.nomem_w == w && F.nomem_h == h) return 0;
     // A size change: earlier presents may still read the old images (vkDeviceWaitIdle holds the queue lock, as
     // vk_fsr.c ensure_images)
     vk_queue_lock();
@@ -210,8 +213,9 @@ static int ensure_images(VkCtx *c, int w, int h) {
     for (int i = 0; i < VK_FG_MAX - 1; i++)
         ok = ok && make_img(c, &F.made[i], (uint32_t)w, (uint32_t)h, VK_FORMAT_R8G8B8A8_UNORM, XS);
     if (!ok) {
-        rt_log("vk: frame generation: no memory for its %dx%d images", w, h);
+        rt_log("vk: frame generation: no memory for its %dx%d images; off until the size changes", w, h);
         free_images(c);
+        F.nomem_w = w, F.nomem_h = h;
         return 0;
     }
     F.w = w, F.h = h, F.fresh = 1, F.cur = 0;
